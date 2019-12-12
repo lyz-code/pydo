@@ -1,21 +1,25 @@
-import unittest
-import logging
-from unittest.mock import patch, call
 from pydo.cli import load_parser, load_logger
+from unittest.mock import patch, call
+
+import logging
+import pytest
 
 
-class TestArgparse(unittest.TestCase):
-    def setUp(self):
+class TestArgparse:
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
         self.parser = load_parser()
 
     def test_can_specify_install_subcommand(self):
         parsed = self.parser.parse_args(['install'])
-        self.assertEqual(parsed.subcommand, 'install')
+        assert parsed.subcommand == 'install'
 
 
-class TestLogger(unittest.TestCase):
+class TestLogger:
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def setup(self):
         self.logging_patch = patch('pydo.cli.logging', autospect=True)
         self.logging = self.logging_patch.start()
 
@@ -24,26 +28,21 @@ class TestLogger(unittest.TestCase):
         self.logging.WARNING = 30
         self.logging.ERROR = 40
 
-    def tearDown(self):
+        yield 'setup'
+
         self.logging_patch.stop()
 
     def test_logger_is_configured_by_default(self):
         load_logger()
-        self.assertEqual(
-            self.logging.addLevelName.assert_has_calls(
+        assert self.logging.addLevelName.assert_has_calls(
                 [
                     call(logging.INFO, '[\033[36mINFO\033[0m]'),
                     call(logging.ERROR, '[\033[31mERROR\033[0m]'),
                     call(logging.DEBUG, '[\033[32mDEBUG\033[0m]'),
                     call(logging.WARNING, '[\033[33mWARNING\033[0m]'),
                 ]
-            ),
-            None
-        )
-        self.assertEqual(
-            self.logging.basicConfig.assert_called_with(
+            ) is None
+        assert self.logging.basicConfig.assert_called_with(
                 level=logging.INFO,
                 format="  %(levelname)s %(message)s",
-            ),
-            None
-        )
+            ) is None

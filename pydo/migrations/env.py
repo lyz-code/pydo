@@ -28,10 +28,12 @@ target_metadata = models.Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_url():
     basedir = '~/.local/share/pydo'
-    return os.environ.get('DATABASE_URL') or \
+    return os.environ.get('PYDO_DATABASE_URL') or \
         'sqlite:///' + os.path.join(os.path.expanduser(basedir), 'main.db')
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.

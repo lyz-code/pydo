@@ -19,7 +19,7 @@ def install():
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)
 
-    # Install the database
+    # Install the database schema
     pydo_dir = os.path.dirname(os.path.abspath(__file__))
 
     alembic_args = [
@@ -29,3 +29,5 @@ def install():
         'head',
     ]
     alembic.config.main(argv=alembic_args)
+
+    # Install the database initial values
