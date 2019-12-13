@@ -8,13 +8,10 @@ Functions:
 from pydo.manager import ConfigManager
 
 import alembic.config
-import logging
 import os
 
-log = logging.getLogger('main')
 
-
-def install(session):
+def install(session, log):
     '''
     Function to create the environment for pydo.
     '''

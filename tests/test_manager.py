@@ -50,6 +50,32 @@ class TableManagerBaseTest:
     def test_add_table_element_method_exists(self):
         assert 'add' in dir(self.manager)
 
+    def test_short_ulids_returns_one_character_if_no_coincidence(self):
+        ulids = [
+            '01DW02HA97WN1JM14399VH8WBX',
+            '01DW02J8WWJNB109DA02HZTW0W',
+            '01DW02JQNGR5X0VYJ1SF64RTCK',
+        ]
+        expected_sulids = {
+            '01DW02HA97WN1JM14399VH8WBX': 'x',
+            '01DW02J8WWJNB109DA02HZTW0W': 'w',
+            '01DW02JQNGR5X0VYJ1SF64RTCK': 'k',
+        }
+        assert self.manager.short_ulids(ulids) == expected_sulids
+
+    def test_short_ulids_returns_two_characters_if_coincidence_in_first(self):
+        ulids = [
+            '01DW02HA97WN1JM14399VH8WBX',
+            '01DW02J8WWJNB109DA02HZTW0X',
+            '01DW02JQNGR5X0VYJ1SF64RTCK',
+        ]
+        expected_sulids = {
+            '01DW02HA97WN1JM14399VH8WBX': 'bx',
+            '01DW02J8WWJNB109DA02HZTW0X': '0x',
+            '01DW02JQNGR5X0VYJ1SF64RTCK': 'ck',
+        }
+        assert self.manager.short_ulids(ulids) == expected_sulids
+
 
 @pytest.mark.usefixtures('base_setup')
 class TestTaskManager(TableManagerBaseTest):

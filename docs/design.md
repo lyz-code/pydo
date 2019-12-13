@@ -11,7 +11,9 @@
 * [x] Create a basic Config object
 
 * [ ] Short uid
-  * rev ulid and search in open/waiting for unique values
+  * [x] rev ulid and search in open/waiting for unique values
+  * [ ] apply sulids into the list report
+  * [ ] apply sulids into the add/remove/done methods
 
 * [ ] Tags
 

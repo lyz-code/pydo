@@ -23,6 +23,8 @@ from pydo.ops import install
 from pydo.reports import List
 from sqlalchemy.orm import sessionmaker
 
+import logging
+
 
 def main():
     parser = load_parser()
@@ -33,7 +35,8 @@ def main():
     session = sessionmaker()(bind=connection)
 
     if args.subcommand == 'install':
-        install(session)
+
+        install(session, logging.getLogger('main'))
     elif args.subcommand in ['add', 'del', 'done']:
         task_manager = TaskManager(session)
 

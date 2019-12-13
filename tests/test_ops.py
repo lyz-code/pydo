@@ -1,4 +1,4 @@
-from unittest.mock import patch, call
+from unittest.mock import patch, call, Mock
 from pydo.ops import install
 
 import os
@@ -25,9 +25,8 @@ class TestInstall:
         self.config_patch = patch('pydo.ops.ConfigManager', autospect=True)
         self.config = self.config_patch.start()
         self.homedir = os.path.expanduser('~')
-        self.log_patch = patch('pydo.ops.logging', autospect=True)
-        self.log = self.log_patch.start()
-        self.log_info = self.log.getLogger.return_value.info
+        self.log = Mock()
+        self.log_info = self.log.info
         self.os_patch = patch('pydo.ops.os', autospect=True)
         self.os = self.os_patch.start()
         self.os.path.expanduser.side_effect = os.path.expanduser
@@ -39,13 +38,12 @@ class TestInstall:
 
         self.alembic_patch.stop()
         self.config_patch.stop()
-        self.log_patch.stop()
         self.os_patch.stop()
 
     def test_creates_the_data_directory_if_it_doesnt_exist(self):
         self.os.path.exists.return_value = False
 
-        install(self.session)
+        install(self.session, self.log)
         self.os.makedirs.assert_called_with(
                 os.path.join(self.homedir, '.local/share/pydo')
         )
@@ -54,7 +52,7 @@ class TestInstall:
     def test_doesnt_create_data_directory_if_exist(self):
         self.os.path.exists.return_value = True
 
-        install(self.session)
+        install(self.session, self.log)
         assert self.os.makedirs.called is False
 
     def test_initializes_database(self):
@@ -65,13 +63,13 @@ class TestInstall:
             'head',
         ]
 
-        install(self.session)
+        install(self.session, self.log)
 
         self.alembic.config.main.assert_called_with(argv=alembic_args)
         assert call('Database initialized') in self.log_info.mock_calls
 
     def test_seed_config_table(self):
-        install(self.session)
+        install(self.session, self.log)
 
         assert self.config.return_value.seed.called
         assert call('Configuration initialized') in self.log_info.mock_calls
