@@ -63,6 +63,7 @@ class TestMain:
             'done',
             'del',
             'list',
+            None
         ]
     )
     def test_session_is_initialized_when_needed(
@@ -141,11 +142,15 @@ class TestMain:
             id=arguments[1]
         )
 
-    def test_list_subcomand_prints_report(self):
-        arguments = [
+    @pytest.mark.parametrize(
+        'subcommand',
+        [
             'list',
+            None,
         ]
-        self.parser_args.subcommand = arguments[0]
+    )
+    def test_list_subcomand_prints_report_and_by_default(self, subcommand):
+        self.parser_args.subcommand = subcommand
 
         main()
 

@@ -44,7 +44,7 @@ def main():
             task_manager.delete(id=args.ulid)
         elif args.subcommand == 'done':
             task_manager.complete(id=args.ulid)
-    elif args.subcommand == 'list':
+    elif args.subcommand in ['list', None]:
         columns = ('ulid', 'description')
         labels = ('ID', 'Description')
         List(session).print(

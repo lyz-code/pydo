@@ -13,7 +13,7 @@ class TestList:
         self.print_patch = patch('pydo.reports.print', autospect=True)
         self.print = self.print_patch.start()
         self.tabulate_patch = patch(
-            'pydo.reports.tabulate.tabulate',
+            'pydo.reports.tabulate',
             autospect=True
         )
         self.tabulate = self.tabulate_patch.start()

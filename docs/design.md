@@ -3,8 +3,7 @@
 ## Todo
 
 * [ ] List
-  * [ ] Print tasks
-  * [ ] Color yes color no
+  * [x] Print tasks
 * [ ] Short uid
   * rev ulid and search in open/waiting for unique values
 * [ ] Projects
@@ -33,6 +32,11 @@
 * [ ] Start/Stop
 
 * [ ] Stats - Dash
+
+* [ ] Color on reports
+  * [ ] optional
+  https://github.com/astanin/python-tabulate/issues/8
+  https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit
 
 ## Technologies
 
