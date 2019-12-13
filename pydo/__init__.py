@@ -29,13 +29,12 @@ def main():
     args = parser.parse_args()
     load_logger()
 
-    if args.subcommand == 'install':
-        install()
-    else:
-        connection = engine.connect()
-        session = sessionmaker()(bind=connection)
+    connection = engine.connect()
+    session = sessionmaker()(bind=connection)
 
-    if args.subcommand in ['add', 'del', 'done']:
+    if args.subcommand == 'install':
+        install(session)
+    elif args.subcommand in ['add', 'del', 'done']:
         task_manager = TaskManager(session)
 
         if args.subcommand == 'add':

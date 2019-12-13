@@ -62,6 +62,7 @@ class TestMain:
             'add',
             'done',
             'del',
+            'install',
             'list',
             None
         ]

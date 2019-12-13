@@ -1,8 +1,8 @@
+from faker import Faker
+from pydo.models import Task, possible_task_states
 
 import factory
 import ulid
-
-from pydo.models import Task, possible_task_states
 
 
 class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -18,3 +18,40 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = Task
         sqlalchemy_session_persistence = 'commit'
+
+
+class ConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
+    """
+    Class to generate a fake config.
+
+    We assume it's initialized
+
+    Arguments:
+        session (session object): Database session
+
+    Public methods:
+        create: Generates a user configuration in the database
+
+    Public attributes:
+        fake (Faker object): Faker object.
+        session (Session object): Database session.
+    """
+
+    def __init__(self, session):
+        self.session = session
+        self.fake = Faker()
+
+    def create(self):
+        """
+        Method to generate a user configuration in the database
+        """
+
+        user_config = {
+            'verbose_level': self.fake.word(
+                ext_word_list=['info', 'debug', 'quiet', None]
+            )
+        }
+        for key, value in user_config.items():
+            config = self.session.query.get(key)
+            config.user = value
+            self.session.add(config)

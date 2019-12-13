@@ -71,3 +71,4 @@ def load_logger():
         level=logging.INFO,
         format="  %(levelname)s %(message)s"
     )
+    return logging.getLogger('main')
