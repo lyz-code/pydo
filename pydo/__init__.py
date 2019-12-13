@@ -39,14 +39,17 @@ def main():
         task_manager = TaskManager(session)
 
         if args.subcommand == 'add':
-            task_manager.add(description=args.description)
+            task_manager.add(
+                description=args.description,
+                project=args.project,
+            )
         elif args.subcommand == 'del':
             task_manager.delete(id=args.ulid)
         elif args.subcommand == 'done':
             task_manager.complete(id=args.ulid)
     elif args.subcommand in ['list', None]:
-        columns = ('ulid', 'description')
-        labels = ('ID', 'Description')
+        columns = ['ulid', 'description', 'project']
+        labels = ['ID', 'Description', 'Project']
         List(session).print(
             columns=columns,
             labels=labels

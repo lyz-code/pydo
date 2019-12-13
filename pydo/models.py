@@ -28,17 +28,19 @@ Base = declarative_base(bind=engine)
 class Task(Base):
     __tablename__ = 'task'
     ulid = Column(String, primary_key=True)
+    closed_utc = Column(DateTime)
     description = Column(String, nullable=False)
     state = Column(String, nullable=False)
-    closed_utc = Column(DateTime)
+    project = Column(String)
 
-    def __init__(self, ulid, description, state):
+    def __init__(self, ulid, description, project, state):
         self.ulid = ulid
         self.description = description
+        self.project = project
         self.state = state
 
 
-class Config(Base):
-    __tablename__ = 'config'
-    property = Column(String, primary_key=True)
-    value = Column(String, nullable=False)
+# class Config(Base):
+#     __tablename__ = 'config'
+#     property = Column(String, primary_key=True)
+#     value = Column(String, nullable=False)

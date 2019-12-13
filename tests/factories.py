@@ -10,6 +10,7 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     description = factory.Faker('sentence')
     state = factory.Faker('word', ext_word_list=possible_task_states)
+    project = factory.Faker('word', ext_word_list=[None, 'music', 'clean'])
 
     if state == 'done' or state == 'deleted':
         closed_utc = factory.Faker('DateTime')

@@ -32,15 +32,27 @@ class List():
         Method to print the report
 
         Arguments:
-            columns (tuple): Element attributes to print
-            labels (tuple): Headers of the attributes
+            columns (list): Element attributes to print
+            labels (list): Headers of the attributes
         """
         tasks = self.session.query(Task).filter_by(state='open')
+
+        # Remove columns that have all nulls
+        for attribute in columns:
+            if tasks.filter(getattr(Task, attribute).is_(None)).count() == \
+                    tasks.count():
+                index_to_remove = columns.index(attribute)
+                columns.pop(index_to_remove)
+                labels.pop(index_to_remove)
+
         task_data = [
-            [task.ulid, task.description]
+            [
+                task.__getattribute__(attribute)
+                for attribute in columns
+            ]
             for task in sorted(
-                tasks,
-                key=lambda k: k.state,
+                tasks.all(),
+                key=lambda k: k.ulid,
                 reverse=True,
             )
         ]

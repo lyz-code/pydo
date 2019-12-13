@@ -2,15 +2,20 @@
 
 ## Todo
 
-* [ ] List
-  * [x] Print tasks
+* [x] Add
+* [x] Done
+* [x] Delete
+* [x] List
+* [x] Projects
+
+* [ ] Create a config
+  * [ ] Introduce the labels into the config
+  * [ ] Add a task.attributes that list the available attributes and refactor
+
 * [ ] Short uid
   * rev ulid and search in open/waiting for unique values
-* [ ] Projects
-  * [ ] Projects report
 
 * [ ] Tags
-  * [ ] Tags report
 
 * [ ] `undo`
   * [ ] Set up the log
@@ -31,12 +36,15 @@
 
 * [ ] Start/Stop
 
-* [ ] Stats - Dash
+* [ ] Tags report
+* [ ] Projects report
 
 * [ ] Color on reports
   * [ ] optional
   https://github.com/astanin/python-tabulate/issues/8
   https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit
+
+* [ ] Stats - Dash
 
 ## Technologies
 

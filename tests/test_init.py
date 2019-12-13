@@ -107,11 +107,31 @@ class TestMain:
         ]
         self.parser_args.subcommand = arguments[0]
         self.parser_args.description = arguments[1]
+        self.parser_args.project = None
 
         main()
 
         self.tm.return_value.add.assert_called_once_with(
-            description=arguments[1]
+            description=arguments[1],
+            project=None,
+        )
+
+    def test_add_subcomand_creates_task_with_project(self):
+        arguments = [
+            'add',
+            self.fake.sentence(),
+            '-p',
+            self.fake.word(),
+        ]
+        self.parser_args.subcommand = arguments[0]
+        self.parser_args.description = arguments[1]
+        self.parser_args.project = arguments[3]
+
+        main()
+
+        self.tm.return_value.add.assert_called_once_with(
+            description=arguments[1],
+            project=arguments[3],
         )
 
     def test_done_subcomand_completes_task(self):
@@ -158,6 +178,6 @@ class TestMain:
             self.sessionmaker.return_value.return_value
         )
         self.ls.return_value.print.assert_called_once_with(
-            columns=('ulid', 'description'),
-            labels=('ID', 'Description')
+            columns=['ulid', 'description', 'project'],
+            labels=['ID', 'Description', 'Project']
         )

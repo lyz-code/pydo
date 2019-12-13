@@ -30,6 +30,13 @@ def load_parser():
         type=str,
         help='Task description',
     )
+    add_parser.add_argument(
+        "--project",
+        "-p",
+        type=str,
+        help='Task description',
+        default=None,
+    )
 
     delete_parser = subparser.add_parser('del')
     delete_parser.add_argument(

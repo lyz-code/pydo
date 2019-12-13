@@ -21,14 +21,8 @@ class TestList:
         self.fake = Faker()
         self.ls = List(session)
         self.session = session
-        self.tasks = TaskFactory.create_batch(20)
-        self.open_tasks = [task for task in self.tasks if task.state == 'open']
-        self.complete_tasks = [
-            task for task in self.tasks if task.state == 'done'
-        ]
-        self.deleted_tasks = [
-            task for task in self.tasks if task.state == 'deleted'
-        ]
+        self.columns = ['ulid', 'description', 'project']
+        self.labels = ['ID', 'Description', 'Project']
 
         yield 'setup'
 
@@ -38,22 +32,52 @@ class TestList:
     def test_session_attribute_exists(self):
         assert self.ls.session is self.session
 
-    def test_list_open(self):
-        columns = ('ulid', 'description')
-        labels = ('ID', 'Description')
+    def test_list_prints_columns(self):
+        self.tasks = TaskFactory.create_batch(20)
+        self.open_tasks = [task for task in self.tasks if task.state == 'open']
 
-        self.ls.print(columns=columns, labels=labels)
+        self.ls.print(columns=self.columns, labels=self.labels)
 
         self.tabulate.assert_called_once_with(
             [
-                [task.ulid, task.description]
+                [
+                    task.__getattribute__(attribute)
+                    for attribute in self.columns
+                ]
                 for task in sorted(
                     self.open_tasks,
-                    key=lambda k: k.state,
+                    key=lambda k: k.ulid,
                     reverse=True,
                 )
             ],
-            headers=labels,
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_list_dont_print_column_if_all_null_open(self):
+        tasks = TaskFactory.create_batch(20, project=None)
+        open_tasks = [task for task in tasks if task.state == 'open']
+        final_columns = self.columns.copy()
+        final_columns.remove('project')
+        final_labels = self.labels.copy()
+        final_labels.remove('Project')
+
+        self.ls.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [
+                    task.__getattribute__(attribute)
+                    for attribute in final_columns
+                ]
+                for task in sorted(
+                    open_tasks,
+                    key=lambda k: k.ulid,
+                    reverse=True,
+                )
+            ],
+            headers=final_labels,
             tablefmt='simple'
         )
         self.print.assert_called_once_with(self.tabulate.return_value)

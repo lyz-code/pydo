@@ -34,6 +34,7 @@ class TestTaskManager:
         assert isinstance(ulid.from_str(generated_task.ulid), ulid.ulid.ULID)
         assert generated_task.description == description
         assert generated_task.state == 'open'
+        assert generated_task.project is None
 
     def test_delete_task(self):
         closed_utc = self.fake.date_time()

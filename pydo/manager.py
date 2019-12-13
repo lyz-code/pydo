@@ -32,18 +32,20 @@ class TaskManager():
     def __init__(self, session):
         self.session = session
 
-    def add(self, description):
+    def add(self, description, project=None):
         """
         Method to create a new task
 
         Arguments:
             description (str): Description of the task
+            project (str): Task project
         """
 
         task = Task(
             ulid=ulid.new().str,
             description=description,
             state='open',
+            project=project,
         )
         self.session.add(task)
         self.session.commit()
