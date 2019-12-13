@@ -24,6 +24,29 @@ def load_parser():
     subparser = parser.add_subparsers(dest='subcommand', help='subcommands')
     subparser.add_parser('install')
 
+    add_parser = subparser.add_parser('add')
+    add_parser.add_argument(
+        "description",
+        type=str,
+        help='Task description',
+    )
+
+    delete_parser = subparser.add_parser('del')
+    delete_parser.add_argument(
+        "ulid",
+        type=str,
+        help='Task ulid',
+    )
+
+    complete_parser = subparser.add_parser('done')
+    complete_parser.add_argument(
+        "ulid",
+        type=str,
+        help='Task ulid',
+    )
+
+    subparser.add_parser('list')
+
     argcomplete.autocomplete(parser)
     return parser
 

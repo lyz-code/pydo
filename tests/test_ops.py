@@ -28,9 +28,9 @@ class TestInstall:
         self.os.path.exists.return_value = False
 
         install()
-        assert self.os.makedirs.assert_called_with(
+        self.os.makedirs.assert_called_with(
                 os.path.join(self.homedir, '.local/share/pydo')
-            ) is None
+        )
 
     def test_doesnt_create_data_directory_if_exist(self):
         self.os.path.exists.return_value = True
@@ -48,5 +48,4 @@ class TestInstall:
 
         install()
 
-        assert self.alembic.config.main.assert_called_with(argv=alembic_args) \
-            is None
+        self.alembic.config.main.assert_called_with(argv=alembic_args)

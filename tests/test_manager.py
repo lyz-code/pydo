@@ -1,63 +1,64 @@
-# from sqlalchemy import create_engine
-from alembic.command import upgrade
-from alembic.config import Config
+from faker import Faker
 from pydo.manager import TaskManager
-from pydo.models import engine
-from sqlalchemy.orm import sessionmaker
+from pydo.models import Task
 from tests.factories import TaskFactory
+from unittest.mock import patch
 
 import pytest
-
-Session = sessionmaker()
-
-
-@pytest.fixture(scope='module')
-def connection():
-    '''
-    Fixture to set up the connection to the temporal database, the path is
-    stablished at conftest.py
-    '''
-
-    # Create database connection
-    connection = engine.connect()
-
-    # Applies all alembic migrations.
-    config = Config('pydo/migrations/alembic.ini')
-    upgrade(config, 'head')
-
-    # End of setUp
-
-    yield connection
-
-    # Start of tearDown
-    connection.close()
+import ulid
 
 
-@pytest.fixture(scope='function')
-def session(connection):
-    '''
-    Fixture to set up the sqlalchemy session of the database.
-    '''
-
-    # Begin a non-ORM transaction and bind session
-    transaction = connection.begin()
-    session = Session(bind=connection)
-
-    TaskFactory._meta.sqlalchemy_session = session
-
-    yield session
-
-    # Close session and rollback transaction
-    session.close()
-    transaction.rollback()
-
-
-class TestTaskManager():
+class TestTaskManager:
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
+        self.datetime_patch = patch('pydo.manager.datetime', autospect=True)
+        self.datetime = self.datetime_patch.start()
+        self.fake = Faker()
         self.tm = TaskManager(session)
         self.session = session
 
+        yield 'setup'
+
+        self.datetime_patch.stop()
+
     def test_session_attribute_exists(self):
         assert self.tm.session is self.session
+
+    def test_add_task(self):
+        description = self.fake.sentence()
+
+        self.tm.add(description=description)
+
+        generated_task = self.session.query(Task).one()
+        assert isinstance(ulid.from_str(generated_task.ulid), ulid.ulid.ULID)
+        assert generated_task.description == description
+        assert generated_task.state == 'open'
+
+    def test_delete_task(self):
+        closed_utc = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed_utc
+        task = TaskFactory.create()
+
+        assert self.session.query(Task).one()
+
+        self.tm.delete(task.ulid)
+
+        modified_task = self.session.query(Task).get(task.ulid)
+        assert modified_task.closed_utc == closed_utc
+        assert modified_task.description == task.description
+        assert modified_task.state == 'deleted'
+
+    def test_complete_task(self):
+        closed_utc = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed_utc
+        task = TaskFactory.create()
+
+        assert self.session.query(Task).one()
+
+        self.tm.complete(task.ulid)
+
+        modified_task = self.session.query(Task).get(task.ulid)
+        assert modified_task.closed_utc == closed_utc
+        assert modified_task.description == task.description
+        assert modified_task.state == 'done'

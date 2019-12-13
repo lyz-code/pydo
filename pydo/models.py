@@ -5,12 +5,17 @@ Classes:
     Task:
 """
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, DateTime
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
 import os
 
+possible_task_states = [
+    'open',
+    'deleted',
+    'done',
+]
 
 db_path = os.path.expanduser('~/.local/share/pydo/main.db')
 engine = create_engine(
@@ -25,6 +30,7 @@ class Task(Base):
     ulid = Column(String, primary_key=True)
     description = Column(String, nullable=False)
     state = Column(String, nullable=False)
+    closed_utc = Column(DateTime)
 
     def __init__(self, ulid, description, state):
         self.ulid = ulid
@@ -32,9 +38,7 @@ class Task(Base):
         self.state = state
 
 
-class TaskState(Base):
-    __tablename__ = 'task_state'
-    id = Column(String, primary_key=True)
-
-    def __init__(self, id):
-        self.id = id
+class Config(Base):
+    __tablename__ = 'config'
+    property = Column(String, primary_key=True)
+    value = Column(String, nullable=False)

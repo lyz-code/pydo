@@ -17,7 +17,11 @@
 # along with pydo.  If not, see <http://www.gnu.org/licenses/>.
 
 from pydo.cli import load_logger, load_parser
+from pydo.manager import TaskManager
+from pydo.models import engine
 from pydo.ops import install
+from pydo.reports import List
+from sqlalchemy.orm import sessionmaker
 
 
 def main():
@@ -27,3 +31,23 @@ def main():
 
     if args.subcommand == 'install':
         install()
+    else:
+        connection = engine.connect()
+        session = sessionmaker()(bind=connection)
+
+    if args.subcommand in ['add', 'del', 'done']:
+        task_manager = TaskManager(session)
+
+        if args.subcommand == 'add':
+            task_manager.add(description=args.description)
+        elif args.subcommand == 'del':
+            task_manager.delete(id=args.ulid)
+        elif args.subcommand == 'done':
+            task_manager.complete(id=args.ulid)
+    elif args.subcommand == 'list':
+        columns = ('ulid', 'description')
+        labels = ('ID', 'Description')
+        List(session).print(
+            columns=columns,
+            labels=labels
+        )
