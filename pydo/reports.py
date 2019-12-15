@@ -52,7 +52,7 @@ class List():
             ]
             for task in sorted(
                 tasks.all(),
-                key=lambda k: k.ulid,
+                key=lambda k: k.id,
                 reverse=True,
             )
         ]

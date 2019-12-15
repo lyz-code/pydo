@@ -21,7 +21,7 @@ class TestList:
         self.fake = Faker()
         self.ls = List(session)
         self.session = session
-        self.columns = ['ulid', 'description', 'project']
+        self.columns = ['id', 'description', 'project']
         self.labels = ['ID', 'Description', 'Project']
 
         yield 'setup'
@@ -46,7 +46,7 @@ class TestList:
                 ]
                 for task in sorted(
                     self.open_tasks,
-                    key=lambda k: k.ulid,
+                    key=lambda k: k.id,
                     reverse=True,
                 )
             ],
@@ -73,7 +73,7 @@ class TestList:
                 ]
                 for task in sorted(
                     open_tasks,
-                    key=lambda k: k.ulid,
+                    key=lambda k: k.id,
                     reverse=True,
                 )
             ],

@@ -1,11 +1,12 @@
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1.0'
+from pydo import __version__
+
 
 setup(
     name='pydo',
-    version=version,
+    version=__version__,
     description='CLI task manager built with Python and SQLite.',
     author='Lyz',
     author_email='lyz@riseup.net',

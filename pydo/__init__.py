@@ -25,6 +25,8 @@ from sqlalchemy.orm import sessionmaker
 
 import logging
 
+__version__ = '0.1.0'
+
 
 def main():
     parser = load_parser()
@@ -50,7 +52,7 @@ def main():
         elif args.subcommand == 'done':
             task_manager.complete(id=args.ulid)
     elif args.subcommand in ['list', None]:
-        columns = ['ulid', 'description', 'project']
+        columns = ['id', 'description', 'project']
         labels = ['ID', 'Description', 'Project']
         List(session).print(
             columns=columns,

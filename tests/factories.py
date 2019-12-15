@@ -1,12 +1,13 @@
-from faker import Faker
-from pydo.models import Task, possible_task_states
+from pydo.models import Task, Config, possible_task_states
 
 import factory
 import ulid
 
+# XXX If you add new Factories remember to add the session in conftest.py
+
 
 class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
-    ulid = factory.LazyFunction(lambda: ulid.new().str)
+    id = factory.LazyFunction(lambda: ulid.new().str)
 
     description = factory.Faker('sentence')
     state = factory.Faker('word', ext_word_list=possible_task_states)
@@ -23,35 +24,20 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
 class ConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
     """
     Class to generate a fake config.
-
-    We assume it's initialized
-
-    Arguments:
-        session (session object): Database session
-
-    Public methods:
-        create: Generates a user configuration in the database
-
-    Public attributes:
-        fake (Faker object): Faker object.
-        session (Session object): Database session.
     """
 
-    def __init__(self, session):
-        self.session = session
-        self.fake = Faker()
+    id = factory.Faker('word')
+    default = factory.Faker('word')
+    user = factory.Faker('word', ext_word_list=[None, 'value_1', 'value_2'])
+    description = factory.Faker('sentence')
+    choices = factory.Faker(
+        'word',
+        ext_word_list=[
+            None,
+            "{['choice1', 'choice2']}",
+            "{['choice3', 'choice4']}",
+        ])
 
-    def create(self):
-        """
-        Method to generate a user configuration in the database
-        """
-
-        user_config = {
-            'verbose_level': self.fake.word(
-                ext_word_list=['info', 'debug', 'quiet', None]
-            )
-        }
-        for key, value in user_config.items():
-            config = self.session.query.get(key)
-            config.user = value
-            self.session.add(config)
+    class Meta:
+        model = Config
+        sqlalchemy_session_persistence = 'commit'

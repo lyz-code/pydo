@@ -16,6 +16,7 @@ class TestInstall:
         log (mock): logging mock
         log_info (mock): log.info mock
         os (mock): os mock
+        session (Session object): Database session.
     """
 
     @pytest.fixture(autouse=True)

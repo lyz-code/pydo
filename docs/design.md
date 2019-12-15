@@ -12,6 +12,9 @@
 
 * [ ] Short uid
   * [x] rev ulid and search in open/waiting for unique values
+  * [x] Create friendli ulids fulids with a set of defined characters for the
+    random part.
+  * [x] Substitute the ulids from fulids in the code
   * [ ] apply sulids into the list report
   * [ ] apply sulids into the add/remove/done methods
 
@@ -53,7 +56,7 @@
 * [ ] Create nested subtasks in a way as I use vc
 * [ ] Add body of tasks
 * [ ] Add epics
-* [ ] Add description, priority to projects
+* [ ] Add description, priority to projects, migrate to it's own object
 * [ ] Color on reports
   * [ ] optional
   https://github.com/astanin/python-tabulate/issues/8

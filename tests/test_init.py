@@ -179,6 +179,6 @@ class TestMain:
             self.sessionmaker.return_value.return_value
         )
         self.ls.return_value.print.assert_called_once_with(
-            columns=['ulid', 'description', 'project'],
+            columns=['id', 'description', 'project'],
             labels=['ID', 'Description', 'Project']
         )

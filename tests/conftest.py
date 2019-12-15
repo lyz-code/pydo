@@ -12,7 +12,7 @@ os.environ['PYDO_DATABASE_URL'] = 'sqlite:///{}'.format(temp_ddbb)
 
 # It needs to be after the environmental variable
 from pydo import engine
-from tests.factories import TaskFactory
+from tests.factories import TaskFactory, ConfigFactory
 
 Session = sessionmaker()
 
@@ -50,6 +50,7 @@ def session(connection):
     session = Session(bind=connection)
 
     TaskFactory._meta.sqlalchemy_session = session
+    ConfigFactory._meta.sqlalchemy_session = session
 
     yield session
 

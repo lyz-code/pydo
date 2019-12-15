@@ -6,18 +6,30 @@ Classes:
     ConfigManager: Class to manipulate the pydo configuration
 """
 from pydo.cli import load_logger
+from pydo.fulids import FulidGenerator
 from pydo.models import Task, Config
 
 import datetime
 import json
 import logging
-import ulid
 
 pydo_default_config = {
     'verbose_level': {
         'default': 'info',
         'choices': ['info', 'debug', 'warning'],
         'description': 'Set the logging verbosity level',
+    },
+    'fulid_characters': {
+        'default': 'asdfghjwer',
+        'choices': '',
+        'description': 'Characters used for the generation of identifiers.'
+    },
+    'fulid_forbidden_characters': {
+        'default': 'ilou|&:;()<>~*@?!$#[]{}\\/\'"`',
+        'choices': '',
+        'description': 'Characters forbidden to be used in the generation'
+        'of ids, due to ulid converting them to numbers or because they'
+        'have a meaning for the terminal',
     }
 }
 
@@ -37,16 +49,18 @@ class TableManager:
 
     Internal methods:
         _add: Method to create a new table item
+        _get: Retrieve the table element identified by id.
 
     Public attributes:
         session (session object): Database session
+        fulid_gen (FulidGenerator object): Generator of fulids.
         log (logging object): Logger
     """
 
     def __init__(self, session, table_model):
         self.log = logging.getLogger('main')
-        self.session = session
         self.model = table_model
+        self.session = session
 
     def _add(self, object_values, id, description):
         """
@@ -108,6 +122,25 @@ class TableManager:
                 return sulids
             char_num += 1
 
+    def _get(self, id):
+        """
+        Return the table element identified by id.
+
+        Arguments:
+            id (str): Table element identifier
+
+        Returns:
+            table element (obj): Sqlalchemy element of the table.
+            raises: ValueError if element is not found
+        """
+
+        table_element = self.session.query(self.model).get(id)
+
+        if table_element is None:
+            raise ValueError('The element {} does not exist'.format(id))
+        else:
+            return table_element
+
 
 class TaskManager(TableManager):
     """
@@ -132,6 +165,11 @@ class TaskManager(TableManager):
 
     def __init__(self, session):
         super().__init__(session, Task)
+        self.config = ConfigManager(self.session)
+        self.fulid_gen = FulidGenerator(
+            self.config.get('fulid_characters'),
+            self.config.get('fulid_forbidden_characters'),
+        )
 
     def add(self, description, project=None):
         """
@@ -143,14 +181,14 @@ class TaskManager(TableManager):
         """
 
         task_attributes = {
-            'ulid': ulid.new().str,
+            'id': self.fulid_gen.new().str,
             'description': description,
             'state': 'open',
             'project': project,
         }
         self._add(
             task_attributes,
-            task_attributes['ulid'],
+            task_attributes['id'],
             task_attributes['description'],
         )
 
@@ -172,7 +210,7 @@ class TaskManager(TableManager):
         self.log.debug(
             '{} task {}: {}'.format(
                 state.title(),
-                task.ulid,
+                task.id,
                 task.description
             )
         )
@@ -272,3 +310,22 @@ class ConfigManager(TableManager):
                     choices=json.dumps(attribute_data['choices']),
                     user=None
                 )
+
+    def get(self, id):
+        """
+        Return the configuration value.
+
+        Arguments:
+            id (str): Configuration element identifier
+
+        Returns:
+            value (str): Configuration value
+            raises: ValueError if element is not found
+        """
+
+        config = self._get(id)
+
+        if config.user is not None:
+            return config.user
+        else:
+            return config.default

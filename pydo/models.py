@@ -30,7 +30,7 @@ class Task(Base):
     Class to define the task model.
     """
     __tablename__ = 'task'
-    ulid = Column(String, primary_key=True, doc='ULID of creation')
+    id = Column(String, primary_key=True, doc='ULID of creation')
     closed_utc = Column(DateTime, doc='Closed datetime')
     description = Column(String, nullable=False, doc='Task description')
     state = Column(
@@ -40,8 +40,8 @@ class Task(Base):
     )
     project = Column(String, doc='Task project')
 
-    def __init__(self, ulid, description, project=None, state=None):
-        self.ulid = ulid
+    def __init__(self, id, description, project=None, state=None):
+        self.id = id
         self.description = description
         self.project = project
         self.state = state
@@ -52,7 +52,7 @@ class Config(Base):
     Class to define the pydo configuration model.
     """
     __tablename__ = 'config'
-    property = Column(String, primary_key=True, doc="Property identifier")
+    id = Column(String, primary_key=True, doc="Property identifier")
     default = Column(
         String,
         nullable=False,
@@ -76,13 +76,13 @@ class Config(Base):
 
     def __init__(
         self,
-        property,
+        id,
         default,
         description=None,
         user=None,
         choices=None
     ):
-        self.property = property
+        self.id = id
         self.default = default
         self.description = description
         self.user = user
