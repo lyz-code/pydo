@@ -15,8 +15,13 @@
   * [x] Create friendli ulids fulids with a set of defined characters for the
     random part.
   * [x] Substitute the ulids from fulids in the code
-  * [ ] apply sulids into the list report
-  * [ ] apply sulids into the add/remove/done methods
+  * [x] apply sulids into the list report
+  * [x] apply sulids into the add/remove/done methods
+  * [ ] Generate fulids in a more clever way
+    * [ ] convert string to numeric aaaaaaaaaaaa -> 0
+    * [ ] Get the last ulid, increment in 1 and encode back
+
+* [ ] Priority
 
 * [ ] Tags
 
@@ -25,8 +30,6 @@
 
 * [ ] Modify
   * [ ] Review all the .session.commit() to see if you can use the modify method
-
-* [ ] Priority
 
 * [ ] Recurrence (https://tasklite.org/concepts.html)
   * [ ] Repeating
@@ -61,6 +64,10 @@
   * [ ] optional
   https://github.com/astanin/python-tabulate/issues/8
   https://en.wikipedia.org/wiki/ANSI_escape_code#24-bit
+
+* [ ] Improve the fulids
+  * [ ] Allow a charset with length != 10 doing base n number operations
+  * [ ] Reuse completed tasks number part of the fulid
 
 * [ ] Stats - Dash
 * [ ] task done on date, on due date

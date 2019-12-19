@@ -6,7 +6,7 @@ Classes:
     ConfigManager: Class to manipulate the pydo configuration
 """
 from pydo.cli import load_logger
-from pydo.fulids import FulidGenerator
+from pydo.fulids import fulid
 from pydo.models import Task, Config
 
 import datetime
@@ -44,16 +44,12 @@ class TableManager:
         session (session object): Database session
         table_model (Sqlalchemy model): Table model
 
-    Public methods:
-        short_ulids: Return a the suild of a list of ulids.
-
     Internal methods:
         _add: Method to create a new table item
         _get: Retrieve the table element identified by id.
 
     Public attributes:
         session (session object): Database session
-        fulid_gen (FulidGenerator object): Generator of fulids.
         log (logging object): Logger
     """
 
@@ -87,40 +83,6 @@ class TableManager:
                 description,
             )
         )
-
-    def short_ulids(self, ulids):
-        """
-        Method to shorten the length of the ulids so we need to type less
-        while retaining the uniqueness.
-
-        The ulids as stated [here](https://github.com/ulid/spec) have to parts
-        the first bytes are an encoding of the date, while the last are
-        an encoding of randomness.
-
-        Therefore, for all the ulids that come, we're going to transform
-        to lower and reverse them to search the minimum characters that
-        uniquely identify each ulids.
-
-        Once we've got all return the equivalence in a dictionary.
-
-        Arguments:
-            uilds (list): List of ulids to shorten.
-
-        Return
-            sulids (dict): List of associations between ulids and sulids.
-        """
-        work_ulids = [ulid.lower()[::-1] for ulid in ulids]
-
-        char_num = 1
-        while True:
-            work_sulids = [ulid[:char_num] for ulid in work_ulids]
-            if len(work_sulids) == len(set(work_sulids)):
-                sulids = {
-                    ulids[index]: work_sulids[index][::-1]
-                    for index in range(0, len(ulids))
-                }
-                return sulids
-            char_num += 1
 
     def _get(self, id):
         """
@@ -159,14 +121,15 @@ class TaskManager(TableManager):
         _close: Closes a task.
 
     Public attributes:
-        session (session object): Database session
+        fulid (fulid object): Fulid manager and generator object.
         log (logging object): Logger
+        session (session object): Database session
     """
 
     def __init__(self, session):
         super().__init__(session, Task)
         self.config = ConfigManager(self.session)
-        self.fulid_gen = FulidGenerator(
+        self.fulid = fulid(
             self.config.get('fulid_characters'),
             self.config.get('fulid_forbidden_characters'),
         )
@@ -180,8 +143,17 @@ class TaskManager(TableManager):
             project (str): Task project
         """
 
+        last_fulid = self.session.query(
+            Task
+        ).filter_by(state='open').order_by(Task.id.desc()).first()
+
+        if last_fulid is not None:
+            last_fulid = last_fulid.id
+
+        new_fulid = self.fulid.new(last_fulid)
+
         task_attributes = {
-            'id': self.fulid_gen.new().str,
+            'id': new_fulid.str,
             'description': description,
             'state': 'open',
             'project': project,
@@ -200,6 +172,11 @@ class TaskManager(TableManager):
             id (str): Ulid of the task
             state (str): State of the task once it's closed
         """
+
+        if len(id) < 10:
+            open_tasks = self.session.query(Task).filter_by(state='open')
+            open_task_fulids = [task.id for task in open_tasks]
+            id = self.fulid.sulid_to_fulid(id, open_task_fulids)
 
         task = self.session.query(Task).get(id)
 

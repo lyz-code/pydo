@@ -1,13 +1,14 @@
+from pydo.fulids import fulid
+from pydo.manager import ConfigManager
 from pydo.models import Task, Config, possible_task_states
 
 import factory
-import ulid
 
 # XXX If you add new Factories remember to add the session in conftest.py
 
 
 class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
-    id = factory.LazyFunction(lambda: ulid.new().str)
+    id = factory.LazyFunction(lambda: fulid().new().str)
 
     description = factory.Faker('sentence')
     state = factory.Faker('word', ext_word_list=possible_task_states)
@@ -23,7 +24,7 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
 
 class ConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
     """
-    Class to generate a fake config.
+    Class to generate a fake config element.
     """
 
     id = factory.Faker('word')
@@ -41,3 +42,14 @@ class ConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = Config
         sqlalchemy_session_persistence = 'commit'
+
+
+class PydoConfigFactory:
+    """
+    Class to generate a pydo fake config.
+    """
+    def __init__(self, session):
+        self.config = ConfigManager(session)
+
+    def create(self):
+        self.config.seed()

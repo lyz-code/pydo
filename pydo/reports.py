@@ -4,7 +4,9 @@ Module to store the pydo reports
 Classes:
     List: Class to print the list report.
 """
+from pydo.fulids import fulid
 from pydo.models import Task
+from pydo.manager import ConfigManager
 from tabulate import tabulate
 
 
@@ -14,6 +16,7 @@ class List():
 
     Arguments:
         session: Database session.
+        config: ConfigManager object.
 
     Public methods:
         print: Method to print the report.
@@ -26,6 +29,7 @@ class List():
 
     def __init__(self, session):
         self.session = session
+        self.config = ConfigManager(session)
 
     def print(self, columns, labels):
         """
@@ -45,6 +49,16 @@ class List():
                 columns.pop(index_to_remove)
                 labels.pop(index_to_remove)
 
+        # Transform the fulids into sulids
+        sulids = fulid(
+            self.config.get('fulid_characters'),
+            self.config.get('fulid_forbidden_characters'),
+        ).sulids([task.id for task in tasks])
+
+        for task in tasks:
+            task.id = sulids[task.id]
+
+        # Print data
         task_data = [
             [
                 task.__getattribute__(attribute)

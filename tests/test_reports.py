@@ -1,6 +1,7 @@
 from faker import Faker
+from pydo.manager import ConfigManager
 from pydo.reports import List
-from tests.factories import TaskFactory
+from tests.factories import TaskFactory, PydoConfigFactory
 from unittest.mock import patch
 
 import pytest
@@ -17,10 +18,12 @@ class TestList:
             autospect=True
         )
         self.tabulate = self.tabulate_patch.start()
-
         self.fake = Faker()
-        self.ls = List(session)
+        self.config = ConfigManager(session)
+        PydoConfigFactory(session).create()
         self.session = session
+
+        self.ls = List(session)
         self.columns = ['id', 'description', 'project']
         self.labels = ['ID', 'Description', 'Project']
 
@@ -31,6 +34,9 @@ class TestList:
 
     def test_session_attribute_exists(self):
         assert self.ls.session is self.session
+
+    def test_config_attribute_exists(self):
+        assert isinstance(self.ls.config, ConfigManager)
 
     def test_list_prints_columns(self):
         self.tasks = TaskFactory.create_batch(20)
