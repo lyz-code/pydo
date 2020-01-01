@@ -12,9 +12,11 @@ os.environ['PYDO_DATABASE_URL'] = 'sqlite:///{}'.format(temp_ddbb)
 
 # It needs to be after the environmental variable
 from pydo import engine
-from tests.factories import TaskFactory, ConfigFactory
-
-Session = sessionmaker()
+from tests.factories import \
+    ConfigFactory, \
+    ProjectFactory, \
+    TagFactory, \
+    TaskFactory
 
 
 @pytest.fixture(scope='module')
@@ -47,10 +49,12 @@ def session(connection):
 
     # Begin a non-ORM transaction and bind session
     transaction = connection.begin()
-    session = Session(bind=connection)
+    session = sessionmaker()(bind=connection)
 
-    TaskFactory._meta.sqlalchemy_session = session
     ConfigFactory._meta.sqlalchemy_session = session
+    ProjectFactory._meta.sqlalchemy_session = session
+    TagFactory._meta.sqlalchemy_session = session
+    TaskFactory._meta.sqlalchemy_session = session
 
     yield session
 

@@ -7,11 +7,12 @@ Classes:
 """
 from pydo.cli import load_logger
 from pydo.fulids import fulid
-from pydo.models import Task, Config
+from pydo.models import Task, Config, Project, Tag
 
 import datetime
 import json
 import logging
+import re
 
 pydo_default_config = {
     'verbose_level': {
@@ -19,18 +20,66 @@ pydo_default_config = {
         'choices': ['info', 'debug', 'warning'],
         'description': 'Set the logging verbosity level',
     },
-    'fulid_characters': {
+    'fulid.characters': {
         'default': 'asdfghjwer',
         'choices': '',
         'description': 'Characters used for the generation of identifiers.'
     },
-    'fulid_forbidden_characters': {
+    'fulid.forbidden_characters': {
         'default': 'ilou|&:;()<>~*@?!$#[]{}\\/\'"`',
         'choices': '',
         'description': 'Characters forbidden to be used in the generation'
         'of ids, due to ulid converting them to numbers or because they'
         'have a meaning for the terminal',
-    }
+    },
+    'report.list.columns': {
+        'default': 'id, title, project_id, priority, tags',
+        'choices': 'id, title, description, project_id, priority, tags, '
+        'agile, estimate, willpower, value, fun',
+        'description': 'Ordered coma separated list of Task attributes '
+        'to print',
+    },
+    'report.list.labels': {
+        'default': 'ID, Title, Project, Pri, Tags',
+        'choices': '',
+        'description': 'Ordered coma separated list of names for the '
+        'Task attributes to print',
+    },
+    'report.projects.columns': {
+        'default': 'id, task.count, description',
+        'choices': '',
+        'description': 'Ordered coma separated list of Project attributes '
+        'to print',
+    },
+    'report.projects.labels': {
+        'default': 'Name, Tasks, Description',
+        'choices': '',
+        'description': 'Ordered coma separated list of names for the '
+        'Project attributes to print',
+    },
+    'report.tags.columns': {
+        'default': 'id, task.count, description',
+        'choices': '',
+        'description': 'Ordered coma separated list of Tag attributes '
+        'to print',
+    },
+    'report.tags.labels': {
+        'default': 'Name, Tasks, Description',
+        'choices': '',
+        'description': 'Ordered coma separated list of names for the '
+        'Tag attributes to print',
+    },
+    'task.default.agile': {
+        'default': None,
+        'choices': 'See task.agile.states',
+        'description': 'Default task agile state if not specified.',
+    },
+    'task.agile.states': {
+        'default': 'backlog, todo, doing, review, complete',
+        'choices': '',
+        'description': 'Coma separated list of agile states the task '
+        'can transition to.',
+    },
 }
 
 load_logger()
@@ -58,18 +107,18 @@ class TableManager:
         self.model = table_model
         self.session = session
 
-    def _add(self, object_values, id, description):
+    def _add(self, object_values, id, title):
         """
         Method to create a new table item
 
         Arguments:
-            description (str): object description
+            title (str): object title
             id (str): object identifier
             object_values (dict): Dictionary with the column identifier
                 as keys.
         """
 
-        obj = self.model(id, description)
+        obj = self.model(id, title)
 
         for attribute_key, attribute_value in object_values.items():
             setattr(obj, attribute_key, attribute_value)
@@ -80,7 +129,7 @@ class TableManager:
             'Added {} {}: {}'.format(
                 self.model.__name__.lower(),
                 id,
-                description,
+                title,
             )
         )
 
@@ -119,6 +168,8 @@ class TaskManager(TableManager):
     Internal methods:
         _add: Parent method to add table elements.
         _close: Closes a task.
+        _parse_arguments: Parse a Taskwarrior like add query into task
+            attributes
 
     Public attributes:
         fulid (fulid object): Fulid manager and generator object.
@@ -130,19 +181,88 @@ class TaskManager(TableManager):
         super().__init__(session, Task)
         self.config = ConfigManager(self.session)
         self.fulid = fulid(
-            self.config.get('fulid_characters'),
-            self.config.get('fulid_forbidden_characters'),
+            self.config.get('fulid.characters'),
+            self.config.get('fulid.forbidden_characters'),
         )
 
-    def add(self, description, project=None):
+    def _parse_arguments(self, add_arguments):
+        """
+        Parse a Taskwarrior like add query into task attributes
+
+        Arguments:
+            add_arguments (str): Taskwarrior like add argument string.
+
+        Returns:
+            attributes (dict): Dictionary with the attributes of the task.
+        """
+
+        attributes = {
+            'agile': None,
+            'body': None,
+            'title': [],
+            'estimate': None,
+            'fun': None,
+            'priority': None,
+            'project_id': None,
+            'tags': [],
+            'value': None,
+            'willpower': None,
+        }
+        for argument in add_arguments:
+            if re.match(r'^(pro|project):', argument):
+                attributes['project_id'] = argument.split(':')[1]
+            elif re.match(r'^(ag|agile):', argument):
+                attributes['agile'] = argument.split(':')[1]
+            elif re.match(r'^(pri|priority):', argument):
+                attributes['priority'] = int(argument.split(':')[1])
+            elif re.match(r'^(wp|willpower):', argument):
+                attributes['willpower'] = int(argument.split(':')[1])
+            elif re.match(r'^(est|estimate):', argument):
+                attributes['estimate'] = float(argument.split(':')[1])
+            elif re.match(r'^(vl|value):', argument):
+                attributes['value'] = int(argument.split(':')[1])
+            elif re.match(r'^fun:', argument):
+                attributes['fun'] = int(argument.split(':')[1])
+            elif re.match(r'^body:', argument):
+                attributes['body'] = argument.split(':')[1]
+            elif re.match(r'^\+', argument):
+                attributes['tags'].append(argument.replace('+', ''))
+            else:
+                attributes['title'].append(argument)
+        attributes['title'] = ' '.join(attributes['title'])
+        return attributes
+
+    def add(
+        self,
+        title,
+        agile=None,
+        body=None,
+        estimate=None,
+        fun=None,
+        priority=None,
+        project_id=None,
+        tags=[],
+        value=None,
+        willpower=None,
+    ):
         """
         Use parent method to create a new task
 
         Arguments:
-            description (str): Description of the task
-            project (str): Task project
+            agile (str): Task agile state.
+            title (str): Title of the task.
+            body (str): Description of the task.
+            estimate (float): Estimate size of the task.
+            fun (int): Fun size of the task.
+            priority (int): Task priority.
+            project_id (str): Project id.
+            tags (list): List of tag ids.
+            title (str): Title of the task.
+            value (int): Objective/Bussiness value of the task.
+            willpower (int): Willpower consumption of the task.
         """
 
+        # Define ID
         last_fulid = self.session.query(
             Task
         ).filter_by(state='open').order_by(Task.id.desc()).first()
@@ -154,14 +274,47 @@ class TaskManager(TableManager):
 
         task_attributes = {
             'id': new_fulid.str,
-            'description': description,
+            'agile': agile,
+            'body': body,
+            'title': title,
+            'estimate': estimate,
+            'fun': fun,
             'state': 'open',
-            'project': project,
+            'priority': priority,
+            'value': value,
+            'tags': [],
+            'willpower': willpower,
         }
+
+        # Define Project
+        if project_id is not None:
+            project = self.session.query(Project).get(project_id)
+            if project is None:
+                project = Project(id=project_id, description='')
+                self.session.add(project)
+                self.session.commit()
+            task_attributes['project'] = project
+
+        # Define tags
+        for tag_id in tags:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                self.session.commit()
+            task_attributes['tags'].append(tag)
+
+        # Test the task attributes are into the available choices
+        if agile not in self.config.get('task.agile.states').split(', '):
+            raise ValueError(
+                'Agile state {} is not between the specified '
+                'by task.agile.states'.format(agile)
+            )
+
         self._add(
             task_attributes,
             task_attributes['id'],
-            task_attributes['description'],
+            task_attributes['title'],
         )
 
     def _close(self, id, state):
@@ -188,7 +341,7 @@ class TaskManager(TableManager):
             '{} task {}: {}'.format(
                 state.title(),
                 task.id,
-                task.description
+                task.title
             )
         )
 
@@ -222,6 +375,7 @@ class ConfigManager(TableManager):
 
     Public methods:
         add: Creates a new configuration element.
+        get: Return the configuration value.
         seed: Generates the default config data in an idempotent way.
 
     Internal methods:

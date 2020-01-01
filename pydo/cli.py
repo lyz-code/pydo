@@ -26,16 +26,11 @@ def load_parser():
 
     add_parser = subparser.add_parser('add')
     add_parser.add_argument(
-        "description",
+        "add_argument",
         type=str,
-        help='Task description',
-    )
-    add_parser.add_argument(
-        "--project",
-        "-p",
-        type=str,
-        help='Task description',
+        help='Task add arguments',
         default=None,
+        nargs=argparse.REMAINDER,
     )
 
     delete_parser = subparser.add_parser('del')
@@ -53,6 +48,8 @@ def load_parser():
     )
 
     subparser.add_parser('list')
+    subparser.add_parser('projects')
+    subparser.add_parser('tags')
 
     argcomplete.autocomplete(parser)
     return parser

@@ -26,19 +26,19 @@ class TestArgparse:
         ]
         parsed = self.parser.parse_args(arguments)
         assert parsed.subcommand == arguments[0]
-        assert parsed.description == arguments[1]
+        assert parsed.add_argument == [arguments[1]]
 
     def test_can_specify_project_in_add_subcommand(self):
+        description = self.fake.sentence()
+        project_id = self.fake.word()
         arguments = [
             'add',
-            self.fake.sentence(),
-            '-p',
-            self.fake.word(),
+            description,
+            'pro:{}'.format(project_id),
         ]
         parsed = self.parser.parse_args(arguments)
         assert parsed.subcommand == arguments[0]
-        assert parsed.description == arguments[1]
-        assert parsed.project == arguments[3]
+        assert parsed.add_argument == arguments[1:3]
 
     def test_can_specify_done_subcommand(self):
         arguments = [
@@ -61,6 +61,14 @@ class TestArgparse:
     def test_can_specify_list_subcommand(self):
         parsed = self.parser.parse_args(['list'])
         assert parsed.subcommand == 'list'
+
+    def test_can_specify_projects_subcommand(self):
+        parsed = self.parser.parse_args(['projects'])
+        assert parsed.subcommand == 'projects'
+
+    def test_can_specify_tags_subcommand(self):
+        parsed = self.parser.parse_args(['tags'])
+        assert parsed.subcommand == 'tags'
 
 
 class TestLogger:

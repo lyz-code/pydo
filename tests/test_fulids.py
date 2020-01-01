@@ -26,28 +26,27 @@ class Testfulid:
 
     def test_representation(self):
         self.fulid.new()
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         assert str(self.fulid.__repr__) == "<bound method fulid.__repr__ of" \
             + " <fulid('{}')>>".format(self.fulid.str)
 
     def test_fulid_has_charset_attribute(self):
         assert self.fulid.charset == \
-            list(pydo_default_config['fulid_characters']['default'])
+            list(pydo_default_config['fulid.characters']['default'])
 
     def test_fulid_has_forbidden_charset_attribute(self):
         assert self.fulid.forbidden_charset == \
-            list(pydo_default_config['fulid_forbidden_characters']['default'])
+            list(pydo_default_config['fulid.forbidden_characters']['default'])
 
     def test_fulid_has_fulid_attribute_none_by_default(self):
         assert self.fulid.str is None
 
     def test_fulid_has_charset_attribute_set_by_default(self):
         assert self.fulid.charset == \
-            list(pydo_default_config['fulid_characters']['default'])
+            list(pydo_default_config['fulid.characters']['default'])
 
     def test_fulid_has_forbidden_charset_attribute_set_by_default(self):
         assert self.fulid.forbidden_charset == \
-            list(pydo_default_config['fulid_forbidden_characters']['default'])
+            list(pydo_default_config['fulid.forbidden_characters']['default'])
 
     def test_fulid_can_set_fulid_attribute(self):
         self.fulid = fulid(fulid='full_fulid_string')
@@ -80,13 +79,13 @@ class Testfulid:
     def test_fulid_generates_an_ulid_with_the_id_in_charset(self):
         for character in self.fulid.new().id():
             assert character.lower() in \
-                pydo_default_config['fulid_characters']['default']
+                pydo_default_config['fulid.characters']['default']
 
     def test_fulid_does_not_accept_invalid_terminal_characters(self):
         with pytest.raises(ValueError):
             fulid(
                 'ilou|&:;()<>~*@?!$#[]{}\\/\'"`',
-                pydo_default_config['fulid_forbidden_characters']['default'],
+                pydo_default_config['fulid.forbidden_characters']['default'],
             )
 
     def test_fulid_sets_the_fulid_attribute(self):

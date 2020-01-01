@@ -1,89 +1,460 @@
 from faker import Faker
 from pydo.manager import ConfigManager
-from pydo.reports import List
-from tests.factories import TaskFactory, PydoConfigFactory
+from pydo.reports import List, Projects, Tags
+from tests.factories import \
+    ProjectFactory, \
+    PydoConfigFactory, \
+    TagFactory, \
+    TaskFactory
 from unittest.mock import patch
 
 import pytest
 
 
-class TestList:
+class BaseReport:
+    """
+    Abstract base test class to ensure that all the reporst have the same
+    interface.
+
+    The Children classes must define the following attributes:
+        self.report: The report class to test.
+
+    Public attributes:
+        config (ConfigManager): Default pydo configuration manager.
+        print (mock): print mock.
+        fake (Faker object): Faker object.
+        tabulate (mock): tabulate mock.
+        session (Session object): Database session.
+    """
 
     @pytest.fixture(autouse=True)
-    def setup(self, session):
+    def base_setup(self, session):
         self.print_patch = patch('pydo.reports.print', autospect=True)
         self.print = self.print_patch.start()
+        self.fake = Faker()
         self.tabulate_patch = patch(
             'pydo.reports.tabulate',
             autospect=True
         )
         self.tabulate = self.tabulate_patch.start()
-        self.fake = Faker()
         self.config = ConfigManager(session)
         PydoConfigFactory(session).create()
         self.session = session
 
-        self.ls = List(session)
-        self.columns = ['id', 'description', 'project']
-        self.labels = ['ID', 'Description', 'Project']
-
-        yield 'setup'
+        yield 'base_setup'
 
         self.print_patch.stop()
         self.tabulate_patch.stop()
 
     def test_session_attribute_exists(self):
-        assert self.ls.session is self.session
+        assert self.report.session is self.session
 
     def test_config_attribute_exists(self):
-        assert isinstance(self.ls.config, ConfigManager)
+        assert isinstance(self.report.config, ConfigManager)
 
-    def test_list_prints_columns(self):
-        self.tasks = TaskFactory.create_batch(20)
-        self.open_tasks = [task for task in self.tasks if task.state == 'open']
 
-        self.ls.print(columns=self.columns, labels=self.labels)
+@pytest.mark.usefixtures('base_setup')
+class TestList(BaseReport):
+    """
+    Class to test the List report.
+
+    Public attributes:
+        config (ConfigManager): Default pydo configuration manager.
+        print (mock): print mock.
+        fake (Faker object): Faker object.
+        tabulate (mock): tabulate mock.
+        session (Session object): Database session.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, session):
+        self.report = List(session)
+        self.columns = self.config.get('report.list.columns').split(', ')
+        self.labels = self.config.get('report.list.labels').split(', ')
+
+        yield 'setup'
+
+    def test_list_prints_id_priority_and_title_by_default(self):
+        tasks = TaskFactory.create_batch(20)
+
+        open_tasks = [task for task in tasks if task.state == 'open']
+
+        id_index = self.columns.index('id')
+        title_index = self.columns.index('title')
+        priority_index = self.columns.index('priority')
+
+        final_columns = [
+            self.columns[id_index],
+            self.columns[title_index],
+            self.columns[priority_index],
+        ]
+        final_labels = [
+            self.labels[id_index],
+            self.labels[title_index],
+            self.labels[priority_index],
+        ]
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        # Prepare desired report
+        report_data = []
+        for task in sorted(open_tasks, key=lambda k: k.id, reverse=True):
+            task_report = []
+            for attribute in final_columns:
+                if attribute == 'id':
+                    task_report.append(task.sulid)
+                else:
+                    task_report.append(task.__getattribute__(attribute))
+            report_data.append(task_report)
+
+        self.tabulate.assert_called_once_with(
+            report_data,
+            headers=final_labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_list_prints_id_title_and_project_if_project_existent(self):
+        project = ProjectFactory.create()
+        tasks = TaskFactory.create_batch(2, state='open')
+        tasks[0].project = project
+        self.session.commit()
+
+        open_tasks = [task for task in tasks if task.state == 'open']
+
+        id_index = self.columns.index('id')
+        title_index = self.columns.index('title')
+        project_index = self.columns.index('project_id')
+        priority_index = self.columns.index('priority')
+
+        final_columns = [
+            self.columns[id_index],
+            self.columns[title_index],
+            self.columns[project_index],
+            self.columns[priority_index],
+        ]
+        final_labels = [
+            self.labels[id_index],
+            self.labels[title_index],
+            self.labels[project_index],
+            self.labels[priority_index],
+        ]
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        # Prepare desired report
+        report_data = []
+        for task in sorted(open_tasks, key=lambda k: k.id, reverse=True):
+            task_report = []
+            for attribute in final_columns:
+                if attribute == 'id':
+                    task_report.append(task.sulid)
+                else:
+                    task_report.append(task.__getattribute__(attribute))
+            report_data.append(task_report)
+
+        self.tabulate.assert_called_once_with(
+            report_data,
+            headers=final_labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_list_print_id_title_and_tags_if_present(self):
+        tasks = TaskFactory.create_batch(4, state='open')
+        tags = TagFactory.create_batch(2)
+
+        # Add tags to task
+        tasks[0].tags = tags
+        self.session.commit()
+
+        # Select columns to print
+        id_index = self.columns.index('id')
+        title_index = self.columns.index('title')
+        tags_index = self.columns.index('tags')
+        priority_index = self.columns.index('priority')
+        final_columns = [
+            self.columns[id_index],
+            self.columns[title_index],
+            self.columns[priority_index],
+            self.columns[tags_index],
+        ]
+        final_labels = [
+            self.labels[id_index],
+            self.labels[title_index],
+            self.labels[priority_index],
+            self.labels[tags_index],
+        ]
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        # Prepare desired report
+        report_data = []
+        for task in sorted(tasks, key=lambda k: k.id, reverse=True):
+            task_report = []
+            for attribute in final_columns:
+                if attribute == 'id':
+                    task_report.append(task.sulid)
+                elif attribute == 'tags':
+                    if len(task.tags) > 0:
+                        task_report.append(
+                            ', '.join([tag.id for tag in tags])
+                        )
+                    else:
+                        task_report.append('')
+                else:
+                    task_report.append(task.__getattribute__(attribute))
+            report_data.append(task_report)
+
+        self.tabulate.assert_called_once_with(
+            report_data,
+            headers=final_labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+
+@pytest.mark.usefixtures('base_setup')
+class TestProjects(BaseReport):
+    """
+    Class to test the Projects report.
+
+    Public attributes:
+        config (ConfigManager): Default pydo configuration manager.
+        print (mock): print mock.
+        fake (Faker object): Faker object.
+        tabulate (mock): tabulate mock.
+        session (Session object): Database session.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, session):
+        self.report = Projects(session)
+        self.columns = self.config.get('report.projects.columns').split(', ')
+        self.labels = self.config.get('report.projects.labels').split(', ')
+        self.tasks = TaskFactory.create_batch(20, state='open')
+
+        yield 'setup'
+
+    def test_report_prints_projects_with_tasks(self):
+        project = ProjectFactory.create()
+
+        # Project assignment
+        for task in self.tasks:
+            task.project = project
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
 
         self.tabulate.assert_called_once_with(
             [
-                [
-                    task.__getattribute__(attribute)
-                    for attribute in self.columns
-                ]
-                for task in sorted(
-                    self.open_tasks,
-                    key=lambda k: k.id,
-                    reverse=True,
-                )
+                [project.id, 20, project.description],
             ],
             headers=self.labels,
             tablefmt='simple'
         )
         self.print.assert_called_once_with(self.tabulate.return_value)
 
-    def test_list_dont_print_column_if_all_null_open(self):
-        tasks = TaskFactory.create_batch(20, project=None)
-        open_tasks = [task for task in tasks if task.state == 'open']
-        final_columns = self.columns.copy()
-        final_columns.remove('project')
-        final_labels = self.labels.copy()
-        final_labels.remove('Project')
+    def test_report_does_not_print_projects_without_tasks(self):
+        project = ProjectFactory.create()
 
-        self.ls.print(columns=self.columns, labels=self.labels)
+        # empty project
+        ProjectFactory.create()
+
+        # Project assignment
+        for task in self.tasks:
+            task.project = project
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
 
         self.tabulate.assert_called_once_with(
             [
-                [
-                    task.__getattribute__(attribute)
-                    for attribute in final_columns
-                ]
-                for task in sorted(
-                    open_tasks,
-                    key=lambda k: k.id,
-                    reverse=True,
-                )
+                [project.id, 20, project.description],
             ],
-            headers=final_labels,
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_does_not_print_projects_without_open_tasks(self):
+        project = ProjectFactory.create()
+        project_with_closed_tasks = ProjectFactory.create()
+
+        completed_task = TaskFactory.create(state='completed')
+        completed_task.project = project_with_closed_tasks
+        deleted_task = TaskFactory.create(state='deleted')
+        deleted_task.project = project_with_closed_tasks
+
+        # Project assignment
+        for task in self.tasks:
+            task.project = project
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [project.id, 20, project.description],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_does_not_count_completed_tasks_in_projects(self):
+        project = ProjectFactory.create()
+
+        # Project assignment
+        for task in self.tasks:
+            task.project = project
+
+        # Complete one task
+        self.tasks[0].state = 'completed'
+        self.tasks[1].state = 'deleted'
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [project.id, 18, project.description],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_prints_tasks_without_project(self):
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                ['None', 20, 'Tasks without project'],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+
+@pytest.mark.usefixtures('base_setup')
+class TestTags(BaseReport):
+    """
+    Class to test the Tags report.
+
+    Public attributes:
+        config (ConfigManager): Default pydo configuration manager.
+        print (mock): print mock.
+        fake (Faker object): Faker object.
+        tabulate (mock): tabulate mock.
+        session (Session object): Database session.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self, session):
+        self.report = Tags(session)
+        self.columns = self.config.get('report.tags.columns').split(', ')
+        self.labels = self.config.get('report.tags.labels').split(', ')
+        self.tasks = TaskFactory.create_batch(20, state='open')
+
+        yield 'setup'
+
+    def test_report_prints_tags_with_tasks(self):
+        tag = TagFactory.create()
+
+        # Tag assignment
+        for task in self.tasks:
+            task.tags = [tag]
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [tag.id, 20, tag.description],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_does_not_print_tags_without_tasks(self):
+        tag = TagFactory.create()
+
+        # empty Tag
+        TagFactory.create()
+
+        # Tag assignment
+        for task in self.tasks:
+            task.tags = [tag]
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [tag.id, 20, tag.description],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_does_not_print_tags_without_open_tasks(self):
+        tag = TagFactory.create()
+        tag_with_closed_tasks = TagFactory.create()
+
+        completed_task = TaskFactory.create(state='completed')
+        completed_task.tags = [tag_with_closed_tasks]
+        deleted_task = TaskFactory.create(state='deleted')
+        deleted_task.tags = [tag_with_closed_tasks]
+
+        # Tag assignment
+        for task in self.tasks:
+            task.tags = [tag]
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [tag.id, 20, tag.description],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_does_not_count_completed_tasks_in_tags(self):
+        tag = TagFactory.create()
+
+        # Tag assignment
+        for task in self.tasks:
+            task.tags = [tag]
+
+        # Complete one task
+        self.tasks[0].state = 'completed'
+        self.tasks[1].state = 'deleted'
+        self.session.commit()
+
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [
+                [tag.id, 18, tag.description],
+            ],
+            headers=self.labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_report_does_not_print_tasks_without_tag(self):
+        self.report.print(columns=self.columns, labels=self.labels)
+
+        self.tabulate.assert_called_once_with(
+            [],
+            headers=self.labels,
             tablefmt='simple'
         )
         self.print.assert_called_once_with(self.tabulate.return_value)

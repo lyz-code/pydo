@@ -166,7 +166,7 @@ class fulid:
             except ValueError:
                 raise ValueError(
                     'Error decoding {} into a number as character {} is not '
-                    'in the configuration fulid_characters'.format(
+                    'in the configuration fulid.characters'.format(
                         number_string,
                         character,
                     )
