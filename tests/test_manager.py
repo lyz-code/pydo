@@ -1,6 +1,6 @@
 from faker import Faker
 from pydo.fulids import fulid
-from pydo.manager import TaskManager, ConfigManager
+from pydo.manager import TaskManager, ConfigManager, DateManager
 from pydo.manager import pydo_default_config
 from pydo.models import Task, Config, Project, Tag
 from tests.factories import \
@@ -11,6 +11,7 @@ from tests.factories import \
     TaskFactory
 from unittest.mock import patch
 
+import datetime
 import pytest
 
 
@@ -306,6 +307,20 @@ class TestTaskManager(TableManagerBaseTest):
         assert attributes['title'] == title
         assert attributes['agile'] == agile
 
+    @patch('pydo.manager.DateManager')
+    def test_parse_arguments_extracts_due(self, dateMock):
+        self.manager = TaskManager(self.session)
+        title = self.fake.sentence()
+        due = '1d'
+        add_arguments = [
+            title,
+            'due:{}'.format(due),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['due'] == dateMock.return_value.convert.return_value
+
     def test_add_task(self):
         title = self.fake.sentence()
 
@@ -469,6 +484,15 @@ class TestTaskManager(TableManagerBaseTest):
         generated_task = self.session.query(Task).one()
         assert generated_task.agile == agile
 
+    def test_add_task_assigns_due_if_exist(self):
+        title = self.fake.sentence()
+        due = self.fake.date_time()
+
+        self.manager.add(title=title, due=due)
+
+        generated_task = self.session.query(Task).one()
+        assert generated_task.due == due
+
     def test_delete_task_by_sulid(self):
         task = self.factory.create(state='open')
         closed_utc = self.fake.date_time()
@@ -555,6 +579,217 @@ class TestTaskManager(TableManagerBaseTest):
 
     def test_config_manager_loaded_in_attribute(self):
         assert isinstance(self.manager.config, ConfigManager)
+
+    def test_date_manager_loaded_in_attribute(self):
+        assert isinstance(self.manager.date, DateManager)
+
+
+class TestDateManager:
+    """
+    Class to test the DateManager class.
+
+    Public attributes:
+        manager (DateManager object): DateManager object to test
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.manager = DateManager()
+        self.now = datetime.datetime.now()
+
+        yield 'setup'
+
+    def test_next_weekday_if_starting_weekday_is_smaller(self):
+        # Monday
+        starting_date = datetime.date(2020, 1, 6)
+        next_weekday = self.manager._next_weekday(1, starting_date)
+        assert next_weekday == datetime.date(2020, 1, 7)
+
+    def test_next_weekday_if_starting_weekday_is_greater(self):
+        # Wednesday
+        starting_date = datetime.date(2020, 1, 8)
+        next_weekday = self.manager._next_weekday(1, starting_date)
+        assert next_weekday == datetime.date(2020, 1, 14)
+
+    def test_next_weekday_if_weekday_is_equal(self):
+        # Monday
+        starting_date = datetime.date(2020, 1, 6)
+        next_weekday = self.manager._next_weekday(0, starting_date)
+        assert next_weekday == datetime.date(2020, 1, 13)
+
+    def test_next_monthday_first_day_of_month(self):
+        # 1st tuesday of month
+        starting_date = datetime.date(2020, 1, 7)
+        expected_result = datetime.date(2020, 2, 4)
+        assert self.manager._next_monthday(1, starting_date) == expected_result
+
+    def test_next_monthday_second_day_of_month(self):
+        # 2st wednesday of month
+        starting_date = datetime.date(2020, 1, 8)
+        expected_result = datetime.date(2020, 2, 12)
+        assert self.manager._next_monthday(1, starting_date) == expected_result
+
+    def test_next_monthday_if_5_monthday(self):
+        # 5th monday of month, next month doesn't exist
+        starting_date = datetime.date(2019, 12, 30)
+        expected_result = datetime.date(2020, 2, 3)
+        assert self.manager._next_monthday(1, starting_date) == expected_result
+
+    def test_if_str2date_loads_seconds(self):
+        expected_result = self.now + datetime.timedelta(seconds=1)
+        assert self.manager._str2date('1s', self.now) == expected_result
+
+    def test_if_str2date_loads_minutes(self):
+        expected_result = self.now + datetime.timedelta(minutes=1)
+        assert self.manager._str2date('1m', self.now) == expected_result
+
+    def test_if_str2date_loads_hours(self):
+        expected_result = self.now + datetime.timedelta(hours=1)
+        assert self.manager._str2date('1h', self.now) == expected_result
+
+    def test_if_str2date_loads_days(self):
+        expected_result = self.now + datetime.timedelta(days=1)
+        assert self.manager._str2date('1d', self.now) == expected_result
+
+    def test_if_str2date_loads_months(self):
+        starting_date = datetime.date(2020, 1, 12)
+        expected_result = datetime.date(2020, 2, 12)
+        assert self.manager._str2date('1mo', starting_date) == expected_result
+
+    def test_if_str2date_loads_weeks(self):
+        starting_date = datetime.date(2020, 1, 12)
+        expected_result = datetime.date(2020, 1, 19)
+        assert self.manager._str2date('1w', starting_date) == expected_result
+
+    def test_if_str2date_loads_months_if_on_31(self):
+        starting_date = datetime.date(2020, 1, 31)
+        expected_result = datetime.date(2020, 2, 29)
+        assert self.manager._str2date('1mo', starting_date) == expected_result
+
+    def test_if_str2date_loads_years(self):
+        starting_date = datetime.date(2020, 1, 12)
+        expected_result = datetime.date(2021, 1, 12)
+        assert self.manager._str2date('1y', starting_date) == expected_result
+
+    def test_if_str2date_loads_relative_months(self):
+        # A month is not equal to 30d, it depends on the days of the month,
+        # use this in case you want for example the 3rd friday of the month
+        starting_date = datetime.datetime(2020, 1, 7)
+        expected_result = datetime.datetime(2020, 2, 4)
+        assert self.manager._str2date('1rmo', starting_date) == expected_result
+
+    def test_if_str2date_loads_combination_of_strings(self):
+        starting_date = datetime.datetime(2020, 1, 7)
+        expected_result = datetime.datetime(2021, 2, 8)
+        assert self.manager._str2date('1d 1mo 1y', starting_date) == \
+            expected_result
+
+    def test_convert_date_accepts_date_year_month_day(self):
+        assert self.manager.convert('2019-05-05') == \
+            datetime.datetime.strptime('2019-05-05', '%Y-%m-%d')
+
+    def test_convert_date_accepts_date_year_month_day_hour_min(self):
+        assert self.manager.convert('2019-05-05T10:00') == \
+            datetime.datetime.strptime('2019-05-05T10:00', '%Y-%m-%dT%H:%M')
+
+    def test_convert_date_accepts_monday(self):
+        starting_date = datetime.date(2020, 1, 6)
+        assert self.manager.convert('monday', starting_date) == \
+            datetime.date(2020, 1, 13)
+
+    def test_convert_date_accepts_mon(self):
+        starting_date = datetime.date(2020, 1, 6)
+        assert self.manager.convert('mon', starting_date) == \
+            datetime.date(2020, 1, 13)
+
+    def test_convert_date_accepts_tuesday(self):
+        starting_date = datetime.date(2020, 1, 7)
+        assert self.manager.convert('tuesday', starting_date) == \
+            datetime.date(2020, 1, 14)
+
+    def test_convert_date_accepts_tue(self):
+        starting_date = datetime.date(2020, 1, 7)
+        assert self.manager.convert('tue', starting_date) == \
+            datetime.date(2020, 1, 14)
+
+    def test_convert_date_accepts_wednesday(self):
+        starting_date = datetime.date(2020, 1, 8)
+        assert self.manager.convert('wednesday', starting_date) == \
+            datetime.date(2020, 1, 15)
+
+    def test_convert_date_accepts_wed(self):
+        starting_date = datetime.date(2020, 1, 8)
+        assert self.manager.convert('wed', starting_date) == \
+            datetime.date(2020, 1, 15)
+
+    def test_convert_date_accepts_thursdday(self):
+        starting_date = datetime.date(2020, 1, 9)
+        assert self.manager.convert('thursdday', starting_date) == \
+            datetime.date(2020, 1, 16)
+
+    def test_convert_date_accepts_thu(self):
+        starting_date = datetime.date(2020, 1, 9)
+        assert self.manager.convert('thu', starting_date) == \
+            datetime.date(2020, 1, 16)
+
+    def test_convert_date_accepts_friday(self):
+        starting_date = datetime.date(2020, 1, 10)
+        assert self.manager.convert('friday', starting_date) == \
+            datetime.date(2020, 1, 17)
+
+    def test_convert_date_accepts_fri(self):
+        starting_date = datetime.date(2020, 1, 10)
+        assert self.manager.convert('fri', starting_date) == \
+            datetime.date(2020, 1, 17)
+
+    def test_convert_date_accepts_saturday(self):
+        starting_date = datetime.date(2020, 1, 11)
+        assert self.manager.convert('saturday', starting_date) == \
+            datetime.date(2020, 1, 18)
+
+    def test_convert_date_accepts_sat(self):
+        starting_date = datetime.date(2020, 1, 11)
+        assert self.manager.convert('sat', starting_date) == \
+            datetime.date(2020, 1, 18)
+
+    def test_convert_date_accepts_sunday(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('sunday', starting_date) == \
+            datetime.date(2020, 1, 19)
+
+    def test_convert_date_accepts_sun(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('sun', starting_date) == \
+            datetime.date(2020, 1, 19)
+
+    def test_convert_date_accepts_1d(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('1d', starting_date) == \
+            datetime.date(2020, 1, 13)
+
+    def test_convert_date_accepts_1mo(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('1mo', starting_date) == \
+            datetime.date(2020, 2, 12)
+
+    def test_convert_date_accepts_1rmo(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('1rmo', starting_date) == \
+            datetime.date(2020, 2, 9)
+
+    def test_convert_date_accepts_now(self):
+        assert self.manager.convert('now').day == \
+            self.now.day
+
+    def test_convert_date_accepts_tomorrow(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('tomorrow', starting_date) == \
+            datetime.date(2020, 1, 13)
+
+    def test_convert_date_accepts_yesterday(self):
+        starting_date = datetime.date(2020, 1, 12)
+        assert self.manager.convert('yesterday', starting_date) == \
+            datetime.date(2020, 1, 11)
 
 
 @pytest.mark.usefixtures('base_setup')
