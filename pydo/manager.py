@@ -342,7 +342,7 @@ class TaskManager(TableManager):
         task = self.session.query(Task).get(id)
 
         task.state = state
-        task.closed_utc = datetime.datetime.now()
+        task.closed = datetime.datetime.now()
 
         self.session.commit()
         self.log.debug(

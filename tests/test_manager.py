@@ -495,8 +495,8 @@ class TestTaskManager(TableManagerBaseTest):
 
     def test_delete_task_by_sulid(self):
         task = self.factory.create(state='open')
-        closed_utc = self.fake.date_time()
-        self.datetime.datetime.now.return_value = closed_utc
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
 
         assert self.session.query(Task).one()
 
@@ -505,7 +505,7 @@ class TestTaskManager(TableManagerBaseTest):
         )
 
         modified_task = self.session.query(Task).get(task.id)
-        assert modified_task.closed_utc == closed_utc
+        assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'deleted'
         self.log_debug.assert_called_with(
@@ -517,15 +517,15 @@ class TestTaskManager(TableManagerBaseTest):
 
     def test_delete_task_by_fulid(self):
         task = self.factory.create(state='open')
-        closed_utc = self.fake.date_time()
-        self.datetime.datetime.now.return_value = closed_utc
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
 
         assert self.session.query(Task).one()
 
         self.manager.delete(task.id)
 
         modified_task = self.session.query(Task).get(task.id)
-        assert modified_task.closed_utc == closed_utc
+        assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'deleted'
         self.log_debug.assert_called_with(
@@ -536,8 +536,8 @@ class TestTaskManager(TableManagerBaseTest):
         )
 
     def test_complete_task_by_sulid(self):
-        closed_utc = self.fake.date_time()
-        self.datetime.datetime.now.return_value = closed_utc
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
         task = TaskFactory.create(state='open')
 
         assert self.session.query(Task).one()
@@ -547,7 +547,7 @@ class TestTaskManager(TableManagerBaseTest):
         )
 
         modified_task = self.session.query(Task).get(task.id)
-        assert modified_task.closed_utc == closed_utc
+        assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'completed'
         self.log_debug.assert_called_with(
@@ -558,8 +558,8 @@ class TestTaskManager(TableManagerBaseTest):
         )
 
     def test_complete_task_by_fulid(self):
-        closed_utc = self.fake.date_time()
-        self.datetime.datetime.now.return_value = closed_utc
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
         task = TaskFactory.create(state='open')
 
         assert self.session.query(Task).one()
@@ -567,7 +567,7 @@ class TestTaskManager(TableManagerBaseTest):
         self.manager.complete(task.id)
 
         modified_task = self.session.query(Task).get(task.id)
-        assert modified_task.closed_utc == closed_utc
+        assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'completed'
         self.log_debug.assert_called_with(
