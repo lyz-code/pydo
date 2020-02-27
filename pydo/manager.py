@@ -33,6 +33,11 @@ pydo_default_config = {
         'of ids, due to ulid converting them to numbers or because they'
         'have a meaning for the terminal',
     },
+    'report.date_format': {
+        'default': '%Y-%m-%dT%H:%M',
+        'choices': '',
+        'description': 'Datetime strftime compatible string to print dates',
+    },
     'report.list.columns': {
         'default': 'id, title, project_id, priority, tags, due',
         'choices': 'id, title, description, project_id, priority, tags, '

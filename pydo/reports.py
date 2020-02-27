@@ -23,11 +23,30 @@ class BaseReport():
     Public attributes:
         session: Database session.
         config: ConfigManager object.
+
+    Internal methods:
+        _date2str: Returns a string with the config report.date_format format
     """
 
     def __init__(self, session):
         self.session = session
         self.config = ConfigManager(session)
+
+    def _date2str(self, date):
+        """
+        Method to convert a datetime object into a string with the format
+        specified in the report.date_format configuration.
+
+        Arguments:
+            date (datetime or None): Object to convert.
+
+        Returns:
+            str: converted date string.
+        """
+        try:
+            return date.strftime(self.config.get('report.date_format'))
+        except AttributeError:
+            return None
 
 
 class List(BaseReport):
@@ -103,6 +122,8 @@ class List(BaseReport):
                         )
                     else:
                         task_report.append('')
+                elif attribute == 'due':
+                    assert False
                 else:
                     task_report.append(task.__getattribute__(attribute))
             report_data.append(task_report)
