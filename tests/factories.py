@@ -62,13 +62,16 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
     priority = factory.Faker('random_number')
 
     # Let half the tasks have a due date
-    if random.random() > 0.5:
-        due = factory.Faker('date_time')
-    else:
-        due = None
 
-    if state == 'completed' or state == 'deleted':
-        closed = factory.Faker('DateTime')
+    @factory.lazy_attribute
+    def due(self):
+        if random.random() > 0.5:
+            return factory.Faker('date_time').generate({})
+
+    @factory.lazy_attribute
+    def closed(self):
+        if self.state == 'completed' or self.state == 'deleted':
+            return factory.Faker('date_time').generate({})
 
     class Meta:
         model = Task
