@@ -128,8 +128,6 @@ class TestList(BaseReport):
         tasks[0].project = project
         self.session.commit()
 
-        open_tasks = [task for task in tasks if task.state == 'open']
-
         id_index = self.columns.index('id')
         project_index = self.columns.index('project_id')
 
@@ -146,7 +144,7 @@ class TestList(BaseReport):
 
         # Prepare desired report
         report_data = []
-        for task in sorted(open_tasks, key=lambda k: k.id, reverse=True):
+        for task in sorted(tasks, key=lambda k: k.id, reverse=True):
             task_report = []
             for attribute in columns:
                 if attribute == 'id':
@@ -208,7 +206,39 @@ class TestList(BaseReport):
         self.print.assert_called_once_with(self.tabulate.return_value)
 
     def test_list_print_id_and_due_if_present(self):
-        assert False
+        tasks = TaskFactory.create_batch(10, state='open')
+
+        id_index = self.columns.index('id')
+        due_index = self.columns.index('due')
+
+        columns = [
+            self.columns[id_index],
+            self.columns[due_index],
+        ]
+        labels = [
+            self.labels[id_index],
+            self.labels[due_index],
+        ]
+
+        self.report.print(columns=columns, labels=labels)
+
+        # Prepare desired report
+        report_data = []
+        for task in sorted(tasks, key=lambda k: k.id, reverse=True):
+            task_report = []
+            for attribute in columns:
+                if attribute == 'id':
+                    task_report.append(task.sulid)
+                else:
+                    task_report.append(self.report._date2str(task.due))
+            report_data.append(task_report)
+
+        self.tabulate.assert_called_once_with(
+            report_data,
+            headers=labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
 
 
 @pytest.mark.usefixtures('base_setup')

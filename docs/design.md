@@ -53,8 +53,7 @@ In the display we could have something like a parent task fulid field.
 * [x] Add body of tasks
 * [x] Kanban
   * Set in config available values
-
-* [ ] Due
+* [x] Due
 
 * [ ] Recurrence (https://tasklite.org/concepts.html)
   * [ ] Repeating

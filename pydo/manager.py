@@ -34,7 +34,7 @@ pydo_default_config = {
         'have a meaning for the terminal',
     },
     'report.date_format': {
-        'default': '%Y-%m-%dT%H:%M',
+        'default': '%Y-%m-%d %H:%M',
         'choices': '',
         'description': 'Datetime strftime compatible string to print dates',
     },

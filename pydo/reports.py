@@ -120,7 +120,7 @@ class List(BaseReport):
             reverse=True
         ):
             task_report = []
-            for attribute in final_columns:
+            for attribute in columns:
                 if attribute == 'id':
                     task.sulid = sulids[task.id]
                     task_report.append(task.sulid)
@@ -136,7 +136,7 @@ class List(BaseReport):
                 else:
                     task_report.append(task.__getattribute__(attribute))
             report_data.append(task_report)
-        print(tabulate(report_data, headers=final_labels, tablefmt='simple'))
+        print(tabulate(report_data, headers=labels, tablefmt='simple'))
 
 
 class Projects(BaseReport):
