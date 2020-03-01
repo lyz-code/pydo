@@ -69,20 +69,15 @@ class List(BaseReport):
     def __init__(self, session):
         super().__init__(session)
 
-    def print(self, columns, labels):
+    def _remove_null_columns(self, tasks, columns, labels):
         """
-        Method to print the report
+        Method to remove the columns that have all null items.
 
         Arguments:
+            tasks (session.query): A Task session query
             columns (list): Element attributes to print
             labels (list): Headers of the attributes
         """
-        report_data = []
-        tasks = self.session.query(Task).filter_by(state='open')
-
-        # Remove columns that have all nulls
-        final_columns = columns.copy()
-        final_labels = labels.copy()
         for attribute in columns:
             remove_attribute = False
             try:
@@ -95,9 +90,23 @@ class List(BaseReport):
                 if tasks.filter(getattr(Task, attribute).any()).count() == 0:
                     remove_attribute = True
             if remove_attribute:
-                index_to_remove = final_columns.index(attribute)
-                final_columns.pop(index_to_remove)
-                final_labels.pop(index_to_remove)
+                index_to_remove = columns.index(attribute)
+                columns.pop(index_to_remove)
+                labels.pop(index_to_remove)
+        return columns, labels
+
+    def print(self, columns, labels):
+        """
+        Method to print the report
+
+        Arguments:
+            columns (list): Element attributes to print
+            labels (list): Headers of the attributes
+        """
+        report_data = []
+        tasks = self.session.query(Task).filter_by(state='open')
+
+        columns, labels = self._remove_null_columns(tasks, columns, labels)
 
         # Transform the fulids into sulids
         sulids = fulid(
@@ -123,7 +132,7 @@ class List(BaseReport):
                     else:
                         task_report.append('')
                 elif attribute == 'due':
-                    assert False
+                    task_report.append(self._date2str(task.due))
                 else:
                     task_report.append(task.__getattribute__(attribute))
             report_data.append(task_report)

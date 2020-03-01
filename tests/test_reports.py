@@ -1,5 +1,6 @@
 from faker import Faker
 from pydo.manager import ConfigManager
+from pydo.models import Task
 from pydo.reports import List, Projects, Tags
 from tests.factories import \
     ProjectFactory, \
@@ -90,6 +91,36 @@ class TestList(BaseReport):
         assert 'due' in self.columns
         assert 'project_id' in self.columns
         assert 'tags' in self.columns
+
+    def test_remove_null_columns_removes_columns_if_all_nulls(
+        self,
+        session
+    ):
+        # If we don't assign a project and tags to the tasks they are all
+        # going to be null.
+        desired_columns = self.columns.copy()
+        desired_labels = self.labels.copy()
+
+        project_index = desired_columns.index('project_id')
+        desired_columns.pop(project_index)
+        desired_labels.pop(project_index)
+
+        tags_index = desired_columns.index('tags')
+        desired_columns.pop(tags_index)
+        desired_labels.pop(tags_index)
+
+        TaskFactory.create_batch(10)
+
+        tasks = session.query(Task).filter_by(state='open')
+
+        columns, labels = self.report._remove_null_columns(
+            tasks,
+            self.columns,
+            self.labels
+        )
+
+        assert desired_columns == columns
+        assert desired_labels == labels
 
     def test_list_prints_id_title_and_project_if_project_existent(self):
         project = ProjectFactory.create()
