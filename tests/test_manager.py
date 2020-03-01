@@ -15,7 +15,7 @@ import datetime
 import pytest
 
 
-class TableManagerBaseTest:
+class ManagerBaseTest:
     """
     Abstract base test class to ensure that all the managers have the same
     interface.
@@ -68,7 +68,7 @@ class TableManagerBaseTest:
 
 
 @pytest.mark.usefixtures('base_setup')
-class TestTaskManager(TableManagerBaseTest):
+class TestTaskManager(ManagerBaseTest):
     """
     Class to test the TaskManager object.
 
@@ -793,7 +793,7 @@ class TestDateManager:
 
 
 @pytest.mark.usefixtures('base_setup')
-class TestConfigManager(TableManagerBaseTest):
+class TestConfigManager(ManagerBaseTest):
     """
     Class to test the ConfigManager object.
 

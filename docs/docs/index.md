@@ -1,4 +1,10 @@
-# Pydo
+---
+title: Pydo Documentation
+date: 20200301
+author: Lyz
+---
+
+# What is Pydo?
 
 `pydo` is a free software command line task manager built with
 [Python](https://en.wikipedia.org/wiki/Python_%28programming_language%29) and
