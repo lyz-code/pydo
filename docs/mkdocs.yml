@@ -10,6 +10,8 @@ nav:
     - Projects: "projects.md"
     - Tags: "tags.md"
     - Dates: "dates.md"
+    - Priority: "priority.md"
+    - Estimate: "estimate.md"
     #- Design:
     # - Friendly IDs: 'fulids.md'
   - Roadmap: 'roadmap.md'
