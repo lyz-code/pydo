@@ -10,15 +10,15 @@ may want to explore the different features it has to adapt it to your workflow.
 As the number of tasks starts to increase, it's convenient to group them
 together to help us with the priorization and visualization.
 
-One way of doing so is using projects. A project is a category that defines the
-purpose of a task therefore a task can *only have one project*. If you feel that
-a task might have two projects or if you have hierarchical problems with your
-tasks, you may want to use [tags](tags.md) instead.
+One way of doing so is using projects. A project is an optional category that
+defines the purpose of a task therefore a task can *only have one project*. If
+you feel that a task might have two projects or if you have hierarchical
+problems with your tasks, you may want to use [tags](tags.md) instead.
 
 For example, I'd use `clean` for cleaning tasks, or `time_management` for `pydo`
 developing tasks.
 
-To add a project to a task, we use the `project` or `pro` keyword.
+To add a project to a task, use the `project` or `pro` keyword.
 
 ```bash
 pydo add Improve pydo documentation pro:time_management

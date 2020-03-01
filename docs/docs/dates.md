@@ -18,11 +18,12 @@ effects. You can choose to use some, all or none of these, but like all
 pydo features, they are there in case your needs require it, but you do
 not pay a performance or friction penalty by not using them.
 
-# The `due` Date
+# The `due` date
 
-Use a `due` date to specify the exact date by which a task must be completed. This
-corresponds to the last possible moment when the task can be considered on-time.
-Using our example, we can set the due date to be Alice's birthday:
+Use a optional `due` task attribute to specify the exact date by which a task
+must be completed. This corresponds to the last possible moment when the task
+can be considered on-time.  Using our example, we can set the due date to be
+Alice's birthday:
 
 ```bash
 pydo add Send Alice a birthday card due:2016-11-08
