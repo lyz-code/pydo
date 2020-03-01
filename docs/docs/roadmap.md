@@ -4,7 +4,8 @@ date: 20200301
 author: Lyz
 ---
 
-`pydo`'s initial development has been split into phases.
+`pydo`'s initial development has been split into phases. Follow the evolution
+of each item in the [issues](https://github.com/lyz-code/pydo/issues) page.
 
 # 0.1.0. Task structure to be able to import from taskwarrior
 
@@ -79,6 +80,7 @@ Create the commands to match Taskwarrior functionality.
     * [ ] waiting
     * [ ] recurring
     * [ ] query (sql)
+    * [ ] overdue
 
 # 0.3.0. Add further functionality
 

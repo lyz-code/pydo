@@ -9,7 +9,7 @@ nav:
   - Advanced Usage:
     - Projects: "projects.md"
     - Tags: "tags.md"
-    - Due: "due.md"
+    - Dates: "dates.md"
     #- Design:
     # - Friendly IDs: 'fulids.md'
   - Roadmap: 'roadmap.md'
