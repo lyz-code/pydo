@@ -120,7 +120,8 @@ In the display we could have something like a parent task fulid field.
   * Positive and negative habits, annotate when they happen and add alarms. Set
     a max and min recurrence.
 * [ ] Serial tasks, recurrent without date, process book, 25 pages starting value, increment
-
+* [ ] Set up an end of tasks, can be both relative to the due or absolute that
+  will be automatically deleted or completed if it hasn't been acted upon.
 * [ ] Stats - Dash
   * Speed of sprint, week, day with filter by project or tag
   * [ ] Average day est consumption and evolution, also filter possibility by
