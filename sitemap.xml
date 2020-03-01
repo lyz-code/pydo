@@ -36,6 +36,16 @@
      <changefreq>daily</changefreq>
     </url>
     <url>
+     <loc>https://lyz-code.github.io/pydo/priority/</loc>
+     <lastmod>2020-03-01</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
+     <loc>https://lyz-code.github.io/pydo/estimate/</loc>
+     <lastmod>2020-03-01</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    <url>
      <loc>https://lyz-code.github.io/pydo/roadmap/</loc>
      <lastmod>2020-03-01</lastmod>
      <changefreq>daily</changefreq>
