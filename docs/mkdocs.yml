@@ -3,8 +3,17 @@ site_author: Lyz
 site_url: https://lyz-code.github.io/pydo
 nav:
   - Introduction: 'index.md'
+  - Basic Usage: 'basic_usage.md'
   - Configuration: 'configuration.md'
+  - Update: 'update.md'
+  - Advanced Usage:
+    - Projects: "projects.md"
+    - Tags: "tags.md"
+    - Due: "due.md"
+    #- Design:
+    # - Friendly IDs: 'fulids.md'
   - Roadmap: 'roadmap.md'
+  - Related: 'related.md'
 
 plugins:
   - search

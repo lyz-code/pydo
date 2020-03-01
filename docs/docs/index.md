@@ -93,8 +93,12 @@ user defined metadata and many more.
 
 # Installation
 
+Until we [improve the install method](https://github.com/lyz-code/pydo/issues/11) do:
+
 ```bash
 pip3 install git+git://github.com/lyz-code/pydo
+mkdir ~/.local/share/pydo
+touch ~/.local/share/pydo/main.db
 pydo install
 ```
 
