@@ -3,6 +3,7 @@ from pydo.manager import ConfigManager
 from pydo.models import Project, Tag, Task, Config, possible_task_states
 
 import factory
+import random
 
 # XXX If you add new Factories remember to add the session in conftest.py
 
@@ -60,8 +61,17 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
     agile = factory.Faker('word', ext_word_list=['backlog', 'todo', None])
     priority = factory.Faker('random_number')
 
-    if state == 'completed' or state == 'deleted':
-        closed_utc = factory.Faker('DateTime')
+    # Let half the tasks have a due date
+
+    @factory.lazy_attribute
+    def due(self):
+        if random.random() > 0.5:
+            return factory.Faker('date_time').generate({})
+
+    @factory.lazy_attribute
+    def closed(self):
+        if self.state == 'completed' or self.state == 'deleted':
+            return factory.Faker('date_time').generate({})
 
     class Meta:
         model = Task

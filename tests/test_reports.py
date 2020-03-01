@@ -1,5 +1,6 @@
 from faker import Faker
 from pydo.manager import ConfigManager
+from pydo.models import Task
 from pydo.reports import List, Projects, Tags
 from tests.factories import \
     ProjectFactory, \
@@ -52,6 +53,15 @@ class BaseReport:
     def test_config_attribute_exists(self):
         assert isinstance(self.report.config, ConfigManager)
 
+    def test_date_to_string_converts_with_desired_format(self):
+        date = self.fake.date_time()
+        assert self.report._date2str(date) == date.strftime(
+            self.config.get('report.date_format')
+        )
+
+    def test_date_to_string_converts_None_to_None(self):
+        assert self.report._date2str(None) is None
+
 
 @pytest.mark.usefixtures('base_setup')
 class TestList(BaseReport):
@@ -74,45 +84,43 @@ class TestList(BaseReport):
 
         yield 'setup'
 
-    def test_list_prints_id_priority_and_title_by_default(self):
-        tasks = TaskFactory.create_batch(20)
+    def test_list_has_desired_default_columns(self):
+        assert 'id' in self.columns
+        assert 'title' in self.columns
+        assert 'priority' in self.columns
+        assert 'due' in self.columns
+        assert 'project_id' in self.columns
+        assert 'tags' in self.columns
 
-        open_tasks = [task for task in tasks if task.state == 'open']
+    def test_remove_null_columns_removes_columns_if_all_nulls(
+        self,
+        session
+    ):
+        # If we don't assign a project and tags to the tasks they are all
+        # going to be null.
+        desired_columns = self.columns.copy()
+        desired_labels = self.labels.copy()
 
-        id_index = self.columns.index('id')
-        title_index = self.columns.index('title')
-        priority_index = self.columns.index('priority')
+        project_index = desired_columns.index('project_id')
+        desired_columns.pop(project_index)
+        desired_labels.pop(project_index)
 
-        final_columns = [
-            self.columns[id_index],
-            self.columns[title_index],
-            self.columns[priority_index],
-        ]
-        final_labels = [
-            self.labels[id_index],
-            self.labels[title_index],
-            self.labels[priority_index],
-        ]
+        tags_index = desired_columns.index('tags')
+        desired_columns.pop(tags_index)
+        desired_labels.pop(tags_index)
 
-        self.report.print(columns=self.columns, labels=self.labels)
+        TaskFactory.create_batch(10)
 
-        # Prepare desired report
-        report_data = []
-        for task in sorted(open_tasks, key=lambda k: k.id, reverse=True):
-            task_report = []
-            for attribute in final_columns:
-                if attribute == 'id':
-                    task_report.append(task.sulid)
-                else:
-                    task_report.append(task.__getattribute__(attribute))
-            report_data.append(task_report)
+        tasks = session.query(Task).filter_by(state='open')
 
-        self.tabulate.assert_called_once_with(
-            report_data,
-            headers=final_labels,
-            tablefmt='simple'
+        columns, labels = self.report._remove_null_columns(
+            tasks,
+            self.columns,
+            self.labels
         )
-        self.print.assert_called_once_with(self.tabulate.return_value)
+
+        assert desired_columns == columns
+        assert desired_labels == labels
 
     def test_list_prints_id_title_and_project_if_project_existent(self):
         project = ProjectFactory.create()
@@ -120,33 +128,25 @@ class TestList(BaseReport):
         tasks[0].project = project
         self.session.commit()
 
-        open_tasks = [task for task in tasks if task.state == 'open']
-
         id_index = self.columns.index('id')
-        title_index = self.columns.index('title')
         project_index = self.columns.index('project_id')
-        priority_index = self.columns.index('priority')
 
-        final_columns = [
+        columns = [
             self.columns[id_index],
-            self.columns[title_index],
             self.columns[project_index],
-            self.columns[priority_index],
         ]
-        final_labels = [
+        labels = [
             self.labels[id_index],
-            self.labels[title_index],
             self.labels[project_index],
-            self.labels[priority_index],
         ]
 
-        self.report.print(columns=self.columns, labels=self.labels)
+        self.report.print(columns=columns, labels=labels)
 
         # Prepare desired report
         report_data = []
-        for task in sorted(open_tasks, key=lambda k: k.id, reverse=True):
+        for task in sorted(tasks, key=lambda k: k.id, reverse=True):
             task_report = []
-            for attribute in final_columns:
+            for attribute in columns:
                 if attribute == 'id':
                     task_report.append(task.sulid)
                 else:
@@ -155,7 +155,7 @@ class TestList(BaseReport):
 
         self.tabulate.assert_called_once_with(
             report_data,
-            headers=final_labels,
+            headers=labels,
             tablefmt='simple'
         )
         self.print.assert_called_once_with(self.tabulate.return_value)
@@ -170,29 +170,23 @@ class TestList(BaseReport):
 
         # Select columns to print
         id_index = self.columns.index('id')
-        title_index = self.columns.index('title')
         tags_index = self.columns.index('tags')
-        priority_index = self.columns.index('priority')
-        final_columns = [
+        columns = [
             self.columns[id_index],
-            self.columns[title_index],
-            self.columns[priority_index],
             self.columns[tags_index],
         ]
-        final_labels = [
+        labels = [
             self.labels[id_index],
-            self.labels[title_index],
-            self.labels[priority_index],
             self.labels[tags_index],
         ]
 
-        self.report.print(columns=self.columns, labels=self.labels)
+        self.report.print(columns=columns, labels=labels)
 
         # Prepare desired report
         report_data = []
         for task in sorted(tasks, key=lambda k: k.id, reverse=True):
             task_report = []
-            for attribute in final_columns:
+            for attribute in columns:
                 if attribute == 'id':
                     task_report.append(task.sulid)
                 elif attribute == 'tags':
@@ -202,13 +196,46 @@ class TestList(BaseReport):
                         )
                     else:
                         task_report.append('')
-                else:
-                    task_report.append(task.__getattribute__(attribute))
             report_data.append(task_report)
 
         self.tabulate.assert_called_once_with(
             report_data,
-            headers=final_labels,
+            headers=labels,
+            tablefmt='simple'
+        )
+        self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_list_print_id_and_due_if_present(self):
+        tasks = TaskFactory.create_batch(10, state='open')
+
+        id_index = self.columns.index('id')
+        due_index = self.columns.index('due')
+
+        columns = [
+            self.columns[id_index],
+            self.columns[due_index],
+        ]
+        labels = [
+            self.labels[id_index],
+            self.labels[due_index],
+        ]
+
+        self.report.print(columns=columns, labels=labels)
+
+        # Prepare desired report
+        report_data = []
+        for task in sorted(tasks, key=lambda k: k.id, reverse=True):
+            task_report = []
+            for attribute in columns:
+                if attribute == 'id':
+                    task_report.append(task.sulid)
+                else:
+                    task_report.append(self.report._date2str(task.due))
+            report_data.append(task_report)
+
+        self.tabulate.assert_called_once_with(
+            report_data,
+            headers=labels,
             tablefmt='simple'
         )
         self.print.assert_called_once_with(self.tabulate.return_value)

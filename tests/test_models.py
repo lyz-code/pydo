@@ -43,6 +43,7 @@ class TestTask(BaseModelTest):
             agile=self.dummy_instance.agile,
             title=self.dummy_instance.title,
             state=self.dummy_instance.state,
+            due=self.dummy_instance.due,
             priority=self.dummy_instance.priority,
         )
         self.model_attributes = [

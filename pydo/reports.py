@@ -23,11 +23,30 @@ class BaseReport():
     Public attributes:
         session: Database session.
         config: ConfigManager object.
+
+    Internal methods:
+        _date2str: Returns a string with the config report.date_format format
     """
 
     def __init__(self, session):
         self.session = session
         self.config = ConfigManager(session)
+
+    def _date2str(self, date):
+        """
+        Method to convert a datetime object into a string with the format
+        specified in the report.date_format configuration.
+
+        Arguments:
+            date (datetime or None): Object to convert.
+
+        Returns:
+            str: converted date string.
+        """
+        try:
+            return date.strftime(self.config.get('report.date_format'))
+        except AttributeError:
+            return None
 
 
 class List(BaseReport):
@@ -50,20 +69,15 @@ class List(BaseReport):
     def __init__(self, session):
         super().__init__(session)
 
-    def print(self, columns, labels):
+    def _remove_null_columns(self, tasks, columns, labels):
         """
-        Method to print the report
+        Method to remove the columns that have all null items.
 
         Arguments:
+            tasks (session.query): A Task session query
             columns (list): Element attributes to print
             labels (list): Headers of the attributes
         """
-        report_data = []
-        tasks = self.session.query(Task).filter_by(state='open')
-
-        # Remove columns that have all nulls
-        final_columns = columns.copy()
-        final_labels = labels.copy()
         for attribute in columns:
             remove_attribute = False
             try:
@@ -76,9 +90,23 @@ class List(BaseReport):
                 if tasks.filter(getattr(Task, attribute).any()).count() == 0:
                     remove_attribute = True
             if remove_attribute:
-                index_to_remove = final_columns.index(attribute)
-                final_columns.pop(index_to_remove)
-                final_labels.pop(index_to_remove)
+                index_to_remove = columns.index(attribute)
+                columns.pop(index_to_remove)
+                labels.pop(index_to_remove)
+        return columns, labels
+
+    def print(self, columns, labels):
+        """
+        Method to print the report
+
+        Arguments:
+            columns (list): Element attributes to print
+            labels (list): Headers of the attributes
+        """
+        report_data = []
+        tasks = self.session.query(Task).filter_by(state='open')
+
+        columns, labels = self._remove_null_columns(tasks, columns, labels)
 
         # Transform the fulids into sulids
         sulids = fulid(
@@ -92,7 +120,7 @@ class List(BaseReport):
             reverse=True
         ):
             task_report = []
-            for attribute in final_columns:
+            for attribute in columns:
                 if attribute == 'id':
                     task.sulid = sulids[task.id]
                     task_report.append(task.sulid)
@@ -103,10 +131,12 @@ class List(BaseReport):
                         )
                     else:
                         task_report.append('')
+                elif attribute == 'due':
+                    task_report.append(self._date2str(task.due))
                 else:
                     task_report.append(task.__getattribute__(attribute))
             report_data.append(task_report)
-        print(tabulate(report_data, headers=final_labels, tablefmt='simple'))
+        print(tabulate(report_data, headers=labels, tablefmt='simple'))
 
 
 class Projects(BaseReport):
