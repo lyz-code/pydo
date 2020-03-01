@@ -33,3 +33,27 @@ work on it.
 There is also an overdue report that makes use of the OVERDUE virtual tag, to show you what is already late. If you run the calendar report, your due date will be highlighted on it.
 
 What we see here is that Taskwarrior leverages the metadata to drive various features. Several reports will sort by due date, and as we see above, a task that has a due date now belongs on your schedule.
+
+# Date format
+
+`pydo` understands different ways of expressing dates.
+
+* `YYYY-MM-DD`: Enter year, month and day.
+* `YYYY-MM-DDTHH-mm`: Enter year, month, day, hour and minute.
+* `now`: Current local date and time.
+* `tomorrow`:	Local date for tomorrow, same as `now + 24h`.
+* `yesterday`: Local date for yesterday, same as `now - 24h`.
+* `monday`, `tuesday`, ...: Local date for the specified day, after today. There
+  is also available in the short three lettered version: `mon`, `tue`...
+* Combination of the following operators to specify a relative date from `now`:
+
+    * `s`: seconds,
+    * `m`: minutes.
+    * `h`: hours,
+    * `d`: days.
+    * `w`: weeks.
+    * `mo`: months.
+    * `rmo`: relative months. Use this if you want to set the 3rd Friday of the month.
+    * `y`: years.
+
+    So `1y2mo30s` will set the date to `now + 1 year + 2 months + 30 seconds`.
