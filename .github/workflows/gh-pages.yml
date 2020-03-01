@@ -1,4 +1,4 @@
-name: github pages
+name: Github pages
 
 on:
   push:
@@ -34,10 +34,12 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r ./docs/requirements.txt
 
-      - run: mkdocs build
+      - run: |
+          cd docs
+          mkdocs build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./site
+          publish_dir: ./docs/site
