@@ -321,6 +321,19 @@ class TestTaskManager(ManagerBaseTest):
 
         assert attributes['due'] == dateMock.return_value.convert.return_value
 
+    def test_parse_arguments_extracts_due_with_hour(self, dateMock):
+        self.manager = TaskManager(self.session)
+        title = self.fake.sentence()
+        due = '2020-04-05T12:30'
+        add_arguments = [
+            title,
+            'due:{}'.format(due),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['due'] == dateMock.return_value.convert.return_value
+
     def test_add_task(self):
         title = self.fake.sentence()
 

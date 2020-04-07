@@ -222,7 +222,7 @@ class TaskManager(TableManager):
             elif re.match(r'^(ag|agile):', argument):
                 attributes['agile'] = argument.split(':')[1]
             elif re.match(r'^due:', argument):
-                attributes['due'] = self.date.convert(argument.split(':')[1])
+                attributes['due'] = self.date.convert(":".join(argument.split(':')[1:]))
             elif re.match(r'^(pri|priority):', argument):
                 attributes['priority'] = int(argument.split(':')[1])
             elif re.match(r'^(wp|willpower):', argument):

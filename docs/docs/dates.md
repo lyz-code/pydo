@@ -40,7 +40,7 @@ What we see here is that Taskwarrior leverages the metadata to drive various fea
 `pydo` understands different ways of expressing dates.
 
 * `YYYY-MM-DD`: Enter year, month and day.
-* `YYYY-MM-DDTHH-mm`: Enter year, month, day, hour and minute.
+* `YYYY-MM-DDTHH:mm`: Enter year, month, day, hour and minute.
 * `now`: Current local date and time.
 * `tomorrow`:	Local date for tomorrow, same as `now + 24h`.
 * `yesterday`: Local date for yesterday, same as `now - 24h`.
