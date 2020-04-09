@@ -7,7 +7,7 @@ author: Lyz
 To update `pydo`, follow the next steps:
 
 ```bash
-pip3 install git+git://github.com/lyz-code/pydo
+pip3 install --upgrade git+git://github.com/lyz-code/pydo
 pydo install
 ```
 
