@@ -1,3 +1,6 @@
+[![Actions
+Status](https://github.com/lyz-code/pydo/workflows/Python%20package/badge.svg)](https://github.com/lyz-code/pydo/actions)
+
 # Pydo
 
 `pydo` is a free software command line task manager built with
