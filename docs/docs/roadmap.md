@@ -29,7 +29,7 @@ operation on them.
     * [x] Installation.
     * [x] Continuous Integration pipeline.
     * [ ] Initial documentation.
-    * [ ] Recurrence (https://tasklite.org/concepts.html):
+    * [ ] [Recurrence](https://tasklite.org/concepts.html):
         * [ ] Repeating.
         * [ ] Recurring.
 

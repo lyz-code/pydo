@@ -1,8 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-from pydo import __version__
-
+__version__ = '0.1.0'
 
 setup(
     name='pydo',
@@ -19,7 +18,11 @@ setup(
     ]},
     entry_points={'console_scripts': ['pydo = pydo:main']},
     install_requires=[
-        "SQLAlchemy==1.3.11",
-        "alembic==1.3.1",
+        "argcomplete>=1.11.1",
+        "SQLAlchemy>=1.3.11",
+        "alembic>=1.3.1",
+        "python-dateutil>=2.8.1",
+        "tabulate>=0.8.7",
+        "ulid-py>=0.0.12",
     ]
 )
