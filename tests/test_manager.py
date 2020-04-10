@@ -321,6 +321,7 @@ class TestTaskManager(ManagerBaseTest):
 
         assert attributes['due'] == dateMock.return_value.convert.return_value
 
+    @patch('pydo.manager.DateManager')
     def test_parse_arguments_extracts_due_with_hour(self, dateMock):
         self.manager = TaskManager(self.session)
         title = self.fake.sentence()
