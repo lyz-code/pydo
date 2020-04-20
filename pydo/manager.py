@@ -102,6 +102,7 @@ class TableManager:
     Internal methods:
         _add: Method to create a new table item
         _get: Retrieve the table element identified by id.
+        _update: Method to update an existing table item
 
     Public attributes:
         session (session object): Database session
@@ -158,6 +159,33 @@ class TableManager:
         else:
             return table_element
 
+    def _update(self, id, object_values=None):
+        """
+        Method to update an existing table item
+
+        Arguments:
+            id (str): object identifier
+            object_values (dict): Dictionary with the column identifier
+                as keys.
+        """
+
+        table_element = self.session.query(self.model).get(id)
+
+        if table_element is None:
+            raise ValueError('The element {} does not exist'.format(id))
+        else:
+            if object_values is not None:
+                for attribute_key, attribute_value in object_values.items():
+                    setattr(table_element, attribute_key, attribute_value)
+
+            self.session.commit()
+            self.log.debug(
+                'Modified {}: {}'.format(
+                    id,
+                    object_values,
+                )
+            )
+
 
 class TaskManager(TableManager):
     """
@@ -213,6 +241,7 @@ class TaskManager(TableManager):
             'priority': None,
             'project_id': None,
             'tags': [],
+            'tags_rm': [],
             'value': None,
             'willpower': None,
         }
@@ -237,6 +266,8 @@ class TaskManager(TableManager):
                 attributes['body'] = argument.split(':')[1]
             elif re.match(r'^\+', argument):
                 attributes['tags'].append(argument.replace('+', ''))
+            elif re.match(r'^\-', argument):
+                attributes['tags_rm'].append(argument.replace('-', ''))
             else:
                 attributes['title'].append(argument)
         attributes['title'] = ' '.join(attributes['title'])
@@ -328,6 +359,113 @@ class TaskManager(TableManager):
             task_attributes,
             task_attributes['id'],
             task_attributes['title'],
+        )
+
+    def modify(
+        self,
+        id,
+        title=None,
+        agile=None,
+        body=None,
+        due=None,
+        estimate=None,
+        fun=None,
+        state=None,
+        priority=None,
+        project_id=None,
+        tags=[],
+        tags_rm=[],
+        value=None,
+        willpower=None,
+    ):
+        """
+        Use parent method to modify an existing task
+
+        Arguments:
+            agile (str): Task agile state.
+            title (str): Title of the task.
+            body (str): Description of the task.
+            estimate (float): Estimate size of the task.
+            fun (int): Fun size of the task.
+            state (str): State of the task once it's closed
+            priority (int): Task priority.
+            project_id (str): Project id.
+            tags (list): List of tag ids.
+            tags_rm (list): List of tag ids to remove.
+            title (str): Title of the task.
+            value (int): Objective/Bussiness value of the task.
+            willpower (int): Willpower consumption of the task.
+        """
+        if len(id) < 10:
+            open_tasks = self.session.query(Task).filter_by(state='open')
+            open_task_fulids = [task.id for task in open_tasks]
+            self.log.debug(open_task_fulids)
+            self.log.debug(id)
+            id = self.fulid.sulid_to_fulid(id, open_task_fulids)
+
+        task = self.session.query(Task).get(id)
+        task_attributes = {}
+
+        # Define Project
+        if project_id is not None:
+            project = self.session.query(Project).get(project_id)
+            if project is None:
+                project = Project(id=project_id, description='')
+                self.session.add(project)
+                self.session.commit()
+            task_attributes['project'] = project
+
+        # Define tags
+        task_attributes['tags'] = task.tags
+
+        for tag_id in tags_rm:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                self.session.commit()
+            task_attributes['tags'].remove(tag)
+
+        for tag_id in tags:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                self.session.commit()
+            task_attributes['tags'].append(tag)
+
+        # Test the task attributes are into the available choices
+        if agile is not None and \
+                agile not in self.config.get('task.agile.states').split(', '):
+            raise ValueError(
+                'Agile state {} is not between the specified '
+                'by task.agile.states'.format(agile)
+            )
+
+        if agile is not None:
+            task_attributes['agile'] = agile
+        if body is not None:
+            task_attributes['body'] = body
+        if due is not None:
+            task_attributes['due'] = due
+        if title is not None:
+            task_attributes['title'] = title
+        if estimate is not None:
+            task_attributes['estimate'] = estimate
+        if fun is not None:
+            task_attributes['fun'] = fun
+        if state is not None:
+            task_attributes['state'] = state
+        if priority is not None:
+            task_attributes['priority'] = priority
+        if value is not None:
+            task_attributes['value'] = value
+        if willpower is not None:
+            task_attributes['willpower'] = willpower
+
+        self._update(
+            id,
+            task_attributes,
         )
 
     def _close(self, id, state):
