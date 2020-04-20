@@ -40,6 +40,31 @@ class TestArgparse:
         assert parsed.subcommand == arguments[0]
         assert parsed.add_argument == arguments[1:3]
 
+    def test_can_specify_modify_subcommand(self):
+        arguments = [
+            'modify',
+            self.fake.word(),
+            self.fake.sentence(),
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.ulid == arguments[1]
+        assert parsed.modify_argument == [arguments[2]]
+
+    def test_can_specify_project_in_modify_subcommand(self):
+        description = self.fake.sentence()
+        project_id = self.fake.word()
+        arguments = [
+            'modify',
+            self.fake.word(),
+            description,
+            'pro:{}'.format(project_id),
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.ulid == arguments[1]
+        assert parsed.modify_argument == arguments[2:4]
+
     def test_can_specify_done_subcommand(self):
         arguments = [
             'done',

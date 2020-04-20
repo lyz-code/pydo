@@ -507,6 +507,177 @@ class TestTaskManager(ManagerBaseTest):
         generated_task = self.session.query(Task).one()
         assert generated_task.due == due
 
+    def test_modify_task_modifies_project(self):
+        old_project = ProjectFactory.create()
+        new_project = ProjectFactory.create()
+        task = self.factory.create(state='open')
+        task.project = old_project
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            project_id=new_project.id
+        )
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.project is new_project
+
+    def test_modify_task_generates_project_if_doesnt_exist(self):
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            project_id='non_existent')
+
+        modified_task = self.session.query(Task).get(task.id)
+        project = self.session.query(Project).get('non_existent')
+
+        assert modified_task.project is project
+        assert isinstance(project, Project)
+
+    def test_modify_task_adds_tags(self):
+        tag_1 = TagFactory.create()
+        tag_2 = TagFactory.create()
+        task = self.factory.create(state='open')
+        task.tags = [tag_1]
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            tags=[tag_2.id])
+
+        modified_task = self.session.query(Task).get(task.id)
+        assert modified_task.tags == [tag_1, tag_2]
+
+    def test_modify_task_removes_tags(self):
+        tag = TagFactory.create()
+        task = self.factory.create(state='open')
+        task.tags = [tag]
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            tags_rm=[tag.id])
+
+        modified_task = self.session.query(Task).get(task.id)
+        assert modified_task.tags == []
+
+    def test_modify_task_generates_tag_if_doesnt_exist(self):
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            tags=['non_existent'])
+
+        modified_task = self.session.query(Task).get(task.id)
+        tag = self.session.query(Tag).get('non_existent')
+
+        assert modified_task.tags == [tag]
+        assert isinstance(tag, Tag)
+
+    def test_modify_task_modifies_priority(self):
+        priority = self.fake.random_number()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            priority=priority)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.priority == priority
+
+    def test_modify_task_modifies_value(self):
+        value = self.fake.random_number()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            value=value)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.value == value
+
+    def test_modify_task_modifies_willpower(self):
+        willpower = self.fake.random_number()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            willpower=willpower)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.willpower == willpower
+
+    def test_modify_task_modifies_fun(self):
+        fun = self.fake.random_number()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            fun=fun)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.fun == fun
+
+    def test_modify_task_modifies_estimate(self):
+        estimate = self.fake.random_number()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            estimate=estimate)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.estimate == estimate
+
+    def test_modify_task_modifies_body(self):
+        body = self.fake.sentence()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            body=body)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.body == body
+
+    def test_raise_error_if_add_task_modifies_unvalid_agile_state(self):
+        task = self.factory.create(state='open')
+        agile = self.fake.word()
+
+        with pytest.raises(ValueError):
+            self.manager.modify(
+                fulid().fulid_to_sulid(task.id, [task.id]),
+                agile=agile)
+
+    def test_add_task_modifies_agile(self):
+        agile = 'todo'
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            agile=agile)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.agile == agile
+
+    def test_add_task_modifies_due(self):
+        due = self.fake.date_time()
+        task = self.factory.create(state='open')
+
+        self.manager.modify(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+            due=due)
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.due == due
+
     def test_delete_task_by_sulid(self):
         task = self.factory.create(state='open')
         closed = self.fake.date_time()
