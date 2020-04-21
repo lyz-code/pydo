@@ -37,7 +37,7 @@ def main():
 
     if args.subcommand == 'install':
         install(session, logging.getLogger('main'))
-    elif args.subcommand in ['add', 'modify', 'del', 'done']:
+    elif args.subcommand in ['add', 'mod', 'del', 'done']:
         task_manager = TaskManager(session)
 
         if args.subcommand == 'add':
@@ -45,7 +45,7 @@ def main():
             task_manager.add(
                 **attributes
             )
-        elif args.subcommand == 'modify':
+        elif args.subcommand == 'mod':
             attributes = task_manager._parse_arguments(args.modify_argument)
             task_manager.modify(
                 args.ulid,

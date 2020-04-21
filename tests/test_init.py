@@ -255,3 +255,23 @@ class TestMain:
             columns=self.config.get('report.tags.columns').split(', '),
             labels=self.config.get('report.tags.labels').split(', ')
         )
+
+    def test_modify_subcomand_modifies_task(self):
+        arguments = [
+            'mod',
+            ulid.new().str,
+            'pro:test',
+        ]
+        self.parser_args.subcommand = arguments[0]
+        self.parser_args.ulid = arguments[1]
+        self.parser_args.modify_argument = arguments[2]
+        self.tm.return_value._parse_arguments.return_value = {
+            'project': 'test',
+        }
+
+        main()
+
+        self.tm.return_value.modify.assert_called_once_with(
+            arguments[1],
+            project='test',
+        )
