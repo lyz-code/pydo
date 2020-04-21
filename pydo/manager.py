@@ -364,37 +364,21 @@ class TaskManager(TableManager):
     def modify(
         self,
         id,
-        title=None,
-        agile=None,
-        body=None,
-        due=None,
-        estimate=None,
-        fun=None,
-        state=None,
-        priority=None,
         project_id=None,
         tags=[],
         tags_rm=[],
-        value=None,
-        willpower=None,
+        agile=None,
+        **kwargs
     ):
         """
         Use parent method to modify an existing task
 
         Arguments:
-            agile (str): Task agile state.
-            title (str): Title of the task.
-            body (str): Description of the task.
-            estimate (float): Estimate size of the task.
-            fun (int): Fun size of the task.
-            state (str): State of the task once it's closed
-            priority (int): Task priority.
             project_id (str): Project id.
             tags (list): List of tag ids.
             tags_rm (list): List of tag ids to remove.
-            title (str): Title of the task.
-            value (int): Objective/Bussiness value of the task.
-            willpower (int): Willpower consumption of the task.
+            agile (str): Task agile state.
+            **kwargs: (object) Other attributes (key: value).
         """
         if len(id) < 10:
             open_tasks = self.session.query(Task).filter_by(state='open')
@@ -444,24 +428,9 @@ class TaskManager(TableManager):
 
         if agile is not None:
             task_attributes['agile'] = agile
-        if body is not None:
-            task_attributes['body'] = body
-        if due is not None:
-            task_attributes['due'] = due
-        if title is not None:
-            task_attributes['title'] = title
-        if estimate is not None:
-            task_attributes['estimate'] = estimate
-        if fun is not None:
-            task_attributes['fun'] = fun
-        if state is not None:
-            task_attributes['state'] = state
-        if priority is not None:
-            task_attributes['priority'] = priority
-        if value is not None:
-            task_attributes['value'] = value
-        if willpower is not None:
-            task_attributes['willpower'] = willpower
+
+        for key, value in kwargs.items():
+            task_attributes[key] = value
 
         self._update(
             id,
