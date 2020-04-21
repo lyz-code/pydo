@@ -202,6 +202,8 @@ class TaskManager(TableManager):
     Internal methods:
         _add: Parent method to add table elements.
         _close: Closes a task.
+        _parse_attribute: Parse a Taskwarrior like add argument into a task
+            attribute.
         _parse_arguments: Parse a Taskwarrior like add query into task
             attributes.
 
@@ -220,12 +222,87 @@ class TaskManager(TableManager):
             self.config.get('fulid.forbidden_characters'),
         )
 
+    def _parse_attribute(self, add_argument):
+        """
+        Parse a Taskwarrior like add argument into a task attribute.
+
+        Arguments:
+            add_argument (str): Taskwarrior like add argument string.
+
+        Returns:
+            attribute_id (str): Attribute key.
+            attributes_value (str|int|float|date): Attribute value.
+        """
+
+        attribute_conf = {
+            'agile': {
+                'regexp': r'^(ag|agile):',
+                'type': 'str',
+            },
+            'body': {
+                'regexp': r'^body:',
+                'type': 'str',
+            },
+            'due': {
+                'regexp': r'^due:',
+                'type': 'date',
+            },
+            'estimate': {
+                'regexp': r'^(est|estimate):',
+                'type': 'float',
+            },
+            'fun': {
+                'regexp': r'^fun:',
+                'type': 'int',
+            },
+            'priority': {
+                'regexp': r'^(pri|priority):',
+                'type': 'int',
+            },
+            'project_id': {
+                'regexp': r'^(pro|project):',
+                'type': 'str',
+            },
+            'tags': {
+                'regexp': r'^\+',
+                'type': 'tag',
+            },
+            'tags_rm': {
+                'regexp': r'^\-',
+                'type': 'tag',
+            },
+            'value': {
+                'regexp': r'^(vl|value):',
+                'type': 'int',
+            },
+            'willpower': {
+                'regexp': r'^(wp|willpower):',
+                'type': 'int',
+            },
+        }
+
+        for attribute_id, attribute in attribute_conf.items():
+            if re.match(attribute['regexp'], add_argument):
+                if attribute['type'] == 'str':
+                    return attribute_id, add_argument.split(':')[1]
+                elif attribute['type'] == 'int':
+                    return attribute_id, int(add_argument.split(':')[1])
+                elif attribute['type'] == 'float':
+                    return attribute_id, float(add_argument.split(':')[1])
+                elif attribute['type'] == 'date':
+                    return attribute_id, self.date.convert(
+                        ":".join(add_argument.split(':')[1:])
+                    )
+                elif attribute['type'] == 'tag':
+                    return attribute_id, re.sub(r'^[+-]', '', add_argument)
+        return 'title', add_argument
+
     def _parse_arguments(self, add_arguments):
         """
         Parse a Taskwarrior like add query into task attributes
 
         Arguments:
-            add_arguments (str): Taskwarrior like add argument string.
+            add_arguments (list): Taskwarrior like add argument list.
 
         Returns:
             attributes (dict): Dictionary with the attributes of the task.
@@ -245,31 +322,14 @@ class TaskManager(TableManager):
             'value': None,
             'willpower': None,
         }
+
         for argument in add_arguments:
-            if re.match(r'^(pro|project):', argument):
-                attributes['project_id'] = argument.split(':')[1]
-            elif re.match(r'^(ag|agile):', argument):
-                attributes['agile'] = argument.split(':')[1]
-            elif re.match(r'^due:', argument):
-                attributes['due'] = self.date.convert(":".join(argument.split(':')[1:]))
-            elif re.match(r'^(pri|priority):', argument):
-                attributes['priority'] = int(argument.split(':')[1])
-            elif re.match(r'^(wp|willpower):', argument):
-                attributes['willpower'] = int(argument.split(':')[1])
-            elif re.match(r'^(est|estimate):', argument):
-                attributes['estimate'] = float(argument.split(':')[1])
-            elif re.match(r'^(vl|value):', argument):
-                attributes['value'] = int(argument.split(':')[1])
-            elif re.match(r'^fun:', argument):
-                attributes['fun'] = int(argument.split(':')[1])
-            elif re.match(r'^body:', argument):
-                attributes['body'] = argument.split(':')[1]
-            elif re.match(r'^\+', argument):
-                attributes['tags'].append(argument.replace('+', ''))
-            elif re.match(r'^\-', argument):
-                attributes['tags_rm'].append(argument.replace('-', ''))
+            attribute_id, attribute_value = self._parse_attribute(argument)
+            if attribute_id in ['tags', 'tags_rm', 'title']:
+                attributes[attribute_id].append(attribute_value)
             else:
-                attributes['title'].append(argument)
+                attributes[attribute_id] = attribute_value
+
         attributes['title'] = ' '.join(attributes['title'])
         return attributes
 
