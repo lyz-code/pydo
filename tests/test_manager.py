@@ -151,6 +151,21 @@ class TestTaskManager(ManagerBaseTest):
         assert attributes['title'] == title
         assert attributes['tags'] == tags
 
+    def test_parse_arguments_extracts_tags_to_remove(self):
+        title = self.fake.sentence()
+        tags = [self.fake.word(), self.fake.word()]
+
+        add_arguments = [
+            title,
+            '-{}'.format(tags[0]),
+            '-{}'.format(tags[1]),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['title'] == title
+        assert attributes['tags_rm'] == tags
+
     def test_parse_arguments_extracts_priority_in_short_representation(self):
         title = self.fake.sentence()
         priority = self.fake.random_number()
