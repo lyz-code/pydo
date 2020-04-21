@@ -33,7 +33,7 @@ def load_parser():
         nargs=argparse.REMAINDER,
     )
 
-    modify_parser = subparser.add_parser('modify')
+    modify_parser = subparser.add_parser('mod')
     modify_parser.add_argument(
         "ulid",
         type=str,

@@ -42,7 +42,7 @@ class TestArgparse:
 
     def test_can_specify_modify_subcommand(self):
         arguments = [
-            'modify',
+            'mod',
             self.fake.word(),
             self.fake.sentence(),
         ]
@@ -55,7 +55,7 @@ class TestArgparse:
         description = self.fake.sentence()
         project_id = self.fake.word()
         arguments = [
-            'modify',
+            'mod',
             self.fake.word(),
             description,
             'pro:{}'.format(project_id),
