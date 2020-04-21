@@ -273,6 +273,83 @@ class TaskManager(TableManager):
         attributes['title'] = ' '.join(attributes['title'])
         return attributes
 
+    def _set(
+        self,
+        id,
+        project_id=None,
+        tags=[],
+        tags_rm=[],
+        agile=None,
+        **kwargs
+    ):
+        """
+        Method to set the task's attributes and get its fulid
+
+        Arguments:
+            id (str): Ulid of the task
+            project_id (str): Project id.
+            tags (list): List of tag ids.
+            tags_rm (list): List of tag ids to remove.
+            agile (str): Task agile state.
+            **kwargs: (object) Other attributes (key: value).
+
+        Returns:
+            fulid (str): fulid that match the sulid.
+            task_attributes (dict): Dictionary with the attributes of the task.
+        """
+
+        if len(id) < 10:
+            open_tasks = self.session.query(Task).filter_by(state='open')
+            open_task_fulids = [task.id for task in open_tasks]
+            fulid = self.fulid.sulid_to_fulid(id, open_task_fulids)
+
+        task = self.session.query(Task).get(fulid)
+        task_attributes = {}
+
+        # Define Project
+        if project_id is not None:
+            project = self.session.query(Project).get(project_id)
+            if project is None:
+                project = Project(id=project_id, description='')
+                self.session.add(project)
+                self.session.commit()
+            task_attributes['project'] = project
+
+        # Define tags
+        task_attributes['tags'] = task.tags
+
+        for tag_id in tags_rm:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                self.session.commit()
+            task_attributes['tags'].remove(tag)
+
+        for tag_id in tags:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                self.session.commit()
+            task_attributes['tags'].append(tag)
+
+        # Test the task attributes are into the available choices
+        if agile is not None and \
+                agile not in self.config.get('task.agile.states').split(', '):
+            raise ValueError(
+                'Agile state {} is not between the specified '
+                'by task.agile.states'.format(agile)
+            )
+
+        if agile is not None:
+            task_attributes['agile'] = agile
+
+        for key, value in kwargs.items():
+            task_attributes[key] = value
+
+        return fulid, task_attributes
+
     def add(
         self,
         title,
@@ -380,60 +457,15 @@ class TaskManager(TableManager):
             agile (str): Task agile state.
             **kwargs: (object) Other attributes (key: value).
         """
-        if len(id) < 10:
-            open_tasks = self.session.query(Task).filter_by(state='open')
-            open_task_fulids = [task.id for task in open_tasks]
-            self.log.debug(open_task_fulids)
-            self.log.debug(id)
-            id = self.fulid.sulid_to_fulid(id, open_task_fulids)
-
-        task = self.session.query(Task).get(id)
-        task_attributes = {}
-
-        # Define Project
-        if project_id is not None:
-            project = self.session.query(Project).get(project_id)
-            if project is None:
-                project = Project(id=project_id, description='')
-                self.session.add(project)
-                self.session.commit()
-            task_attributes['project'] = project
-
-        # Define tags
-        task_attributes['tags'] = task.tags
-
-        for tag_id in tags_rm:
-            tag = self.session.query(Tag).get(tag_id)
-            if tag is None:
-                tag = Tag(id=tag_id, description='')
-                self.session.add(tag)
-                self.session.commit()
-            task_attributes['tags'].remove(tag)
-
-        for tag_id in tags:
-            tag = self.session.query(Tag).get(tag_id)
-            if tag is None:
-                tag = Tag(id=tag_id, description='')
-                self.session.add(tag)
-                self.session.commit()
-            task_attributes['tags'].append(tag)
-
-        # Test the task attributes are into the available choices
-        if agile is not None and \
-                agile not in self.config.get('task.agile.states').split(', '):
-            raise ValueError(
-                'Agile state {} is not between the specified '
-                'by task.agile.states'.format(agile)
-            )
-
-        if agile is not None:
-            task_attributes['agile'] = agile
-
-        for key, value in kwargs.items():
-            task_attributes[key] = value
+        fulid, task_attributes = self._set(id,
+                                           project_id,
+                                           tags,
+                                           tags_rm,
+                                           agile,
+                                           **kwargs)
 
         self._update(
-            id,
+            fulid,
             task_attributes,
         )
 
