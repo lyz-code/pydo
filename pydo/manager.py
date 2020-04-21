@@ -273,9 +273,28 @@ class TaskManager(TableManager):
         attributes['title'] = ' '.join(attributes['title'])
         return attributes
 
+    def _get_fulid(self, id):
+        """
+        Method to get the task's fulid if necessary.
+
+        Arguments:
+            id (str): Ulid of the task.
+            state (str): Task status.
+
+        Returns:
+            fulid (str): fulid that matches the sulid.
+        """
+        fulid = id
+        if len(id) < 10:
+            open_tasks = self.session.query(Task).filter_by(state='open')
+            open_task_fulids = [task.id for task in open_tasks]
+            fulid = self.fulid.sulid_to_fulid(id, open_task_fulids)
+
+        return fulid
+
     def _set(
         self,
-        id,
+        id=None,
         project_id=None,
         tags=[],
         tags_rm=[],
@@ -283,10 +302,10 @@ class TaskManager(TableManager):
         **kwargs
     ):
         """
-        Method to set the task's attributes and get its fulid
+        Method to set the task's attributes and get its fulid.
 
         Arguments:
-            id (str): Ulid of the task
+            id (str): Ulid of the task if it already exists.
             project_id (str): Project id.
             tags (list): List of tag ids.
             tags_rm (list): List of tag ids to remove.
@@ -294,16 +313,9 @@ class TaskManager(TableManager):
             **kwargs: (object) Other attributes (key: value).
 
         Returns:
-            fulid (str): fulid that match the sulid.
+            fulid (str): fulid that matches the sulid.
             task_attributes (dict): Dictionary with the attributes of the task.
         """
-
-        if len(id) < 10:
-            open_tasks = self.session.query(Task).filter_by(state='open')
-            open_task_fulids = [task.id for task in open_tasks]
-            fulid = self.fulid.sulid_to_fulid(id, open_task_fulids)
-
-        task = self.session.query(Task).get(fulid)
         task_attributes = {}
 
         # Define Project
@@ -316,15 +328,22 @@ class TaskManager(TableManager):
             task_attributes['project'] = project
 
         # Define tags
-        task_attributes['tags'] = task.tags
+        if id is not None:
+            fulid = self._get_fulid(id)
 
-        for tag_id in tags_rm:
-            tag = self.session.query(Tag).get(tag_id)
-            if tag is None:
-                tag = Tag(id=tag_id, description='')
-                self.session.add(tag)
-                self.session.commit()
-            task_attributes['tags'].remove(tag)
+            task = self.session.query(Task).get(fulid)
+            task_attributes['tags'] = task.tags
+
+            for tag_id in tags_rm:
+                tag = self.session.query(Tag).get(tag_id)
+                if tag is None:
+                    tag = Tag(id=tag_id, description='')
+                    self.session.add(tag)
+                    self.session.commit()
+                task_attributes['tags'].remove(tag)
+        else:
+            fulid = None
+            task_attributes['tags'] = []
 
         for tag_id in tags:
             tag = self.session.query(Tag).get(tag_id)
@@ -353,16 +372,11 @@ class TaskManager(TableManager):
     def add(
         self,
         title,
-        agile=None,
-        body=None,
-        due=None,
-        estimate=None,
-        fun=None,
-        priority=None,
         project_id=None,
         tags=[],
-        value=None,
-        willpower=None,
+        tags_rm=[],
+        agile=None,
+        **kwargs
     ):
         """
         Use parent method to create a new task
@@ -391,50 +405,18 @@ class TaskManager(TableManager):
 
         new_fulid = self.fulid.new(last_fulid)
 
-        task_attributes = {
-            'id': new_fulid.str,
-            'agile': agile,
-            'body': body,
-            'due': due,
-            'title': title,
-            'estimate': estimate,
-            'fun': fun,
-            'state': 'open',
-            'priority': priority,
-            'value': value,
-            'tags': [],
-            'willpower': willpower,
-        }
-
-        # Define Project
-        if project_id is not None:
-            project = self.session.query(Project).get(project_id)
-            if project is None:
-                project = Project(id=project_id, description='')
-                self.session.add(project)
-                self.session.commit()
-            task_attributes['project'] = project
-
-        # Define tags
-        for tag_id in tags:
-            tag = self.session.query(Tag).get(tag_id)
-            if tag is None:
-                tag = Tag(id=tag_id, description='')
-                self.session.add(tag)
-                self.session.commit()
-            task_attributes['tags'].append(tag)
-
-        # Test the task attributes are into the available choices
-        if agile is not None and \
-                agile not in self.config.get('task.agile.states').split(', '):
-            raise ValueError(
-                'Agile state {} is not between the specified '
-                'by task.agile.states'.format(agile)
-            )
+        fulid, task_attributes = self._set(None,
+                                           project_id,
+                                           tags,
+                                           agile,
+                                           None,
+                                           title=title,
+                                           state='open',
+                                           **kwargs)
 
         self._add(
             task_attributes,
-            task_attributes['id'],
+            new_fulid.str,
             task_attributes['title'],
         )
 
@@ -478,10 +460,7 @@ class TaskManager(TableManager):
             state (str): State of the task once it's closed
         """
 
-        if len(id) < 10:
-            open_tasks = self.session.query(Task).filter_by(state='open')
-            open_task_fulids = [task.id for task in open_tasks]
-            id = self.fulid.sulid_to_fulid(id, open_task_fulids)
+        id = self._get_fulid(id)
 
         task = self.session.query(Task).get(id)
 
