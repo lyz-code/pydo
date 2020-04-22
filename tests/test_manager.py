@@ -84,6 +84,7 @@ class ManagerBaseTest:
         with pytest.raises(ValueError):
             self.manager._update(fake_element_id)
 
+
 @pytest.mark.usefixtures('base_setup')
 class TestTaskManager(ManagerBaseTest):
     """
