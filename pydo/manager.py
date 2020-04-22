@@ -201,11 +201,14 @@ class TaskManager(TableManager):
 
     Internal methods:
         _add: Parent method to add table elements.
+        _update: Parent method to update table elements.
         _close: Closes a task.
         _parse_attribute: Parse a Taskwarrior like add argument into a task
             attribute.
         _parse_arguments: Parse a Taskwarrior like add query into task
             attributes.
+        _get_fulid: Method to get the task's fulid if necessary.
+        _set: Method to set the task's attributes and get its fulid.
 
     Public attributes:
         fulid (fulid object): Fulid manager and generator object.
