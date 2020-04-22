@@ -84,6 +84,7 @@ class ManagerBaseTest:
         with pytest.raises(ValueError):
             self.manager._update(fake_element_id)
 
+        self.session.commit()
 
 @pytest.mark.usefixtures('base_setup')
 class TestTaskManager(ManagerBaseTest):
@@ -546,6 +547,19 @@ class TestTaskManager(ManagerBaseTest):
 
         self.manager.modify(
             fulid().fulid_to_sulid(task.id, [task.id]),
+            non_existent=non_existent_attribute_value
+        )
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.non_existent is non_existent_attribute_value
+
+    def test_modify_task_modifies_arbitrary_attribute_any_state(self):
+        task = self.factory.create()
+        non_existent_attribute_value = self.fake.word()
+
+        self.manager.modify(
+            task.id,
             non_existent=non_existent_attribute_value
         )
 
