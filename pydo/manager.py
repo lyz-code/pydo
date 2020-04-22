@@ -377,6 +377,36 @@ class TaskManager(TableManager):
                 self.session.commit()
             task_attributes['project'] = project
 
+    def _set_tags(
+        self,
+        task_attributes,
+        tags=[]
+    ):
+        """
+        Method to set the tags attribute.
+
+        A new tag will be created if it doesn't exist yet.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            tags (list): List of tag ids.
+        """
+        commit_necessary = False
+
+        if 'tags' not in task_attributes:
+            task_attributes['tags'] = []
+
+        for tag_id in tags:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                commit_necessary = True
+            task_attributes['tags'].append(tag)
+
+        if commit_necessary:
+            self.session.commit()
+
     def _set(
         self,
         id=None,
@@ -405,7 +435,6 @@ class TaskManager(TableManager):
 
         self._set_project(task_attributes, project_id)
 
-        # Define tags
         if id is not None:
             fulid = self._get_fulid(id)
 
@@ -422,14 +451,7 @@ class TaskManager(TableManager):
             fulid = None
             task_attributes['tags'] = []
 
-        for tag_id in tags:
-            tag = self.session.query(Tag).get(tag_id)
-            if tag is None:
-                tag = Tag(id=tag_id, description='')
-                self.session.add(tag)
-            task_attributes['tags'].append(tag)
-
-        self.session.commit()
+        self._set_tags(task_attributes, tags)
 
         # Test the task attributes are into the available choices
         if agile is not None and \

@@ -402,6 +402,22 @@ class TestTaskManager(ManagerBaseTest):
 
         assert task_attributes['project'].id == 'non_existent'
 
+    def test_set_tags_existent(self):
+        tag1 = TagFactory.create()
+        tag2 = TagFactory.create()
+        task_attributes = {}
+
+        self.manager._set_tags(task_attributes, [tag1.id, tag2.id])
+
+        assert task_attributes['tags'] == [tag1, tag2]
+
+    def test_set_tags_non_existent(self):
+        task_attributes = {}
+
+        self.manager._set_tags(task_attributes, ['non_existent'])
+
+        assert task_attributes['tags'][0].id == 'non_existent'
+
     def test_add_task(self):
         title = self.fake.sentence()
 
