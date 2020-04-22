@@ -468,8 +468,8 @@ class TaskManager(TableManager):
         fulid, task_attributes = self._set(None,
                                            project_id,
                                            tags,
-                                           agile,
                                            None,
+                                           agile,
                                            title=title,
                                            state='open',
                                            **kwargs)
