@@ -387,6 +387,21 @@ class TestTaskManager(ManagerBaseTest):
         with pytest.raises(KeyError):
             self.manager._get_fulid(non_existent_id)
 
+    def test_set_project_existent(self):
+        project = ProjectFactory.create()
+        task_attributes = {}
+
+        self.manager._set_project(task_attributes, project.id)
+
+        assert task_attributes['project'] == project
+
+    def test_set_project_non_existent(self):
+        task_attributes = {}
+
+        self.manager._set_project(task_attributes, 'non_existent')
+
+        assert task_attributes['project'].id == 'non_existent'
+
     def test_add_task(self):
         title = self.fake.sentence()
 

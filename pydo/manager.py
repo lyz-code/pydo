@@ -355,6 +355,28 @@ class TaskManager(TableManager):
 
         return fulid
 
+    def _set_project(
+        self,
+        task_attributes,
+        project_id=None
+    ):
+        """
+        Method to set the project attribute.
+
+        A new project will be created if it doesn't exist yet.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            project_id (str): Project id.
+        """
+        if project_id is not None:
+            project = self.session.query(Project).get(project_id)
+            if project is None:
+                project = Project(id=project_id, description='')
+                self.session.add(project)
+                self.session.commit()
+            task_attributes['project'] = project
+
     def _set(
         self,
         id=None,
@@ -381,13 +403,7 @@ class TaskManager(TableManager):
         """
         task_attributes = {}
 
-        # Define Project
-        if project_id is not None:
-            project = self.session.query(Project).get(project_id)
-            if project is None:
-                project = Project(id=project_id, description='')
-                self.session.add(project)
-            task_attributes['project'] = project
+        self._set_project(task_attributes, project_id)
 
         # Define tags
         if id is not None:
