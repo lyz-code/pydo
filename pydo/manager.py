@@ -456,6 +456,7 @@ class TaskManager(TableManager):
             fulid (str): fulid that matches the sulid.
             task_attributes (dict): Dictionary with the attributes of the task.
         """
+        fulid = None
         task_attributes = {}
 
         self._set_project(task_attributes, project_id)
@@ -472,9 +473,6 @@ class TaskManager(TableManager):
                     tag = Tag(id=tag_id, description='')
                     self.session.add(tag)
                 task_attributes['tags'].remove(tag)
-        else:
-            fulid = None
-            task_attributes['tags'] = []
 
         self._set_tags(task_attributes, tags)
         self._set_agile(task_attributes, agile)
