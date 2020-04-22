@@ -209,6 +209,10 @@ class TaskManager(TableManager):
             attributes.
         _get_fulid: Method to get the task's fulid if necessary.
         _set: Method to set the task's attributes and get its fulid.
+        _set_project: Method to set the project attribute.
+        _set_tags: Method to set the tags attribute.
+        _rm_tags: Method to delete tags from the Task attributes.
+        _set_agile: Method to set the agile attribute.
 
     Public attributes:
         fulid (fulid object): Fulid manager and generator object.
