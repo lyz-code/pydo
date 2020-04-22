@@ -418,6 +418,21 @@ class TestTaskManager(ManagerBaseTest):
 
         assert task_attributes['tags'][0].id == 'non_existent'
 
+    def test_set_agile_valid(self):
+        agile = 'todo'
+        task_attributes = {}
+
+        self.manager._set_agile(task_attributes, agile)
+
+        assert task_attributes['agile'] == agile
+
+    def test_set_agile_unvalid(self):
+        agile = self.fake.word()
+        task_attributes = {}
+
+        with pytest.raises(ValueError):
+            self.manager._set_agile(task_attributes, agile)
+
     def test_add_task(self):
         title = self.fake.sentence()
 

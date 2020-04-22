@@ -407,6 +407,31 @@ class TaskManager(TableManager):
         if commit_necessary:
             self.session.commit()
 
+    def _set_agile(
+        self,
+        task_attributes,
+        agile=None
+    ):
+        """
+        Method to set the agile attribute.
+
+        If the agile tag value isn't between the specified ones,
+        a `ValueError` will be raised.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            agile (str): Task agile state.
+        """
+        if agile is not None and \
+                agile not in self.config.get('task.agile.states').split(', '):
+            raise ValueError(
+                'Agile state {} is not between the specified '
+                'by task.agile.states'.format(agile)
+            )
+
+        if agile is not None:
+            task_attributes['agile'] = agile
+
     def _set(
         self,
         id=None,
@@ -452,17 +477,7 @@ class TaskManager(TableManager):
             task_attributes['tags'] = []
 
         self._set_tags(task_attributes, tags)
-
-        # Test the task attributes are into the available choices
-        if agile is not None and \
-                agile not in self.config.get('task.agile.states').split(', '):
-            raise ValueError(
-                'Agile state {} is not between the specified '
-                'by task.agile.states'.format(agile)
-            )
-
-        if agile is not None:
-            task_attributes['agile'] = agile
+        self._set_agile(task_attributes, agile)
 
         for key, value in kwargs.items():
             task_attributes[key] = value
