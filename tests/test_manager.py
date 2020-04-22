@@ -86,6 +86,7 @@ class ManagerBaseTest:
 
         self.session.commit()
 
+
 @pytest.mark.usefixtures('base_setup')
 class TestTaskManager(ManagerBaseTest):
     """
@@ -368,6 +369,23 @@ class TestTaskManager(ManagerBaseTest):
         attributes = self.manager._parse_arguments(add_arguments)
 
         assert attributes['due'] == dateMock.return_value.convert.return_value
+
+    def test_get_fulid_from_sulid(self):
+        task = self.factory.create(state='open')
+        sulid = self.manager.fulid.fulid_to_sulid(task.id, [task.id])
+
+        assert task.id == self.manager._get_fulid(sulid)
+
+    def test_get_fulid_from_fulid(self):
+        task = self.factory.create(state='open')
+
+        assert task.id == self.manager._get_fulid(task.id)
+
+    def test_get_fulid_non_existent_task(self):
+        non_existent_id = self.fake.word()
+
+        with pytest.raises(KeyError):
+            self.manager._get_fulid(non_existent_id)
 
     def test_add_task(self):
         title = self.fake.sentence()
