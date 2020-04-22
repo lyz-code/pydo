@@ -66,6 +66,23 @@ class ManagerBaseTest:
         with pytest.raises(ValueError):
             self.manager._get('unexistent_property')
 
+    def test_update_table_element_method_exists(self):
+        assert '_update' in dir(self.manager)
+
+    def test_update_element(self):
+        element = self.factory.create()
+
+        attribute_value = self.fake.sentence()
+        object_values = {'arbitrary_key': attribute_value}
+        self.manager._update(element.id, object_values)
+
+        assert element.arbitrary_key == attribute_value
+
+    def test_update_raises_valueerror_if_element_doesnt_exist(self):
+        fake_element_id = self.fake.word()
+
+        with pytest.raises(ValueError):
+            self.manager._update(fake_element_id)
 
 @pytest.mark.usefixtures('base_setup')
 class TestTaskManager(ManagerBaseTest):
