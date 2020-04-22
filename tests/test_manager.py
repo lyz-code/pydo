@@ -418,6 +418,25 @@ class TestTaskManager(ManagerBaseTest):
 
         assert task_attributes['tags'][0].id == 'non_existent'
 
+    def test_rm_tags_existent(self):
+        tag1 = TagFactory.create()
+        tag2 = TagFactory.create()
+        tag3 = TagFactory.create()
+        task_attributes = {'tags': [tag1, tag2, tag3]}
+
+        self.manager._rm_tags(task_attributes, [tag1.id, tag2.id])
+
+        assert task_attributes['tags'] == [tag3]
+
+    def test_rm_tags_non_existent(self):
+        tag1 = TagFactory.create()
+        tag2 = TagFactory.create()
+        tag3 = TagFactory.create()
+        task_attributes = {'tags': [tag1.id, tag2.id, tag3.id]}
+
+        with pytest.raises(ValueError):
+            self.manager._rm_tags(task_attributes, ['tag4', 'tag5'])
+
     def test_set_agile_valid(self):
         agile = 'todo'
         task_attributes = {}

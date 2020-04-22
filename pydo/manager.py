@@ -407,6 +407,24 @@ class TaskManager(TableManager):
         if commit_necessary:
             self.session.commit()
 
+    def _rm_tags(
+        self,
+        task_attributes,
+        tags_rm=[]
+    ):
+        """
+        Method to delete tags from the Task attributes.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            tags_rm (list): List of tag ids to remove.
+        """
+        for tag_id in tags_rm:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                raise ValueError("The tag doesn't exist")
+            task_attributes['tags'].remove(tag)
+
     def _set_agile(
         self,
         task_attributes,
@@ -467,12 +485,7 @@ class TaskManager(TableManager):
             task = self.session.query(Task).get(fulid)
             task_attributes['tags'] = task.tags
 
-            for tag_id in tags_rm:
-                tag = self.session.query(Tag).get(tag_id)
-                if tag is None:
-                    tag = Tag(id=tag_id, description='')
-                    self.session.add(tag)
-                task_attributes['tags'].remove(tag)
+            self._rm_tags(task_attributes, tags_rm)
 
         self._set_tags(task_attributes, tags)
         self._set_agile(task_attributes, agile)
