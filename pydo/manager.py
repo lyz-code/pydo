@@ -434,25 +434,18 @@ class TaskManager(TableManager):
         title,
         project_id=None,
         tags=[],
-        tags_rm=[],
         agile=None,
         **kwargs
     ):
         """
-        Use parent method to create a new task
+        Use parent method to create a new task.
 
         Arguments:
-            agile (str): Task agile state.
             title (str): Title of the task.
-            body (str): Description of the task.
-            estimate (float): Estimate size of the task.
-            fun (int): Fun size of the task.
-            priority (int): Task priority.
             project_id (str): Project id.
             tags (list): List of tag ids.
-            title (str): Title of the task.
-            value (int): Objective/Bussiness value of the task.
-            willpower (int): Willpower consumption of the task.
+            agile (str): Task agile state.
+            **kwargs: (object) Other attributes (key: value).
         """
 
         # Define ID
@@ -490,7 +483,7 @@ class TaskManager(TableManager):
         **kwargs
     ):
         """
-        Use parent method to modify an existing task
+        Use parent method to modify an existing task.
 
         Arguments:
             project_id (str): Project id.
