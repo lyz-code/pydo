@@ -452,6 +452,50 @@ class TestTaskManager(ManagerBaseTest):
         with pytest.raises(ValueError):
             self.manager._set_agile(task_attributes, agile)
 
+    def test_set_existent_task(self):
+        task = self.factory.create()
+        project = ProjectFactory.create()
+        tag = TagFactory.create()
+        agile = 'todo'
+        arbitrary_attribute_value = self.fake.word()
+
+        fulid, task_attributes = self.manager._set(
+            task.id,
+            project.id,
+            [tag.id],
+            [],
+            agile,
+            arbitrary_attribute=arbitrary_attribute_value
+        )
+
+        assert fulid == task.id
+        assert task_attributes['project'] == project
+        assert task_attributes['tags'] == [tag]
+        assert task_attributes['agile'] == agile
+        assert task_attributes['arbitrary_attribute'] == \
+            arbitrary_attribute_value
+
+    def test_set_non_existent_task(self):
+        project = ProjectFactory.create()
+        tag = TagFactory.create()
+        agile = 'todo'
+        arbitrary_attribute_value = self.fake.word()
+
+        fulid, task_attributes = self.manager._set(
+            None,
+            project.id,
+            [tag.id],
+            [],
+            agile,
+            arbitrary_attribute=arbitrary_attribute_value
+        )
+
+        assert task_attributes['project'] == project
+        assert task_attributes['tags'] == [tag]
+        assert task_attributes['agile'] == agile
+        assert task_attributes['arbitrary_attribute'] == \
+            arbitrary_attribute_value
+
     def test_add_task(self):
         title = self.fake.sentence()
 
