@@ -384,7 +384,6 @@ class TaskManager(TableManager):
             if project is None:
                 project = Project(id=project_id, description='')
                 self.session.add(project)
-                self.session.commit()
             task_attributes['project'] = project
 
         # Define tags
@@ -399,7 +398,6 @@ class TaskManager(TableManager):
                 if tag is None:
                     tag = Tag(id=tag_id, description='')
                     self.session.add(tag)
-                    self.session.commit()
                 task_attributes['tags'].remove(tag)
         else:
             fulid = None
@@ -410,8 +408,9 @@ class TaskManager(TableManager):
             if tag is None:
                 tag = Tag(id=tag_id, description='')
                 self.session.add(tag)
-                self.session.commit()
             task_attributes['tags'].append(tag)
+
+        self.session.commit()
 
         # Test the task attributes are into the available choices
         if agile is not None and \
