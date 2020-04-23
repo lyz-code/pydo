@@ -359,11 +359,7 @@ class TaskManager(TableManager):
 
         return fulid
 
-    def _set_project(
-        self,
-        task_attributes,
-        project_id=None
-    ):
+    def _set_project(self, task_attributes, project_id=None):
         """
         Method to set the project attribute.
 
@@ -381,11 +377,7 @@ class TaskManager(TableManager):
                 self.session.commit()
             task_attributes['project'] = project
 
-    def _set_tags(
-        self,
-        task_attributes,
-        tags=[]
-    ):
+    def _set_tags(self, task_attributes, tags=[]):
         """
         Method to set the tags attribute.
 
@@ -411,11 +403,7 @@ class TaskManager(TableManager):
         if commit_necessary:
             self.session.commit()
 
-    def _rm_tags(
-        self,
-        task_attributes,
-        tags_rm=[]
-    ):
+    def _rm_tags(self, task_attributes, tags_rm=[]):
         """
         Method to delete tags from the Task attributes.
 
@@ -429,15 +417,11 @@ class TaskManager(TableManager):
                 raise ValueError("The tag doesn't exist")
             task_attributes['tags'].remove(tag)
 
-    def _set_agile(
-        self,
-        task_attributes,
-        agile=None
-    ):
+    def _set_agile(self, task_attributes, agile=None):
         """
         Method to set the agile attribute.
 
-        If the agile tag value isn't between the specified ones,
+        If the agile property value isn't between the specified ones,
         a `ValueError` will be raised.
 
         Arguments:
@@ -528,12 +512,14 @@ class TaskManager(TableManager):
 
         new_fulid = self.fulid.new(last_fulid)
 
-        fulid, task_attributes = self._set(project_id=project_id,
-                                           tags=tags,
-                                           agile=agile,
-                                           title=title,
-                                           state='open',
-                                           **kwargs)
+        fulid, task_attributes = self._set(
+            project_id=project_id,
+            tags=tags,
+            agile=agile,
+            title=title,
+            state='open',
+            **kwargs,
+        )
 
         self._add(
             task_attributes,
@@ -560,12 +546,14 @@ class TaskManager(TableManager):
             agile (str): Task agile state.
             **kwargs: (object) Other attributes (key: value).
         """
-        fulid, task_attributes = self._set(id,
-                                           project_id,
-                                           tags,
-                                           tags_rm,
-                                           agile,
-                                           **kwargs)
+        fulid, task_attributes = self._set(
+            id,
+            project_id,
+            tags,
+            tags_rm,
+            agile,
+            **kwargs
+        )
 
         self._update(
             fulid,

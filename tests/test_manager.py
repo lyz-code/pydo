@@ -84,8 +84,6 @@ class ManagerBaseTest:
         with pytest.raises(ValueError):
             self.manager._update(fake_element_id)
 
-        self.session.commit()
-
 
 @pytest.mark.usefixtures('base_setup')
 class TestTaskManager(ManagerBaseTest):
@@ -432,7 +430,7 @@ class TestTaskManager(ManagerBaseTest):
         tag1 = TagFactory.create()
         tag2 = TagFactory.create()
         tag3 = TagFactory.create()
-        task_attributes = {'tags': [tag1.id, tag2.id, tag3.id]}
+        task_attributes = {'tags': [tag1, tag2, tag3]}
 
         with pytest.raises(ValueError):
             self.manager._rm_tags(task_attributes, ['tag4', 'tag5'])
