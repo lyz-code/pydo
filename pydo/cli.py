@@ -33,6 +33,20 @@ def load_parser():
         nargs=argparse.REMAINDER,
     )
 
+    modify_parser = subparser.add_parser('mod')
+    modify_parser.add_argument(
+        "ulid",
+        type=str,
+        help='Task ulid',
+    )
+    modify_parser.add_argument(
+        "modify_argument",
+        type=str,
+        help='Task modify arguments',
+        default=None,
+        nargs=argparse.REMAINDER,
+    )
+
     delete_parser = subparser.add_parser('del')
     delete_parser.add_argument(
         "ulid",

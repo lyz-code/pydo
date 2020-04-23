@@ -102,6 +102,7 @@ class TableManager:
     Internal methods:
         _add: Method to create a new table item
         _get: Retrieve the table element identified by id.
+        _update: Method to update an existing table item
 
     Public attributes:
         session (session object): Database session
@@ -158,6 +159,33 @@ class TableManager:
         else:
             return table_element
 
+    def _update(self, id, object_values=None):
+        """
+        Method to update an existing table item
+
+        Arguments:
+            id (str): object identifier
+            object_values (dict): Dictionary with the column identifier
+                as keys.
+        """
+
+        table_element = self.session.query(self.model).get(id)
+
+        if table_element is None:
+            raise ValueError('The element {} does not exist'.format(id))
+        else:
+            if object_values is not None:
+                for attribute_key, attribute_value in object_values.items():
+                    setattr(table_element, attribute_key, attribute_value)
+
+            self.session.commit()
+            self.log.debug(
+                'Modified {}: {}'.format(
+                    id,
+                    object_values,
+                )
+            )
+
 
 class TaskManager(TableManager):
     """
@@ -173,9 +201,18 @@ class TaskManager(TableManager):
 
     Internal methods:
         _add: Parent method to add table elements.
+        _update: Parent method to update table elements.
         _close: Closes a task.
+        _parse_attribute: Parse a Taskwarrior like add argument into a task
+            attribute.
         _parse_arguments: Parse a Taskwarrior like add query into task
             attributes.
+        _get_fulid: Method to get the task's fulid if necessary.
+        _set: Method to set the task's attributes and get its fulid.
+        _set_project: Method to set the project attribute.
+        _set_tags: Method to set the tags attribute.
+        _rm_tags: Method to delete tags from the Task attributes.
+        _set_agile: Method to set the agile attribute.
 
     Public attributes:
         fulid (fulid object): Fulid manager and generator object.
@@ -192,12 +229,87 @@ class TaskManager(TableManager):
             self.config.get('fulid.forbidden_characters'),
         )
 
+    def _parse_attribute(self, add_argument):
+        """
+        Parse a Taskwarrior like add argument into a task attribute.
+
+        Arguments:
+            add_argument (str): Taskwarrior like add argument string.
+
+        Returns:
+            attribute_id (str): Attribute key.
+            attributes_value (str|int|float|date): Attribute value.
+        """
+
+        attribute_conf = {
+            'agile': {
+                'regexp': r'^(ag|agile):',
+                'type': 'str',
+            },
+            'body': {
+                'regexp': r'^body:',
+                'type': 'str',
+            },
+            'due': {
+                'regexp': r'^due:',
+                'type': 'date',
+            },
+            'estimate': {
+                'regexp': r'^(est|estimate):',
+                'type': 'float',
+            },
+            'fun': {
+                'regexp': r'^fun:',
+                'type': 'int',
+            },
+            'priority': {
+                'regexp': r'^(pri|priority):',
+                'type': 'int',
+            },
+            'project_id': {
+                'regexp': r'^(pro|project):',
+                'type': 'str',
+            },
+            'tags': {
+                'regexp': r'^\+',
+                'type': 'tag',
+            },
+            'tags_rm': {
+                'regexp': r'^\-',
+                'type': 'tag',
+            },
+            'value': {
+                'regexp': r'^(vl|value):',
+                'type': 'int',
+            },
+            'willpower': {
+                'regexp': r'^(wp|willpower):',
+                'type': 'int',
+            },
+        }
+
+        for attribute_id, attribute in attribute_conf.items():
+            if re.match(attribute['regexp'], add_argument):
+                if attribute['type'] == 'str':
+                    return attribute_id, add_argument.split(':')[1]
+                elif attribute['type'] == 'int':
+                    return attribute_id, int(add_argument.split(':')[1])
+                elif attribute['type'] == 'float':
+                    return attribute_id, float(add_argument.split(':')[1])
+                elif attribute['type'] == 'date':
+                    return attribute_id, self.date.convert(
+                        ":".join(add_argument.split(':')[1:])
+                    )
+                elif attribute['type'] == 'tag':
+                    return attribute_id, re.sub(r'^[+-]', '', add_argument)
+        return 'title', add_argument
+
     def _parse_arguments(self, add_arguments):
         """
         Parse a Taskwarrior like add query into task attributes
 
         Arguments:
-            add_arguments (str): Taskwarrior like add argument string.
+            add_arguments (list): Taskwarrior like add argument list.
 
         Returns:
             attributes (dict): Dictionary with the attributes of the task.
@@ -213,64 +325,181 @@ class TaskManager(TableManager):
             'priority': None,
             'project_id': None,
             'tags': [],
+            'tags_rm': [],
             'value': None,
             'willpower': None,
         }
+
         for argument in add_arguments:
-            if re.match(r'^(pro|project):', argument):
-                attributes['project_id'] = argument.split(':')[1]
-            elif re.match(r'^(ag|agile):', argument):
-                attributes['agile'] = argument.split(':')[1]
-            elif re.match(r'^due:', argument):
-                attributes['due'] = self.date.convert(":".join(argument.split(':')[1:]))
-            elif re.match(r'^(pri|priority):', argument):
-                attributes['priority'] = int(argument.split(':')[1])
-            elif re.match(r'^(wp|willpower):', argument):
-                attributes['willpower'] = int(argument.split(':')[1])
-            elif re.match(r'^(est|estimate):', argument):
-                attributes['estimate'] = float(argument.split(':')[1])
-            elif re.match(r'^(vl|value):', argument):
-                attributes['value'] = int(argument.split(':')[1])
-            elif re.match(r'^fun:', argument):
-                attributes['fun'] = int(argument.split(':')[1])
-            elif re.match(r'^body:', argument):
-                attributes['body'] = argument.split(':')[1]
-            elif re.match(r'^\+', argument):
-                attributes['tags'].append(argument.replace('+', ''))
+            attribute_id, attribute_value = self._parse_attribute(argument)
+            if attribute_id in ['tags', 'tags_rm', 'title']:
+                attributes[attribute_id].append(attribute_value)
             else:
-                attributes['title'].append(argument)
+                attributes[attribute_id] = attribute_value
+
         attributes['title'] = ' '.join(attributes['title'])
         return attributes
+
+    def _get_fulid(self, id):
+        """
+        Method to get the task's fulid if necessary.
+
+        Arguments:
+            id (str): Ulid of the task.
+            state (str): Task status.
+
+        Returns:
+            fulid (str): fulid that matches the sulid.
+        """
+        fulid = id
+        if len(id) < 10:
+            open_tasks = self.session.query(Task).filter_by(state='open')
+            open_task_fulids = [task.id for task in open_tasks]
+            fulid = self.fulid.sulid_to_fulid(id, open_task_fulids)
+
+        return fulid
+
+    def _set_project(self, task_attributes, project_id=None):
+        """
+        Method to set the project attribute.
+
+        A new project will be created if it doesn't exist yet.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            project_id (str): Project id.
+        """
+        if project_id is not None:
+            project = self.session.query(Project).get(project_id)
+            if project is None:
+                project = Project(id=project_id, description='')
+                self.session.add(project)
+                self.session.commit()
+            task_attributes['project'] = project
+
+    def _set_tags(self, task_attributes, tags=[]):
+        """
+        Method to set the tags attribute.
+
+        A new tag will be created if it doesn't exist yet.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            tags (list): List of tag ids.
+        """
+        commit_necessary = False
+
+        if 'tags' not in task_attributes:
+            task_attributes['tags'] = []
+
+        for tag_id in tags:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                tag = Tag(id=tag_id, description='')
+                self.session.add(tag)
+                commit_necessary = True
+            task_attributes['tags'].append(tag)
+
+        if commit_necessary:
+            self.session.commit()
+
+    def _rm_tags(self, task_attributes, tags_rm=[]):
+        """
+        Method to delete tags from the Task attributes.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            tags_rm (list): List of tag ids to remove.
+        """
+        for tag_id in tags_rm:
+            tag = self.session.query(Tag).get(tag_id)
+            if tag is None:
+                raise ValueError("The tag doesn't exist")
+            task_attributes['tags'].remove(tag)
+
+    def _set_agile(self, task_attributes, agile=None):
+        """
+        Method to set the agile attribute.
+
+        If the agile property value isn't between the specified ones,
+        a `ValueError` will be raised.
+
+        Arguments:
+            task_attributes (dict): Dictionary with the attributes of the task.
+            agile (str): Task agile state.
+        """
+        if agile is not None and \
+                agile not in self.config.get('task.agile.states').split(', '):
+            raise ValueError(
+                'Agile state {} is not between the specified '
+                'by task.agile.states'.format(agile)
+            )
+
+        if agile is not None:
+            task_attributes['agile'] = agile
+
+    def _set(
+        self,
+        id=None,
+        project_id=None,
+        tags=[],
+        tags_rm=[],
+        agile=None,
+        **kwargs
+    ):
+        """
+        Method to set the task's attributes and get its fulid.
+
+        Arguments:
+            id (str): Ulid of the task if it already exists.
+            project_id (str): Project id.
+            tags (list): List of tag ids.
+            tags_rm (list): List of tag ids to remove.
+            agile (str): Task agile state.
+            **kwargs: (object) Other attributes (key: value).
+
+        Returns:
+            fulid (str): fulid that matches the sulid.
+            task_attributes (dict): Dictionary with the attributes of the task.
+        """
+        fulid = None
+        task_attributes = {}
+
+        self._set_project(task_attributes, project_id)
+
+        if id is not None:
+            fulid = self._get_fulid(id)
+
+            task = self.session.query(Task).get(fulid)
+            task_attributes['tags'] = task.tags
+
+            self._rm_tags(task_attributes, tags_rm)
+
+        self._set_tags(task_attributes, tags)
+        self._set_agile(task_attributes, agile)
+
+        for key, value in kwargs.items():
+            task_attributes[key] = value
+
+        return fulid, task_attributes
 
     def add(
         self,
         title,
-        agile=None,
-        body=None,
-        due=None,
-        estimate=None,
-        fun=None,
-        priority=None,
         project_id=None,
         tags=[],
-        value=None,
-        willpower=None,
+        agile=None,
+        **kwargs
     ):
         """
-        Use parent method to create a new task
+        Use parent method to create a new task.
 
         Arguments:
-            agile (str): Task agile state.
             title (str): Title of the task.
-            body (str): Description of the task.
-            estimate (float): Estimate size of the task.
-            fun (int): Fun size of the task.
-            priority (int): Task priority.
             project_id (str): Project id.
             tags (list): List of tag ids.
-            title (str): Title of the task.
-            value (int): Objective/Bussiness value of the task.
-            willpower (int): Willpower consumption of the task.
+            agile (str): Task agile state.
+            **kwargs: (object) Other attributes (key: value).
         """
 
         # Define ID
@@ -283,51 +512,52 @@ class TaskManager(TableManager):
 
         new_fulid = self.fulid.new(last_fulid)
 
-        task_attributes = {
-            'id': new_fulid.str,
-            'agile': agile,
-            'body': body,
-            'due': due,
-            'title': title,
-            'estimate': estimate,
-            'fun': fun,
-            'state': 'open',
-            'priority': priority,
-            'value': value,
-            'tags': [],
-            'willpower': willpower,
-        }
-
-        # Define Project
-        if project_id is not None:
-            project = self.session.query(Project).get(project_id)
-            if project is None:
-                project = Project(id=project_id, description='')
-                self.session.add(project)
-                self.session.commit()
-            task_attributes['project'] = project
-
-        # Define tags
-        for tag_id in tags:
-            tag = self.session.query(Tag).get(tag_id)
-            if tag is None:
-                tag = Tag(id=tag_id, description='')
-                self.session.add(tag)
-                self.session.commit()
-            task_attributes['tags'].append(tag)
-
-        # Test the task attributes are into the available choices
-        if agile is not None and \
-                agile not in self.config.get('task.agile.states').split(', '):
-            raise ValueError(
-                'Agile state {} is not between the specified '
-                'by task.agile.states'.format(agile)
-            )
+        fulid, task_attributes = self._set(
+            project_id=project_id,
+            tags=tags,
+            agile=agile,
+            title=title,
+            state='open',
+            **kwargs,
+        )
 
         self._add(
             task_attributes,
-            task_attributes['id'],
+            new_fulid.str,
             task_attributes['title'],
+        )
+
+    def modify(
+        self,
+        id,
+        project_id=None,
+        tags=[],
+        tags_rm=[],
+        agile=None,
+        **kwargs
+    ):
+        """
+        Use parent method to modify an existing task.
+
+        Arguments:
+            project_id (str): Project id.
+            tags (list): List of tag ids.
+            tags_rm (list): List of tag ids to remove.
+            agile (str): Task agile state.
+            **kwargs: (object) Other attributes (key: value).
+        """
+        fulid, task_attributes = self._set(
+            id,
+            project_id,
+            tags,
+            tags_rm,
+            agile,
+            **kwargs
+        )
+
+        self._update(
+            fulid,
+            task_attributes,
         )
 
     def _close(self, id, state):
@@ -339,10 +569,7 @@ class TaskManager(TableManager):
             state (str): State of the task once it's closed
         """
 
-        if len(id) < 10:
-            open_tasks = self.session.query(Task).filter_by(state='open')
-            open_task_fulids = [task.id for task in open_tasks]
-            id = self.fulid.sulid_to_fulid(id, open_task_fulids)
+        id = self._get_fulid(id)
 
         task = self.session.query(Task).get(id)
 
