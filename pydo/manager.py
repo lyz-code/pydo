@@ -528,11 +528,9 @@ class TaskManager(TableManager):
 
         new_fulid = self.fulid.new(last_fulid)
 
-        fulid, task_attributes = self._set(None,
-                                           project_id,
-                                           tags,
-                                           None,
-                                           agile,
+        fulid, task_attributes = self._set(project_id=project_id,
+                                           tags=tags,
+                                           agile=agile,
                                            title=title,
                                            state='open',
                                            **kwargs)
