@@ -494,6 +494,40 @@ class TestTaskManager(ManagerBaseTest):
         assert task_attributes['arbitrary_attribute'] == \
             arbitrary_attribute_value
 
+    def test_set_empty_value_removes_attribute_from_existing_task(self):
+        task = self.factory.create()
+        project = ProjectFactory.create()
+        agile = 'todo'
+        estimate = 2
+        arbitrary_attribute_value = self.fake.word()
+
+        task.project = project
+        task.agile = agile
+        task.estimate = estimate
+        task.arbitrary_attribute = arbitrary_attribute_value
+
+        fulid, task_attributes = self.manager._set(
+            id=task.id,
+            project=None,
+            agile=None,
+            arbitrary_attribute=None
+        )
+
+        assert fulid == task.id
+        assert task_attributes['project'] is None
+        assert task_attributes['agile'] is None
+        assert task_attributes['arbitrary_attribute'] is None
+
+    def test_set_empty_tag_throws_error(self):
+
+        with pytest.raises(ValueError):
+            fulid, task_attributes = self.manager._set(tags=[''])
+
+    def test_set_empty_tag_for_removal_throws_error(self):
+
+        with pytest.raises(ValueError):
+            fulid, task_attributes = self.manager._set(tags=[''])
+
     def test_add_task(self):
         title = self.fake.sentence()
 
