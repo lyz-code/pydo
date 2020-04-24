@@ -7,14 +7,18 @@ nav:
   - Configuration: 'configuration.md'
   - Update: 'update.md'
   - Advanced Usage:
-    - Projects: "projects.md"
-    - Tags: "tags.md"
-    - Dates: "dates.md"
-    - Priority: "priority.md"
-    - Estimate: "estimate.md"
-    #- Design:
-    # - Friendly IDs: 'fulids.md'
-  - Roadmap: 'roadmap.md'
+    - Projects: 'advanced_usage/projects.md'
+    - Tags: 'advanced_usage/tags.md'
+    - Dates: 'advanced_usage/dates.md'
+    - Priority: 'advanced_usage/priority.md'
+    - Estimate: 'advanced_usage/estimate.md'
+    - Value: 'advanced_usage/objective_value.md'
+    - Willpower: 'advanced_usage/willpower.md'
+    - Fun: 'advanced_usage/fun.md'
+  - Contributing: 'contributing.md'
+  - Developing:
+    - Database Schema: 'developing/database_schema.md'
+    - Friendly IDs: 'developing/fulids.md'
   - Related: 'related.md'
 
 plugins:
@@ -50,8 +54,8 @@ markdown_extensions:
 
 theme:
   name: material
-  custom_dir: "theme"
-  logo: "images/logo.bmp"
+  custom_dir: 'theme'
+  logo: 'images/logo.bmp'
   palette:
     primary: 'blue grey'
     accent: 'light blue'

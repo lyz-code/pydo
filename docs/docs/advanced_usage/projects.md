@@ -34,3 +34,9 @@ Name             Tasks  Description
 None                 3  Tasks without project
 time_management      1
 ```
+
+To modify a task project use the `mod` command:
+
+```bash
+pydo mod {{ task_id }} pro:new_project
+```
