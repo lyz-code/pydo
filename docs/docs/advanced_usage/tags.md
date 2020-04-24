@@ -25,3 +25,10 @@ Name      Tasks  Description
 ------  -------  -------------
 python        1
 ```
+
+To add a tag to an existing task or to remove one, use the `mod` command.
+
+```bash
+pydo mod {{ task_id }} +new_tag
+pydo mod {{ task_id }} -existing_tag
+```

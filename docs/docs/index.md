@@ -15,6 +15,10 @@ shows you the list, and removes tasks from that list. Leverage its capabilities
 though, and it becomes a sophisticated data query tool that can help you stay
 organized, and get through your work.
 
+* [Documentation](https://lyz-code.github.io/pydo)
+* [Issue tracker](https://github.com/lyz-code/pydo/issues)
+* [Contributing](https://lyz-code.github.io/pydo/contributing)
+
 # Why another CLI Task Manager?
 
 [Taskwarrior](https://taskwarrior.org/) has been the gold standard for CLI task managers so far. However,
@@ -27,12 +31,12 @@ It has the following inconveniences:
   only](https://github.com/GothenburgBitFactory/taskwarrior/graphs/code-frequency).
 * There are several issues with how it handles
   [recurrence](https://taskwarrior.org/docs/design/recurrence.html).
-* It doesn't have friendly task identifiers.
+* It doesn't have [friendly task identifiers](fulids.md).
 * There is no way of accessing the task time tracking from the python library.
 
 And lacks the following features:
 
-* Native support for Kanban or Scrum.
+* Native Kanban or Scrum support.
 * Task estimations.
 * Task criteria [validation](https://en.wikipedia.org/wiki/Software_verification_and_validation).
 * Easy report creation.
@@ -116,5 +120,7 @@ it could.
 
 This is when you might look closer at the
 [docs](https://lyz-code.github.io/pydo) and the recommended Best Practices.
+
+If you want to contribute to the project follow [this guidelines](guidelines.md).
 
 Welcome to `pydo`.
