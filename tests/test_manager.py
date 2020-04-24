@@ -368,6 +368,41 @@ class TestTaskManager(ManagerBaseTest):
 
         assert attributes['due'] == dateMock.return_value.convert.return_value
 
+    def test_parse_arguments_return_empty_string_if_argument_is_empty(self):
+        # One of each type (str, date, float, int) and the title
+        # empty tags are tested separately
+        add_arguments = [
+            '',
+            'agile:',
+            'due:',
+            'estimate:',
+            'fun:',
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['title'] == ''
+        assert attributes['agile'] == ''
+        assert attributes['due'] == ''
+        assert attributes['estimate'] == ''
+        assert attributes['fun'] == ''
+
+    def test_set_empty_tag_throws_error(self):
+        add_arguments = [
+            '+',
+        ]
+
+        with pytest.raises(ValueError):
+            self.manager._parse_arguments(add_arguments)
+
+    def test_set_empty_tag_for_removal_throws_error(self):
+        add_arguments = [
+            '-',
+        ]
+
+        with pytest.raises(ValueError):
+            self.manager._parse_arguments(add_arguments)
+
     def test_get_fulid_from_sulid(self):
         task = self.factory.create(state='open')
         sulid = self.manager.fulid.fulid_to_sulid(task.id, [task.id])
@@ -517,16 +552,6 @@ class TestTaskManager(ManagerBaseTest):
         assert task_attributes['project'] is None
         assert task_attributes['agile'] is None
         assert task_attributes['arbitrary_attribute'] is None
-
-    def test_set_empty_tag_throws_error(self):
-
-        with pytest.raises(ValueError):
-            fulid, task_attributes = self.manager._set(tags=[''])
-
-    def test_set_empty_tag_for_removal_throws_error(self):
-
-        with pytest.raises(ValueError):
-            fulid, task_attributes = self.manager._set(tags=[''])
 
     def test_add_task(self):
         title = self.fake.sentence()
