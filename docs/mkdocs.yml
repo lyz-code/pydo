@@ -7,11 +7,13 @@ nav:
   - Configuration: 'configuration.md'
   - Update: 'update.md'
   - Advanced Usage:
-    - Projects: "projects.md"
-    - Tags: "tags.md"
-    - Dates: "dates.md"
-    - Priority: "priority.md"
-    - Estimate: "estimate.md"
+    - Projects: "advanced_usage/projects.md"
+    - Tags: "advanced_usage/tags.md"
+    - Dates: "advanced_usage/dates.md"
+    - Priority: "advanced_usage/priority.md"
+    - Estimate: "advanced_usage/estimate.md"
+    - Value: "advanced_usage/objective_value.md"
+    - Willpower: "advanced_usage/willpower.md"
     #- Design:
     # - Friendly IDs: 'fulids.md'
   - Roadmap: 'roadmap.md'

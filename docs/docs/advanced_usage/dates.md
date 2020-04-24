@@ -10,8 +10,7 @@ A task does not require a due date, and can simply be a statement of need:
 pydo add Send Alice a birthday card
 ```
 
-However this is exactly the kind of task can benefit from having a due date, and
-perhaps several other dates also.
+However this is exactly the kind of task can benefit from having a due date.
 
 There are several dates that can decorate a task, each with its own meaning and
 effects. You can choose to use some, all or none of these, but like all
