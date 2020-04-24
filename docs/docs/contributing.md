@@ -54,5 +54,5 @@ don't let this fact discourage you from contributing:
 Finally, to ensure a quicker pull request resolution, remember to *[Allow edits from
 maintainers](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork)*.
 
-Check [Developing pydo](developing/developing.md) to get better insights of the
+Check [Developing pydo](developing/database_schema.md) to get better insights of the
 internals of the program.

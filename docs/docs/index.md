@@ -121,6 +121,6 @@ it could.
 This is when you might look closer at the
 [docs](https://lyz-code.github.io/pydo) and the recommended Best Practices.
 
-If you want to contribute to the project follow [this guidelines](guidelines.md).
+If you want to contribute to the project follow [this guidelines](contributing.md).
 
 Welcome to `pydo`.
