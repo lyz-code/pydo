@@ -508,9 +508,9 @@ class TestTaskManager(ManagerBaseTest):
 
         fulid, task_attributes = self.manager._set(
             id=task.id,
-            project=None,
-            agile=None,
-            arbitrary_attribute=None
+            project_id='',
+            agile='',
+            arbitrary_attribute=''
         )
 
         assert fulid == task.id
