@@ -14,9 +14,9 @@ nav:
     - Estimate: "advanced_usage/estimate.md"
     - Value: "advanced_usage/objective_value.md"
     - Willpower: "advanced_usage/willpower.md"
+    - Fun: "advanced_usage/fun.md"
     #- Design:
     # - Friendly IDs: 'fulids.md'
-  - Roadmap: 'roadmap.md'
   - Related: 'related.md'
 
 plugins:
