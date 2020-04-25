@@ -290,7 +290,13 @@ class TaskManager(TableManager):
 
         for attribute_id, attribute in attribute_conf.items():
             if re.match(attribute['regexp'], add_argument):
-                if attribute['type'] == 'str':
+                if attribute['type'] == 'tag':
+                    if len(add_argument) < 2:
+                        raise ValueError("Empty tag value")
+                    return attribute_id, re.sub(r'^[+-]', '', add_argument)
+                elif add_argument.split(':')[1] == '':
+                    return attribute_id, ''
+                elif attribute['type'] == 'str':
                     return attribute_id, add_argument.split(':')[1]
                 elif attribute['type'] == 'int':
                     return attribute_id, int(add_argument.split(':')[1])
@@ -300,8 +306,6 @@ class TaskManager(TableManager):
                     return attribute_id, self.date.convert(
                         ":".join(add_argument.split(':')[1:])
                     )
-                elif attribute['type'] == 'tag':
-                    return attribute_id, re.sub(r'^[+-]', '', add_argument)
         return 'title', add_argument
 
     def _parse_arguments(self, add_arguments):
@@ -465,7 +469,10 @@ class TaskManager(TableManager):
         fulid = None
         task_attributes = {}
 
-        self._set_project(task_attributes, project_id)
+        if project_id == '':
+            task_attributes['project'] = None
+        else:
+            self._set_project(task_attributes, project_id)
 
         if id is not None:
             fulid = self._get_fulid(id)
@@ -476,9 +483,15 @@ class TaskManager(TableManager):
             self._rm_tags(task_attributes, tags_rm)
 
         self._set_tags(task_attributes, tags)
-        self._set_agile(task_attributes, agile)
+
+        if agile == '':
+            task_attributes['agile'] = None
+        else:
+            self._set_agile(task_attributes, agile)
 
         for key, value in kwargs.items():
+            if value == '':
+                value = None
             task_attributes[key] = value
 
         return fulid, task_attributes
