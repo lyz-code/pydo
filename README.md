@@ -95,13 +95,15 @@ user defined metadata and many more.
 
 # Installation
 
-Until we [improve the install method](https://github.com/lyz-code/pydo/issues/11) do:
+To install pydo, simply:
 
 ```bash
 pip3 install git+git://github.com/lyz-code/pydo
-mkdir ~/.local/share/pydo
-touch ~/.local/share/pydo/main.db
-pydo install
+```
+
+The instalation method will create a new pydo database at:
+```
+~/.local/share/pydo/main.db
 ```
 
 # What's next?
