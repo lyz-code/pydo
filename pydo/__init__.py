@@ -19,7 +19,7 @@
 from pydo.cli import load_logger, load_parser
 from pydo.models import engine
 from pydo.manager import TaskManager, ConfigManager
-from pydo.ops import install
+from pydo.ops import export, install
 from pydo.reports import List, Projects, Tags
 from sqlalchemy.orm import sessionmaker
 
@@ -70,3 +70,5 @@ def main():
             columns=config.get('report.tags.columns').split(', '),
             labels=config.get('report.tags.labels').split(', ')
         )
+    elif args.subcommand == 'export':
+        export(session, logging.getLogger('main'))

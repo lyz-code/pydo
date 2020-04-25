@@ -15,6 +15,7 @@ nav:
     - Value: 'advanced_usage/objective_value.md'
     - Willpower: 'advanced_usage/willpower.md'
     - Fun: 'advanced_usage/fun.md'
+    - Export: 'advanced_usage/export.md`
   - Contributing: 'contributing.md'
   - Developing:
     - Database Schema: 'developing/database_schema.md'
