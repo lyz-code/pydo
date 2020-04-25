@@ -51,12 +51,12 @@ def install(session, log):
     log.info('Configuration initialized')
 
 
-def export(session, log):
+def export(log):
     '''
     Function to export the database to json to stdout.
 
     Arguments:
-        engine (engine object): Database session
+        log (logging object): log handler
 
     Returns:
         stdout: json database dump.
@@ -65,10 +65,12 @@ def export(session, log):
     meta = MetaData()
     meta.reflect(bind=engine)
     data = {}
+    log.debug('Extracting data from database')
     for table in meta.sorted_tables:
         data[table.name] = [
             dict(row)
             for row in engine.execute(table.select())
         ]
 
+    log.debug('Converting to json and printing')
     print(json.dumps(data))

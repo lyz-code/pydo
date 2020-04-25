@@ -1,12 +1,5 @@
 from unittest.mock import patch, call, Mock
 from pydo.ops import export, install
-from tests.factories import \
-    ConfigFactory, \
-    ProjectFactory, \
-    PydoConfigFactory, \
-    TagFactory, \
-    TaskFactory
-from tests.conftest import engine
 
 import os
 import pytest
@@ -103,7 +96,6 @@ class TestExport:
         self.log_info = self.log.info
         self.print_patch = patch('pydo.ops.print', autospect=True)
         self.print = self.print_patch.start()
-        self.session = session
 
         yield 'setup'
 
@@ -112,7 +104,7 @@ class TestExport:
 
     def test_export_generates_task_data(self):
 
-        export(self.session, self.log)
+        export(self.log)
 
         generated_data = str(self.json.dumps.mock_calls[0])
         assert 'task' in generated_data
@@ -123,6 +115,6 @@ class TestExport:
 
     def test_export_prints_desired_json(self):
 
-        export(self.session, self.log)
+        export(self.log)
 
         self.print.assert_called_once_with(self.json.dumps.return_value)

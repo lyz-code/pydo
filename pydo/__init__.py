@@ -71,4 +71,4 @@ def main():
             labels=config.get('report.tags.labels').split(', ')
         )
     elif args.subcommand == 'export':
-        export(session, logging.getLogger('main'))
+        export(logging.getLogger('main'))
