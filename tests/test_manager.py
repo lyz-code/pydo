@@ -415,7 +415,8 @@ class TestTaskManager(ManagerBaseTest):
         assert task.id == self.manager._get_fulid(task.id)
 
     def test_get_fulid_non_existent_task(self):
-        non_existent_id = self.fake.word()
+        # Max 9 chars (otherwise it isn't a sulid)
+        non_existent_id = 'N_E'
 
         with pytest.raises(KeyError):
             self.manager._get_fulid(non_existent_id)
