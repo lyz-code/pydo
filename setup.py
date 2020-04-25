@@ -1,16 +1,13 @@
-from setuptools import find_packages
-from setuptools import setup
-
-from setuptools.command.install import install
-from setuptools.command.develop import develop
-from setuptools.command.egg_info import egg_info
+import logging
 import os
 
-from pydo.models import engine
-from pydo.ops import install as pydo_install
+from setuptools import find_packages, setup
+from setuptools.command.develop import develop
+from setuptools.command.egg_info import egg_info
+from setuptools.command.install import install
 from sqlalchemy.orm import sessionmaker
 
-import logging
+import pydo
 
 
 class PostInstallCommand(install):
@@ -24,9 +21,7 @@ class PostInstallCommand(install):
             os.makedirs(data_directory)
         except FileExistsError:
             logger.info("Data directory already exits")
-        connection = engine.connect()
-        session = sessionmaker()(bind=connection)
-        pydo_install(session, logger)
+        pydo.main(["install"])
 
 
 class PostDevelopCommand(develop):
@@ -40,9 +35,7 @@ class PostDevelopCommand(develop):
             os.makedirs(data_directory)
         except FileExistsError:
             logger.info("Data directory already exits")
-        connection = engine.connect()
-        session = sessionmaker()(bind=connection)
-        pydo_install(session, logger)
+        pydo.main(["install"])
 
 
 class PostEggInfoCommand(egg_info):
@@ -56,9 +49,7 @@ class PostEggInfoCommand(egg_info):
             os.makedirs(data_directory)
         except FileExistsError:
             logger.info("Data directory already exits")
-        connection = engine.connect()
-        session = sessionmaker()(bind=connection)
-        pydo_install(session, logger)
+        pydo.main(["install"])
 
 
 __version__ = "0.1.0"
