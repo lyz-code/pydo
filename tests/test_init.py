@@ -172,6 +172,13 @@ class TestMain:
             priority=priority,
         )
 
+    def test_add_subcomand_raises_error_if_no_title(self):
+        self.parser_args.subcommand = 'add'
+        self.tm.return_value._parse_arguments.return_value = {}
+
+        with pytest.raises(ValueError):
+            main()
+
     def test_done_subcomand_completes_task(self):
         arguments = [
             'done',
