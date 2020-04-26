@@ -78,7 +78,7 @@ class List(BaseReport):
             columns (list): Element attributes to print
             labels (list): Headers of the attributes
         """
-        for attribute in columns:
+        for attribute in columns.copy():
             remove_attribute = False
             try:
                 # Task with attribute == None

@@ -109,7 +109,11 @@ class TestList(BaseReport):
         desired_columns.pop(tags_index)
         desired_labels.pop(tags_index)
 
-        TaskFactory.create_batch(10)
+        due_index = desired_columns.index('due')
+        desired_columns.pop(due_index)
+        desired_labels.pop(due_index)
+
+        TaskFactory.create_batch(10, due=None)
 
         tasks = session.query(Task).filter_by(state='open')
 
