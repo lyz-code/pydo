@@ -64,6 +64,7 @@ def load_parser():
     subparser.add_parser('list')
     subparser.add_parser('projects')
     subparser.add_parser('tags')
+    subparser.add_parser('export')
 
     argcomplete.autocomplete(parser)
     return parser

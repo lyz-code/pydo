@@ -275,3 +275,9 @@ class TestMain:
             arguments[1],
             project='test',
         )
+
+    @patch('pydo.export')
+    def test_export_subcomand_calls_export(self, exportMock):
+        self.parser_args.subcommand = 'export'
+        main()
+        assert exportMock.called

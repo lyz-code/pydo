@@ -95,6 +95,10 @@ class TestArgparse:
         parsed = self.parser.parse_args(['tags'])
         assert parsed.subcommand == 'tags'
 
+    def test_can_specify_export_subcommand(self):
+        parsed = self.parser.parse_args(['export'])
+        assert parsed.subcommand == 'export'
+
 
 class TestLogger:
 
