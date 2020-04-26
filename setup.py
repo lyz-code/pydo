@@ -6,8 +6,6 @@ from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
 from setuptools.command.install import install
 
-import pydo
-
 
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
@@ -18,8 +16,11 @@ class PostInstallCommand(install):
         try:
             data_directory = os.path.expanduser("~/.local/share/pydo")
             os.makedirs(data_directory)
+            logger.info("Data directory created")
         except FileExistsError:
             logger.info("Data directory already exits")
+        import pydo
+
         pydo.main(["install"])
 
 
@@ -32,8 +33,11 @@ class PostDevelopCommand(develop):
         try:
             data_directory = os.path.expanduser("~/.local/share/pydo")
             os.makedirs(data_directory)
+            logger.info("Data directory created")
         except FileExistsError:
             logger.info("Data directory already exits")
+        import pydo
+
         pydo.main(["install"])
 
 
@@ -46,8 +50,11 @@ class PostEggInfoCommand(egg_info):
         try:
             data_directory = os.path.expanduser("~/.local/share/pydo")
             os.makedirs(data_directory)
+            logger.info("Data directory created")
         except FileExistsError:
             logger.info("Data directory already exits")
+        import pydo
+
         pydo.main(["install"])
 
 
@@ -69,6 +76,14 @@ setup(
         "develop": PostDevelopCommand,
         "egg_info": PostEggInfoCommand,
     },
+    setup_requires=[
+        "argcomplete>=1.11.1",
+        "SQLAlchemy>=1.3.11",
+        "alembic>=1.3.1",
+        "python-dateutil>=2.8.1",
+        "tabulate>=0.8.7",
+        "ulid-py>=0.0.12",
+    ],
     install_requires=[
         "argcomplete>=1.11.1",
         "SQLAlchemy>=1.3.11",
