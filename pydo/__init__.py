@@ -25,10 +25,12 @@ from sqlalchemy.orm import sessionmaker
 
 import logging
 
+import sys
 
-def main():
+
+def main(argv=sys.argv[1:]):
     parser = load_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     load_logger()
 
     connection = engine.connect()
