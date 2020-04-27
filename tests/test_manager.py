@@ -128,6 +128,11 @@ class TestTaskManager(ManagerBaseTest):
 
         assert attributes['title'] == title
 
+    def test_parse_arguments_allows_empty_title(self):
+        attributes = self.manager._parse_arguments('')
+
+        assert 'title' not in attributes
+
     def test_parse_arguments_extracts_project_in_short_representation(self):
         title = self.fake.sentence()
         project = self.fake.word()
