@@ -17,3 +17,15 @@ To visualize the schema we've used
 to modify it and save it back as xml in the repo.
 
 ![](../../images/database_schema.jpg)
+
+# How to add a new field
+Rough draft of how to add a new field
+* `manager.py`
+  * Declare field so that pydo can parse a new command-line argument in  `_parse_agruments`
+  * The new field itself must be parsed on `_parse_attribute`
+* `migrations/sql_schema.xml`
+* `models.py`
+  * `__init__`
+  * `self.new_field = field`
+
+* `alembic revision --autogenerate -m "description commit message"`
