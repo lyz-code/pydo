@@ -87,6 +87,7 @@ class RecurrentTaskFactory(TaskFactory):
         'word',
         ext_word_list=['repeating', 'recurring']
     )
+    type = 'recurrent_task'
 
     class Meta:
         model = models.RecurrentTask
