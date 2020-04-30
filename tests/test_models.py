@@ -1,10 +1,5 @@
-from pydo.models import Config, RecurrentTask, Project, Tag, Task
-from tests.factories import \
-    ConfigFactory, \
-    RecurrentTaskFactory, \
-    ProjectFactory, \
-    TagFactory, \
-    TaskFactory
+from pydo import models
+from tests import factories
 
 import pytest
 
@@ -37,9 +32,8 @@ class TestTask(BaseModelTest):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        self.factory = TaskFactory
-        self.dummy_instance = TaskFactory.create()
-        self.model = Task(
+        self.dummy_instance = factories.TaskFactory.create()
+        self.model = models.Task(
             id=self.dummy_instance.id,
             agile=self.dummy_instance.agile,
             title=self.dummy_instance.title,
@@ -57,6 +51,7 @@ class TestTask(BaseModelTest):
             'priority',
             'state',
             'title',
+            'type',
             'value',
             'wait',
             'willpower',
@@ -68,9 +63,8 @@ class TestRecurrentTask(BaseModelTest):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        self.factory = RecurrentTaskFactory
-        self.dummy_instance = RecurrentTaskFactory.create()
-        self.model = RecurrentTask(
+        self.dummy_instance = factories.RecurrentTaskFactory.create()
+        self.model = models.RecurrentTask(
             id=self.dummy_instance.id,
             agile=self.dummy_instance.agile,
             title=self.dummy_instance.title,
@@ -103,8 +97,8 @@ class TestProject(BaseModelTest):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        self.dummy_instance = ProjectFactory.create()
-        self.model = Project(
+        self.dummy_instance = factories.ProjectFactory.create()
+        self.model = models.Project(
             id=self.dummy_instance.id,
             description=self.dummy_instance.description,
         )
@@ -116,8 +110,8 @@ class TestConfig(BaseModelTest):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        self.dummy_instance = ConfigFactory.create()
-        self.model = Config(
+        self.dummy_instance = factories.ConfigFactory.create()
+        self.model = models.Config(
             id=self.dummy_instance.id,
             default=self.dummy_instance.default,
             user=self.dummy_instance.user,
@@ -138,8 +132,8 @@ class TestTag(BaseModelTest):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        self.dummy_instance = TagFactory.create()
-        self.model = Tag(
+        self.dummy_instance = factories.TagFactory.create()
+        self.model = models.Tag(
             id=self.dummy_instance.id,
             description=self.dummy_instance.description,
         )

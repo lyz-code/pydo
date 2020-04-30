@@ -119,13 +119,12 @@ class TableManager:
         Method to create a new table item
 
         Arguments:
-            title (str): object title
             id (str): object identifier
             object_values (dict): Dictionary with the column identifier
                 as keys.
         """
 
-        obj = self.model(id, title)
+        obj = self.model(id=id)
 
         for attribute_key, attribute_value in object_values.items():
             setattr(obj, attribute_key, attribute_value)

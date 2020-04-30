@@ -95,36 +95,6 @@ class Task(Base):
         secondary=task_tag_association_table
     )
 
-    def __init__(
-        self,
-        id,
-        title,
-        agile=None,
-        closed=None,
-        due=None,
-        wait=None,
-        body=None,
-        estimate=None,
-        fun=None,
-        priority=None,
-        state=None,
-        value=None,
-        willpower=None,
-    ):
-        self.id = id
-        self.agile = agile
-        self.closed = closed
-        self.due = due
-        self.wait = wait
-        self.title = title
-        self.estimate = estimate
-        self.body = body
-        self.fun = fun
-        self.priority = priority
-        self.state = state
-        self.value = value
-        self.willpower = willpower
-
 
 class RecurrentTask(Task):
     __tablename__ = 'recurrent_task'
@@ -149,10 +119,6 @@ class Project(Base):
     description = Column(String, doc='Project description')
     tasks = relationship('Task', back_populates='project')
 
-    def __init__(self, id, description):
-        self.id = id
-        self.description = description
-
 
 class Tag(Base):
     """
@@ -167,10 +133,6 @@ class Tag(Base):
         back_populates='tags',
         secondary=task_tag_association_table
     )
-
-    def __init__(self, id, description):
-        self.id = id
-        self.description = description
 
 
 class Config(Base):
@@ -198,17 +160,3 @@ class Config(Base):
         String,
         doc="JSON list of possible values"
     )
-
-    def __init__(
-        self,
-        id,
-        default,
-        description=None,
-        user=None,
-        choices=None
-    ):
-        self.id = id
-        self.default = default
-        self.description = description
-        self.user = user
-        self.choices = choices
