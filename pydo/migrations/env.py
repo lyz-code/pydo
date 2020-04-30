@@ -19,6 +19,10 @@ fileConfig(config.config_file_name)
 # add your model's MetaData object here
 # for 'autogenerate' support
 
+import sys
+
+sys.path = ['', '..'] + sys.path[1:]
+
 from pydo import models
 target_metadata = models.Base.metadata
 # target_metadata = None
