@@ -1,7 +1,7 @@
 """initial schema
 
 Revision ID: ade851e4a70f
-Revises: 
+Revises:
 Create Date: 2019-12-30 21:05:38.000496
 
 """
@@ -51,6 +51,7 @@ def upgrade():
     sa.Column('willpower', sa.Integer(), nullable=True),
     sa.Column('value', sa.Integer(), nullable=True),
     sa.Column('fun', sa.Integer(), nullable=True),
+    sa.Column('type', sa.String(), nullable=False),
     sa.ForeignKeyConstraint(['project_id'], ['project.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
