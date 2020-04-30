@@ -1,6 +1,12 @@
 from pydo.fulids import fulid
 from pydo.manager import ConfigManager
-from pydo.models import Project, Tag, Task, Config, possible_task_states
+from pydo.models import \
+    Config, \
+    RecurrentTask, \
+    Project, \
+    Tag, \
+    Task, \
+    possible_task_states
 
 import factory
 import random
@@ -75,6 +81,21 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     class Meta:
         model = Task
+        sqlalchemy_session_persistence = 'commit'
+
+
+class RecurrentTaskFactory(TaskFactory):
+    recurrence_type = factory.Faker(
+        'word',
+        ext_word_list=['repeating', 'recurring']
+    )
+    recurrence = factory.Faker(
+        'word',
+        ext_word_list=['1d', '1rmo', '1y2mo30s']
+    )
+
+    class Meta:
+        model = RecurrentTask
         sqlalchemy_session_persistence = 'commit'
 
 

@@ -1,6 +1,7 @@
-from pydo.models import Tag, Task, Config, Project
+from pydo.models import Config, RecurrentTask, Project, Tag, Task
 from tests.factories import \
     ConfigFactory, \
+    RecurrentTaskFactory, \
     ProjectFactory, \
     TagFactory, \
     TaskFactory
@@ -54,6 +55,41 @@ class TestTask(BaseModelTest):
             'fun',
             'id',
             'priority',
+            'state',
+            'title',
+            'value',
+            'wait',
+            'willpower',
+        ]
+
+
+@pytest.mark.usefixtures('base_setup')
+class TestRecurrentTask(BaseModelTest):
+
+    @pytest.fixture(autouse=True)
+    def setup(self, session):
+        self.factory = RecurrentTaskFactory
+        self.dummy_instance = RecurrentTaskFactory.create()
+        self.model = RecurrentTask(
+            id=self.dummy_instance.id,
+            agile=self.dummy_instance.agile,
+            title=self.dummy_instance.title,
+            state=self.dummy_instance.state,
+            due=self.dummy_instance.due,
+            priority=self.dummy_instance.priority,
+            recurrence=self.dummy_instance.recurrence,
+            recurrence_type=self.dummy_instance.recurrence_type,
+        )
+        self.model_attributes = [
+            'agile',
+            'body',
+            'estimate',
+            'due',
+            'fun',
+            'id',
+            'priority',
+            'recurrence',
+            'recurrence_type',
             'state',
             'title',
             'value',

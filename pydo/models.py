@@ -26,6 +26,11 @@ possible_task_states = [
     'completed',
 ]
 
+possible_task_types = [
+    'task',
+    'recurrent_task',
+]
+
 db_path = os.path.expanduser('~/.local/share/pydo/main.db')
 engine = create_engine(
     os.environ.get('PYDO_DATABASE_URL') or 'sqlite:///' + db_path
@@ -73,6 +78,16 @@ class Task(Base):
     value = Column(Integer, doc='Task value')
     fun = Column(Integer, doc='Task fun')
     project = relationship('Project', back_populates='tasks')
+    type = Column(
+        String,
+        nullable=False,
+        doc='Task type: {}'.format(str(possible_task_types))
+    )
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'task',
+        'polymorphic_on': type
+    }
 
     tags = relationship(
         'Tag',
@@ -109,6 +124,20 @@ class Task(Base):
         self.state = state
         self.value = value
         self.willpower = willpower
+
+
+class RecurrentTask(Task):
+    __tablename__ = 'recurrent_task'
+    id = Column(String, ForeignKey('task.id'), primary_key=True)
+    recurrence_type = Column(
+        String,
+        doc="Recurrence type: ['repeating', 'recurring']"
+    )
+    recurrence = Column(String, doc='task recurrence in pydo date format')
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'recurrent_task',
+    }
 
 
 class Project(Base):
