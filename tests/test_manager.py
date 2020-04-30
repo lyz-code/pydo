@@ -2,11 +2,12 @@ from faker import Faker
 from pydo.fulids import fulid
 from pydo.manager import TaskManager, ConfigManager, DateManager
 from pydo.manager import pydo_default_config
-from pydo.models import Task, Config, Project, Tag
+from pydo.models import Task, Config, Project, Tag, RecurrentTask
 from tests.factories import \
     ConfigFactory, \
     ProjectFactory, \
     PydoConfigFactory, \
+    RecurrentTaskFactory, \
     TagFactory, \
     TaskFactory
 from unittest.mock import patch
@@ -30,6 +31,7 @@ class ManagerBaseTest:
         fake (Faker object): Faker object.
         log (mock): logging mock
         log_debug (mock): log.debug mock
+        log_error (mock): log.error mock
         session (Session object): Database session.
     """
 
@@ -41,6 +43,7 @@ class ManagerBaseTest:
         self.log_patch = patch('pydo.manager.logging', autospect=True)
         self.log = self.log_patch.start()
         self.log_debug = self.log.getLogger.return_value.debug
+        self.log_error = self.log.getLogger.return_value.error
         self.session = session
 
         yield 'base_setup'
@@ -83,6 +86,11 @@ class ManagerBaseTest:
 
         with pytest.raises(ValueError):
             self.manager._update(fake_element_id)
+
+    def test_extract_attributes(self):
+        element = self.factory.create()
+        attributes = self.manager._get_attributes(element)
+        assert attributes['id'] == element.id
 
 
 @pytest.mark.usefixtures('base_setup')
@@ -391,6 +399,62 @@ class TestTaskManager(ManagerBaseTest):
         assert attributes['due'] == ''
         assert attributes['estimate'] == ''
         assert attributes['fun'] == ''
+
+    def test_parse_arguments_extracts_recurring_in_long_representation(self):
+        title = self.fake.sentence()
+        recurring = self.fake.word()
+        add_arguments = [
+            title,
+            'recurring:{}'.format(recurring),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['title'] == title
+        assert attributes['recurrence_type'] == 'recurring'
+        assert attributes['recurrence'] == recurring
+
+    def test_parse_arguments_extracts_recurring_in_short_representation(self):
+        title = self.fake.sentence()
+        recurring = self.fake.word()
+        add_arguments = [
+            title,
+            'rec:{}'.format(recurring),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['title'] == title
+        assert attributes['recurrence_type'] == 'recurring'
+        assert attributes['recurrence'] == recurring
+
+    def test_parse_arguments_extracts_repeating_in_long_representation(self):
+        title = self.fake.sentence()
+        repeating = self.fake.word()
+        add_arguments = [
+            title,
+            'repeating:{}'.format(repeating),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['title'] == title
+        assert attributes['recurrence_type'] == 'repeating'
+        assert attributes['recurrence'] == repeating
+
+    def test_parse_arguments_extracts_repeating_in_short_representation(self):
+        title = self.fake.sentence()
+        repeating = self.fake.word()
+        add_arguments = [
+            title,
+            'rep:{}'.format(repeating),
+        ]
+
+        attributes = self.manager._parse_arguments(add_arguments)
+
+        assert attributes['title'] == title
+        assert attributes['recurrence_type'] == 'repeating'
+        assert attributes['recurrence'] == repeating
 
     def test_set_empty_tag_throws_error(self):
         add_arguments = [
@@ -731,6 +795,67 @@ class TestTaskManager(ManagerBaseTest):
         generated_task = self.session.query(Task).one()
         assert generated_task.due == due
 
+    def test_add_generates_recurrent_task_when_repeating(self):
+        title = self.fake.sentence()
+        due = self.fake.date_time()
+        recurrence = '1d'
+
+        self.manager.add(
+            title=title,
+            due=due,
+            recurrence=recurrence,
+            recurrence_type='repeating'
+        )
+
+        generated_parent_task = self.session.query(RecurrentTask).one()
+        generated_child_task = \
+            self.session.query(Task).filter_by(type='task').one()
+
+        assert generated_child_task.id != generated_parent_task.id
+        assert generated_child_task.parent_id == generated_parent_task.id
+        assert generated_parent_task.recurrence == recurrence
+        assert generated_parent_task.recurrence_type == 'repeating'
+        assert generated_parent_task.due == due
+        assert generated_child_task.due == due
+
+    def test_add_generates_recurrent_task_when_recurring(self):
+        title = self.fake.sentence()
+        due = self.fake.date_time()
+        recurrence = '1d'
+
+        self.manager.add(
+            title=title,
+            due=due,
+            recurrence=recurrence,
+            recurrence_type='recurring'
+        )
+
+        generated_parent_task = self.session.query(RecurrentTask).one()
+        generated_child_task = \
+            self.session.query(Task).filter_by(type='task').one()
+
+        assert generated_child_task.id != generated_parent_task.id
+        assert generated_child_task.parent_id == generated_parent_task.id
+        assert generated_parent_task.recurrence == recurrence
+        assert generated_parent_task.recurrence_type == 'recurring'
+        assert generated_parent_task.due == due
+        assert generated_child_task.due == due
+
+    def test_add_fails_gently_if_recurring_task_dont_have_due(self):
+        title = self.fake.sentence()
+        recurrence = '1d'
+
+        self.manager.add(
+            title=title,
+            recurrence=recurrence,
+            recurrence_type='recurring',
+            due=None,
+        )
+
+        self.log_error.assert_called_once_with(
+            'You need to specify a due date for recurring tasks'
+        )
+
     def test_modify_task_modifies_arbitrary_attribute(self):
         task = self.factory.create(state='open')
         non_existent_attribute_value = self.fake.word()
@@ -1012,11 +1137,145 @@ class TestTaskManager(ManagerBaseTest):
             )
         )
 
+    @patch('pydo.manager.TaskManager._get_fulid')
+    def test_complete_task_by_fulid_gives_nice_error_if_unexistent(self, mock):
+        mock.side_effect = KeyError('No fulid was found with that sulid')
+
+        self.manager.complete('non_existent_id')
+
+        self.log_error.assert_called_once_with('There is no task with that id')
+
     def test_config_manager_loaded_in_attribute(self):
         assert isinstance(self.manager.config, ConfigManager)
 
     def test_date_manager_loaded_in_attribute(self):
         assert isinstance(self.manager.date, DateManager)
+
+    @patch('pydo.manager.TaskManager._close_children_hook')
+    def test_complete_child_task_calls_close_children_hook(self, hookMock):
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=fulid().new().str,
+        )
+
+        self.manager.complete(child_task.id)
+
+        hookMock.assert_called_once_with(child_task)
+
+    @patch('pydo.manager.TaskManager._spawn_next_recurring')
+    def test_close_children_hook_spawn_next_recurring(self, recurringMock):
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='recurring',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager._close_children_hook(child_task)
+
+        recurringMock.assert_called_once_with(parent_task)
+
+    @patch('pydo.manager.TaskManager._spawn_next_repeating')
+    def test_close_children_hook_spawn_next_repeating(self, repeatingMock):
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='repeating',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager._close_children_hook(child_task)
+
+        repeatingMock.assert_called_once_with(parent_task)
+
+    def test_generate_children_attributes_removes_unwanted_parent_data(self):
+        parent_task = RecurrentTaskFactory()
+
+        child_attributes = self.manager._generate_children_attributes(
+            parent_task
+        )
+
+        assert child_attributes['id'] != parent_task.id
+        assert child_attributes['parent_id'] == parent_task.id
+        assert child_attributes['type'] == 'task'
+        assert 'recurrence' not in child_attributes
+        assert 'recurrence_type' not in child_attributes
+
+    def test_spawn_next_recurring_creates_next_children_task(self):
+        parent_due = self.fake.date_time()
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='repeating',
+            due=parent_due,
+        )
+
+        self.datetime.datetime.now.return_value = \
+            parent_due + datetime.timedelta(hours=1)
+
+        self.manager._spawn_next_recurring(parent_task)
+
+        new_task = self.session.query(Task).filter_by(type='task').one()
+
+        assert new_task.id != parent_task.id
+        assert new_task.state == 'open'
+        assert new_task.type == 'task'
+        assert new_task.parent_id == parent_task.id
+        assert new_task.title == parent_task.title
+        assert new_task.due == parent_due + datetime.timedelta(days=1)
+
+    def test_spawn_next_recurring_does_not_create_missed_children_tasks(self):
+        parent_due = self.fake.date_time()
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1m',
+            recurrence_type='recurring',
+            due=parent_due,
+        )
+
+        self.datetime.datetime.now.return_value = \
+            parent_due + datetime.timedelta(weeks=1)
+
+        self.manager._spawn_next_recurring(parent_task)
+
+        new_tasks = self.session.query(Task).filter_by(type='task').all()
+
+        assert len(new_tasks) == 1
+
+    def test_spawn_next_repeating_creates_next_children_task(self):
+        parent_due = self.fake.date_time()
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='repeating',
+            due=parent_due,
+        )
+
+        now = parent_due + datetime.timedelta(weeks=1)
+        self.datetime.datetime.now.return_value = now
+
+        self.manager._spawn_next_repeating(parent_task)
+
+        new_task = self.session.query(Task).filter_by(type='task').one()
+
+        assert new_task.id != parent_task.id
+        assert new_task.state == 'open'
+        assert new_task.type == 'task'
+        assert new_task.parent_id == parent_task.id
+        assert new_task.title == parent_task.title
+        assert new_task.due == now + datetime.timedelta(days=1)
 
 
 class TestDateManager:

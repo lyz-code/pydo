@@ -78,12 +78,15 @@ class Task(Base):
     value = Column(Integer, doc='Task value')
     fun = Column(Integer, doc='Task fun')
     project = relationship('Project', back_populates='tasks')
+
+    parent_id = Column(String, ForeignKey('task.id'))
+    parent = relationship('Task', remote_side=[id], backref='children')
+
     type = Column(
         String,
         nullable=False,
         doc='Task type: {}'.format(str(possible_task_types))
     )
-
     __mapper_args__ = {
         'polymorphic_identity': 'task',
         'polymorphic_on': type

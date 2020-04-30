@@ -8,7 +8,7 @@ Classes:
 from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 from pydo.cli import load_logger
 from pydo.fulids import fulid
-from pydo.models import Task, Config, Project, Tag
+from pydo.models import Task, Config, Project, Tag, RecurrentTask
 
 import datetime
 import json
@@ -102,6 +102,8 @@ class TableManager:
     Internal methods:
         _add: Method to create a new table item
         _get: Retrieve the table element identified by id.
+        _get_attributes: Method to extract the object attributes to a
+            dictionary.
         _update: Method to update an existing table item
 
     Public attributes:
@@ -114,7 +116,7 @@ class TableManager:
         self.model = table_model
         self.session = session
 
-    def _add(self, object_values, id, title):
+    def _add(self, id, object_values):
         """
         Method to create a new table item
 
@@ -128,6 +130,11 @@ class TableManager:
 
         for attribute_key, attribute_value in object_values.items():
             setattr(obj, attribute_key, attribute_value)
+
+        try:
+            title = object_values['title']
+        except KeyError:
+            title = None
 
         self.session.add(obj)
         self.session.commit()
@@ -157,6 +164,22 @@ class TableManager:
             raise ValueError('The element {} does not exist'.format(id))
         else:
             return table_element
+
+    def _get_attributes(self, model):
+        """
+        Method to extract the object attributes to a dictionary.
+
+        Arguments:
+            model(SQLAlchemy): Object to extract attributes.
+
+        Returns:
+            attributes (dict): object attributes.
+        """
+
+        return {
+            column_name: getattr(model, column_name)
+            for column_name in model.__mapper__.attrs.keys()
+        }
 
     def _update(self, id, object_values=None):
         """
@@ -207,6 +230,8 @@ class TaskManager(TableManager):
         _parse_arguments: Parse a Taskwarrior like add query into task
             attributes.
         _get_fulid: Method to get the task's fulid if necessary.
+        _generate_children_attributes: Method to generate the next children
+            task attributes.
         _set: Method to set the task's attributes and get its fulid.
         _set_project: Method to set the project attribute.
         _set_tags: Method to set the tags attribute.
@@ -214,9 +239,11 @@ class TaskManager(TableManager):
         _set_agile: Method to set the agile attribute.
 
     Public attributes:
+        date (DateManager): DateManager object.
         fulid (fulid object): Fulid manager and generator object.
         log (logging object): Logger
         session (session object): Database session
+        recurrence (TableManager): RecurrenceTask manager
     """
 
     def __init__(self, session):
@@ -227,6 +254,7 @@ class TaskManager(TableManager):
             self.config.get('fulid.characters'),
             self.config.get('fulid.forbidden_characters'),
         )
+        self.recurrence = TableManager(session, RecurrentTask)
 
     def _parse_attribute(self, add_argument):
         """
@@ -267,6 +295,14 @@ class TaskManager(TableManager):
             },
             'project_id': {
                 'regexp': r'^(pro|project):',
+                'type': 'str',
+            },
+            'recurring': {
+                'regexp': r'^(rec|recurring):',
+                'type': 'str',
+            },
+            'repeating': {
+                'regexp': r'^(rep|repeating):',
                 'type': 'str',
             },
             'tags': {
@@ -337,6 +373,9 @@ class TaskManager(TableManager):
             attribute_id, attribute_value = self._parse_attribute(argument)
             if attribute_id in ['tags', 'tags_rm', 'title']:
                 attributes[attribute_id].append(attribute_value)
+            elif attribute_id in ['recurring', 'repeating']:
+                attributes['recurrence'] = attribute_value
+                attributes['recurrence_type'] = attribute_id
             else:
                 attributes[attribute_id] = attribute_value
 
@@ -365,6 +404,43 @@ class TaskManager(TableManager):
             fulid = self.fulid.sulid_to_fulid(id, open_task_fulids)
 
         return fulid
+
+    def _generate_children_attributes(self, parent_task):
+        """
+        Method to generate the next children task attributes.
+
+        Arguments:
+            parent_task (RecurrentTask):
+
+        Returns:
+            child_attributes (dict): Children attributes
+        """
+
+        child_attributes = self._get_attributes(parent_task)
+        child_attributes.pop('recurrence')
+        child_attributes.pop('recurrence_type')
+        child_attributes['id'] = self._create_next_fulid().str
+        child_attributes['parent_id'] = parent_task.id
+        child_attributes['type'] = 'task'
+
+        return child_attributes
+
+    def _create_next_fulid(self):
+        """
+        Method to create the next task's fulid.
+
+        Returns:
+            fulid (str): next fulid.
+        """
+
+        last_fulid = self.session.query(
+            Task
+        ).filter_by(state='open').order_by(Task.id.desc()).first()
+
+        if last_fulid is not None:
+            last_fulid = last_fulid.id
+
+        return self.fulid.new(last_fulid)
 
     def _set_project(self, task_attributes, project_id=None):
         """
@@ -518,16 +594,6 @@ class TaskManager(TableManager):
             **kwargs: (object) Other attributes (key: value).
         """
 
-        # Define ID
-        last_fulid = self.session.query(
-            Task
-        ).filter_by(state='open').order_by(Task.id.desc()).first()
-
-        if last_fulid is not None:
-            last_fulid = last_fulid.id
-
-        new_fulid = self.fulid.new(last_fulid)
-
         fulid, task_attributes = self._set(
             project_id=project_id,
             tags=tags,
@@ -537,10 +603,26 @@ class TaskManager(TableManager):
             **kwargs,
         )
 
+        if 'recurrence' in task_attributes:
+            if task_attributes['due'] is None:
+                self.log.error(
+                    'You need to specify a due date for {} tasks'.format(
+                        task_attributes['recurrence_type']
+                    )
+                )
+            parent_id = self._create_next_fulid().str
+            self.recurrence._add(
+                parent_id,
+                task_attributes,
+            )
+
+            task_attributes.pop('recurrence')
+            task_attributes.pop('recurrence_type')
+            task_attributes['parent_id'] = parent_id
+
         self._add(
+            self._create_next_fulid().str,
             task_attributes,
-            new_fulid.str,
-            task_attributes['title'],
         )
 
     def modify(
@@ -585,12 +667,19 @@ class TaskManager(TableManager):
             state (str): State of the task once it's closed
         """
 
-        id = self._get_fulid(id)
+        try:
+            id = self._get_fulid(id)
+        except KeyError:
+            self.log.error('There is no task with that id')
+            return
 
         task = self.session.query(Task).get(id)
 
         task.state = state
         task.closed = datetime.datetime.now()
+
+        if task.parent_id is not None:
+            self._close_children_hook(task)
 
         self.session.commit()
         self.log.debug(
@@ -600,6 +689,75 @@ class TaskManager(TableManager):
                 task.title
             )
         )
+
+    def _close_children_hook(self, task):
+        """
+        Method to call different hooks for each parent type once a children
+        has been closed
+
+        Arguments:
+            task (Task): Children closed task
+        """
+        if task.parent.recurrence_type == 'recurring':
+            self._spawn_next_recurring(task.parent)
+        elif task.parent.recurrence_type == 'repeating':
+            self._spawn_next_repeating(task.parent)
+
+    def _spawn_next_recurring(self, parent_task):
+        """
+        Method to spawn the next recurring children task.
+
+        Arguments:
+            parent_task (RecurrentTask):
+        """
+        now = datetime.datetime.now()
+
+        child_attributes = self._generate_children_attributes(parent_task)
+
+        last_due = parent_task.due
+
+        while True:
+            next_due = self.date.convert(parent_task.recurrence, last_due)
+            if next_due > now:
+                break
+            last_due = next_due
+
+        child_attributes['due'] = next_due
+        self._add(
+            child_attributes['id'],
+            child_attributes,
+        )
+
+        # Assign parent. It seems that specifying it in the child_attributes
+        # is not enough.
+
+        child_task = self.session.query(Task).get(child_attributes['id'])
+        child_task.parent_id = child_attributes['parent_id']
+
+    def _spawn_next_repeating(self, parent_task):
+        """
+        Method to spawn the next repeating children task.
+
+        Arguments:
+            parent_task (RecurrentTask):
+        """
+        now = datetime.datetime.now()
+
+        child_attributes = self._generate_children_attributes(parent_task)
+        child_attributes['due'] = self.date.convert(
+            parent_task.recurrence,
+            now,
+        )
+        self._add(
+            child_attributes['id'],
+            child_attributes,
+        )
+
+        # Assign parent. It seems that specifying it in the child_attributes
+        # is not enough.
+
+        child_task = self.session.query(Task).get(child_attributes['id'])
+        child_task.parent_id = child_attributes['parent_id']
 
     def delete(self, id):
         """
@@ -671,9 +829,8 @@ class ConfigManager(TableManager):
             'user': user,
         }
         self._add(
-            config_attributes,
             config_attributes['property'],
-            config_attributes['description'],
+            config_attributes,
         )
 
     def seed(self):
