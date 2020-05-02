@@ -354,24 +354,15 @@ class TaskManager(TableManager):
             attributes (dict): Dictionary with the attributes of the task.
         """
 
-        attributes = {
-            'agile': None,
-            'body': None,
-            'due': None,
-            'title': [],
-            'estimate': None,
-            'fun': None,
-            'priority': None,
-            'project_id': None,
-            'tags': [],
-            'tags_rm': [],
-            'value': None,
-            'willpower': None,
-        }
+        attributes = {}
 
         for argument in add_arguments:
             attribute_id, attribute_value = self._parse_attribute(argument)
             if attribute_id in ['tags', 'tags_rm', 'title']:
+                try:
+                    attributes[attribute_id]
+                except KeyError:
+                    attributes[attribute_id] = []
                 attributes[attribute_id].append(attribute_value)
             elif attribute_id in ['recurring', 'repeating']:
                 attributes['recurrence'] = attribute_value
@@ -379,10 +370,10 @@ class TaskManager(TableManager):
             else:
                 attributes[attribute_id] = attribute_value
 
-        if len(attributes['title']) > 0:
+        try:
             attributes['title'] = ' '.join(attributes['title'])
-        else:
-            del attributes['title']
+        except KeyError:
+            pass
 
         return attributes
 
@@ -658,13 +649,33 @@ class TaskManager(TableManager):
             task_attributes,
         )
 
-    def _close(self, id, state):
+    def modify_parent(self, id, **kwargs):
+        """
+        Use parent method to modify the parent of an existing task.
+
+        Arguments:
+            id (str): child id.
+            **kwargs: (object) Other attributes (key: value).
+        """
+
+        fulid = self._get_fulid(id)
+        child_task = self.session.query(Task).get(fulid)
+
+        if child_task.parent_id is None:
+            self.log.error(
+                "Task {} doesn't have a parent task".format(child_task.id)
+            )
+        else:
+            self.modify(child_task.parent_id, **kwargs)
+
+    def _close(self, id, state, parent):
         """
         Method to close a task
 
         Arguments:
             id (str): Ulid of the task
             state (str): State of the task once it's closed
+            parent (bool): Also delete parent task
         """
 
         try:
@@ -678,7 +689,14 @@ class TaskManager(TableManager):
         task.state = state
         task.closed = datetime.datetime.now()
 
-        if task.parent_id is not None:
+        if parent:
+            if task.parent_id is None:
+                self.log.error(
+                    "Task {} doesn't have a parent task".format(task.id)
+                )
+            else:
+                self._close(task.parent_id, state=state, parent=False)
+        elif task.parent_id is not None:
             self._close_children_hook(task)
 
         self.session.commit()
@@ -759,25 +777,27 @@ class TaskManager(TableManager):
         child_task = self.session.query(Task).get(child_attributes['id'])
         child_task.parent_id = child_attributes['parent_id']
 
-    def delete(self, id):
+    def delete(self, id, parent=False):
         """
         Method to delete a task
 
         Arguments:
             id (str): Ulid of the task
+            parent (bool): Also delete parent task (False by default)
         """
 
-        self._close(id, 'deleted')
+        self._close(id, 'deleted', parent)
 
-    def complete(self, id):
+    def complete(self, id, parent=False):
         """
         Method to complete a task
 
         Arguments:
             id (str): Ulid of the task
+            parent (bool): Also delete parent task (False by default)
         """
 
-        self._close(id, 'completed')
+        self._close(id, 'completed', parent)
 
 
 class ConfigManager(TableManager):

@@ -10,7 +10,7 @@ from tests.factories import \
     RecurrentTaskFactory, \
     TagFactory, \
     TaskFactory
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import datetime
 import pytest
@@ -1020,6 +1020,66 @@ class TestTaskManager(ManagerBaseTest):
 
         assert modified_task.body == body
 
+    def test_modify_parent_only_modifies_desired_attributes(self):
+        body = self.fake.sentence()
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='recurring',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager.modify_parent(child_task.id, body=body)
+
+        result_parent_task = self.session.query(Task).get(parent_task.id)
+
+        assert result_parent_task.body == body
+        assert result_parent_task.recurrence == parent_task.recurrence
+        assert result_parent_task.recurrence_type == \
+            parent_task.recurrence_type
+        assert result_parent_task.due == parent_task.due
+
+    def test_modify_parent_doesnt_modify_child(self):
+        body = self.fake.sentence()
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='recurring',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager.modify_parent(child_task.id, body=body)
+
+        result_child_task = self.session.query(Task).get(child_task.id)
+        result_parent_task = self.session.query(Task).get(parent_task.id)
+
+        assert result_parent_task.body == body
+        assert result_child_task.body != body
+
+    def test_modify_parent_fails_gracefully_if_non_existent(self):
+        title = self.fake.sentence()
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=None,
+            title=title,
+        )
+
+        self.manager.modify_parent(child_task.id, title=title)
+
+        self.log_error.assert_called_once_with(
+            "Task {} doesn't have a parent task".format(child_task.id)
+        )
+
     def test_raise_error_if_add_task_modifies_unvalid_agile_state(self):
         task = self.factory.create(state='open')
         agile = self.fake.word()
@@ -1095,6 +1155,69 @@ class TestTaskManager(ManagerBaseTest):
             )
         )
 
+    def test_delete_parent_task_by_fulid_also_deletes_child(self):
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='recurring',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
+
+        self.manager.delete(child_task.id, parent=True)
+
+        result_parent_task = self.session.query(Task).get(parent_task.id)
+        result_child_task = self.session.query(Task).get(child_task.id)
+
+        assert result_child_task.closed == closed
+        assert result_child_task.state == 'deleted'
+        assert call(
+            'Deleted task {}: {}'.format(
+                result_child_task.id,
+                result_child_task.title,
+            )
+        ) in self.log_debug.mock_calls
+
+        assert result_parent_task.closed == closed
+        assert result_parent_task.state == 'deleted'
+        assert call(
+            'Deleted task {}: {}'.format(
+                result_parent_task.id,
+                result_parent_task.title,
+            )
+        ) in self.log_debug.mock_calls
+
+    def test_delete_non_parent_task_deletes_child_and_fails_graceful(self):
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=None
+        )
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
+
+        self.manager.delete(child_task.id, parent=True)
+
+        result_child_task = self.session.query(Task).get(child_task.id)
+
+        assert result_child_task.closed == closed
+        assert result_child_task.state == 'deleted'
+        assert call(
+            'Deleted task {}: {}'.format(
+                result_child_task.id,
+                result_child_task.title,
+            )
+        ) in self.log_debug.mock_calls
+
+        self.log_error.assert_called_once_with(
+            "Task {} doesn't have a parent task".format(child_task.id)
+        )
+
     def test_complete_task_by_sulid(self):
         closed = self.fake.date_time()
         self.datetime.datetime.now.return_value = closed
@@ -1135,6 +1258,69 @@ class TestTaskManager(ManagerBaseTest):
                 modified_task.id,
                 modified_task.title,
             )
+        )
+
+    def test_complete_parent_task_by_fulid_also_completes_child(self):
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='recurring',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
+
+        self.manager.complete(child_task.id, parent=True)
+
+        result_parent_task = self.session.query(Task).get(parent_task.id)
+        result_child_task = self.session.query(Task).get(child_task.id)
+
+        assert result_child_task.closed == closed
+        assert result_child_task.state == 'completed'
+        assert call(
+            'Completed task {}: {}'.format(
+                result_child_task.id,
+                result_child_task.title,
+            )
+        ) in self.log_debug.mock_calls
+
+        assert result_parent_task.closed == closed
+        assert result_parent_task.state == 'completed'
+        assert call(
+            'Completed task {}: {}'.format(
+                result_parent_task.id,
+                result_parent_task.title,
+            )
+        ) in self.log_debug.mock_calls
+
+    def test_complete_non_parent_task_completes_child_and_fails_graceful(self):
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=None
+        )
+        closed = self.fake.date_time()
+        self.datetime.datetime.now.return_value = closed
+
+        self.manager.complete(child_task.id, parent=True)
+
+        result_child_task = self.session.query(Task).get(child_task.id)
+
+        assert result_child_task.closed == closed
+        assert result_child_task.state == 'completed'
+        assert call(
+            'Completed task {}: {}'.format(
+                result_child_task.id,
+                result_child_task.title,
+            )
+        ) in self.log_debug.mock_calls
+
+        self.log_error.assert_called_once_with(
+            "Task {} doesn't have a parent task".format(child_task.id)
         )
 
     @patch('pydo.manager.TaskManager._get_fulid')

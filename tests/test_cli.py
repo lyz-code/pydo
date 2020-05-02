@@ -64,6 +64,21 @@ class TestArgparse:
         assert parsed.subcommand == arguments[0]
         assert parsed.ulid == arguments[1]
         assert parsed.modify_argument == arguments[2:4]
+        assert parsed.parent is False
+
+    def test_can_specify_parent_in_modify_subcommand(self):
+        description = self.fake.sentence()
+        arguments = [
+            'mod',
+            '-p',
+            self.fake.word(),
+            description,
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.parent is True
+        assert parsed.ulid == arguments[2]
+        assert parsed.modify_argument == [arguments[3]]
 
     def test_can_specify_done_subcommand(self):
         arguments = [
@@ -73,6 +88,18 @@ class TestArgparse:
         parsed = self.parser.parse_args(arguments)
         assert parsed.subcommand == arguments[0]
         assert parsed.ulid == arguments[1]
+        assert parsed.parent is False
+
+    def test_can_specify_parent_in_done_subcommand(self):
+        arguments = [
+            'done',
+            '-p',
+            ulid.new().str
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.parent is True
+        assert parsed.ulid == arguments[2]
 
     def test_can_specify_delete_subcommand(self):
         arguments = [
@@ -82,6 +109,18 @@ class TestArgparse:
         parsed = self.parser.parse_args(arguments)
         assert parsed.subcommand == arguments[0]
         assert parsed.ulid == arguments[1]
+        assert parsed.parent is False
+
+    def test_can_specify_parent_in_delete_subcommand(self):
+        arguments = [
+            'del',
+            '-p',
+            ulid.new().str
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.parent is True
+        assert parsed.ulid == arguments[2]
 
     def test_can_specify_list_subcommand(self):
         parsed = self.parser.parse_args(['list'])

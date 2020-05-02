@@ -179,11 +179,30 @@ class TestMain:
         ]
         self.parser_args.subcommand = arguments[0]
         self.parser_args.ulid = arguments[1]
+        self.parser_args.parent = False
 
         main()
 
         self.tm.return_value.complete.assert_called_once_with(
-            id=arguments[1]
+            id=arguments[1],
+            parent=False,
+        )
+
+    def test_done_parent_subcomand_completes_parent_task(self):
+        arguments = [
+            'done',
+            '-p',
+            ulid.new().str
+        ]
+        self.parser_args.subcommand = arguments[0]
+        self.parser_args.ulid = arguments[1]
+        self.parser_args.parent = True
+
+        main()
+
+        self.tm.return_value.complete.assert_called_once_with(
+            id=arguments[1],
+            parent=True,
         )
 
     def test_delete_subcomand_deletes_task(self):
@@ -193,11 +212,30 @@ class TestMain:
         ]
         self.parser_args.subcommand = arguments[0]
         self.parser_args.ulid = arguments[1]
+        self.parser_args.parent = False
 
         main()
 
         self.tm.return_value.delete.assert_called_once_with(
-            id=arguments[1]
+            id=arguments[1],
+            parent=False,
+        )
+
+    def test_delete_parent_subcomand_deletes_parent_task(self):
+        arguments = [
+            'del',
+            '-p',
+            ulid.new().str
+        ]
+        self.parser_args.subcommand = arguments[0]
+        self.parser_args.ulid = arguments[1]
+        self.parser_args.parent = True
+
+        main()
+
+        self.tm.return_value.delete.assert_called_once_with(
+            id=arguments[1],
+            parent=True,
         )
 
     @pytest.mark.parametrize(
@@ -263,6 +301,7 @@ class TestMain:
             'pro:test',
         ]
         self.parser_args.subcommand = arguments[0]
+        self.parser_args.parent = False
         self.parser_args.ulid = arguments[1]
         self.parser_args.modify_argument = arguments[2]
         self.tm.return_value._parse_arguments.return_value = {
@@ -272,6 +311,28 @@ class TestMain:
         main()
 
         self.tm.return_value.modify.assert_called_once_with(
+            arguments[1],
+            project='test',
+        )
+
+    def test_modify_parent_subcomand_modifies_parent_task(self):
+        arguments = [
+            'mod',
+            '-p',
+            ulid.new().str,
+            'pro:test',
+        ]
+        self.parser_args.subcommand = arguments[0]
+        self.parser_args.parent = True
+        self.parser_args.ulid = arguments[1]
+        self.parser_args.modify_argument = arguments[2]
+        self.tm.return_value._parse_arguments.return_value = {
+            'project': 'test',
+        }
+
+        main()
+
+        self.tm.return_value.modify_parent.assert_called_once_with(
             arguments[1],
             project='test',
         )

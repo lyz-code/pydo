@@ -49,14 +49,20 @@ def main(argv=sys.argv[1:]):
             )
         elif args.subcommand == 'mod':
             attributes = task_manager._parse_arguments(args.modify_argument)
-            task_manager.modify(
-                args.ulid,
-                **attributes
-            )
+            if args.parent:
+                task_manager.modify_parent(
+                    args.ulid,
+                    **attributes
+                )
+            else:
+                task_manager.modify(
+                    args.ulid,
+                    **attributes
+                )
         elif args.subcommand == 'del':
-            task_manager.delete(id=args.ulid)
+            task_manager.delete(id=args.ulid, parent=args.parent)
         elif args.subcommand == 'done':
-            task_manager.complete(id=args.ulid)
+            task_manager.complete(id=args.ulid, parent=args.parent)
     elif args.subcommand in ['list', None]:
         List(session).print(
             columns=config.get('report.list.columns').split(', '),
