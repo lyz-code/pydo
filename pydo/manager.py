@@ -38,15 +38,57 @@ pydo_default_config = {
         'choices': '',
         'description': 'Datetime strftime compatible string to print dates',
     },
-    'report.list.columns': {
+    'report.open.columns': {
         'default': 'id, title, project_id, priority, tags, due',
         'choices': 'id, title, description, project_id, priority, tags, '
         'agile, estimate, willpower, value, fun',
         'description': 'Ordered coma separated list of Task attributes '
         'to print',
     },
-    'report.list.labels': {
+    'report.open.labels': {
         'default': 'ID, Title, Project, Pri, Tags, Due',
+        'choices': '',
+        'description': 'Ordered coma separated list of names for the '
+        'Task attributes to print',
+    },
+    'report.repeating.columns': {
+        'default': 'id, title, recurrence, project_id, priority, tags, due',
+        'choices': 'id, title, recurrence, description, project_id, priority, '
+        'tags, agile, estimate, willpower, value, fun',
+        'description': 'Ordered coma separated list of Task attributes '
+        'to print',
+    },
+    'report.repeating.labels': {
+        'default': 'ID, Title, Recurrence, Project, Pri, Tags, Due',
+        'choices': '',
+        'description': 'Ordered coma separated list of names for the '
+        'Task attributes to print',
+    },
+    'report.recurring.columns': {
+        'default': 'id, title, recurrence, project_id, priority, tags, due',
+        'choices': 'id, title, recurrence, description, project_id, priority, '
+        'tags, agile, estimate, willpower, value, fun',
+        'description': 'Ordered coma separated list of Task attributes '
+        'to print',
+    },
+    'report.recurring.labels': {
+        'default': 'ID, Title, Recurrence, Project, Pri, Tags, Due',
+        'choices': '',
+        'description': 'Ordered coma separated list of names for the '
+        'Task attributes to print',
+    },
+    'report.frozen.columns': {
+        'default': 'id, title, recurrence, recurrence_type, project_id, '
+        'priority, tags, due, parent_id',
+        'choices': 'id, title, recurrence, description, project_id, priority, '
+        'tags, agile, estimate, willpower, value, fun, recurrence, '
+        'recurrence_type, parent_id',
+        'description': 'Ordered coma separated list of Task attributes '
+        'to print',
+    },
+    'report.frozen.labels': {
+        'default': 'ID, Title, Recurrence, Recurrence Type, Project, Pri, '
+        'Tags, Due, Parent',
         'choices': '',
         'description': 'Ordered coma separated list of names for the '
         'Task attributes to print',
@@ -377,7 +419,7 @@ class TaskManager(TableManager):
 
         return attributes
 
-    def _get_fulid(self, id):
+    def _get_fulid(self, id, state='open'):
         """
         Method to get the task's fulid if necessary.
 
@@ -390,9 +432,9 @@ class TaskManager(TableManager):
         """
         fulid = id
         if len(id) < 10:
-            open_tasks = self.session.query(Task).filter_by(state='open')
-            open_task_fulids = [task.id for task in open_tasks]
-            fulid = self.fulid.sulid_to_fulid(id, open_task_fulids)
+            tasks = self.session.query(Task).filter_by(state=state)
+            task_fulids = [task.id for task in tasks]
+            fulid = self.fulid.sulid_to_fulid(id, task_fulids)
 
         return fulid
 
@@ -716,10 +758,11 @@ class TaskManager(TableManager):
         Arguments:
             task (Task): Children closed task
         """
-        if task.parent.recurrence_type == 'recurring':
-            self._spawn_next_recurring(task.parent)
-        elif task.parent.recurrence_type == 'repeating':
-            self._spawn_next_repeating(task.parent)
+        if task.parent.state != 'frozen':
+            if task.parent.recurrence_type == 'recurring':
+                self._spawn_next_recurring(task.parent)
+            elif task.parent.recurrence_type == 'repeating':
+                self._spawn_next_repeating(task.parent)
 
     def _spawn_next_recurring(self, parent_task):
         """
@@ -798,6 +841,51 @@ class TaskManager(TableManager):
         """
 
         self._close(id, 'completed', parent)
+
+    def freeze(self, id):
+        """
+        Method to freeze a task.
+
+        Arguments:
+            id (str): Ulid of the task
+        """
+
+        fulid = self._get_fulid(id)
+        task = self.session.query(Task).get(fulid)
+        task.state = 'frozen'
+        self.session.commit()
+
+    def unfreeze(self, id):
+        """
+        Method to unfreeze a task.
+
+        Arguments:
+            id (str): Ulid of the task
+        """
+
+        fulid = self._get_fulid(id, 'frozen')
+        task = self.session.query(Task).get(fulid)
+        task.state = 'open'
+        self.session.commit()
+
+        if task.type != 'task':
+            self._unfreeze_parent_hook(task)
+
+    def _unfreeze_parent_hook(self, task):
+        """
+        Method to call different hooks for each parent type once it's unfrozen
+
+        Arguments:
+            task (Task): Parent unfrozen task
+        """
+
+        children_states = [children.state for children in task.children]
+
+        if 'open' not in children_states:
+            if task.recurrence_type == 'recurring':
+                self._spawn_next_recurring(task)
+            elif task.recurrence_type == 'repeating':
+                self._spawn_next_repeating(task)
 
 
 class ConfigManager(TableManager):

@@ -1,10 +1,11 @@
 from faker import Faker
 from pydo.manager import ConfigManager
-from pydo.models import Task
-from pydo.reports import List, Projects, Tags
+from pydo.models import RecurrentTask, Task
+from pydo.reports import TaskReport, Projects, Tags
 from tests.factories import \
     ProjectFactory, \
     PydoConfigFactory, \
+    RecurrentTaskFactory, \
     TagFactory, \
     TaskFactory
 from unittest.mock import patch
@@ -64,9 +65,9 @@ class BaseReport:
 
 
 @pytest.mark.usefixtures('base_setup')
-class TestList(BaseReport):
+class TestTaskReport(BaseReport):
     """
-    Class to test the List report.
+    Class to test the TaskReport report.
 
     Public attributes:
         config (ConfigManager): Default pydo configuration manager.
@@ -78,13 +79,13 @@ class TestList(BaseReport):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        self.report = List(session)
-        self.columns = self.config.get('report.list.columns').split(', ')
-        self.labels = self.config.get('report.list.labels').split(', ')
+        self.report = TaskReport(session)
+        self.columns = self.config.get('report.open.columns').split(', ')
+        self.labels = self.config.get('report.open.labels').split(', ')
 
         yield 'setup'
 
-    def test_list_has_desired_default_columns(self):
+    def test_task_report_has_desired_default_columns(self):
         assert 'id' in self.columns
         assert 'title' in self.columns
         assert 'priority' in self.columns
@@ -126,7 +127,31 @@ class TestList(BaseReport):
         assert desired_columns == columns
         assert desired_labels == labels
 
-    def test_list_prints_id_title_and_project_if_project_existent(self):
+    def test_remove_null_columns_doesnt_fail_if_column_doesnt_exist(
+        self,
+        session
+    ):
+        desired_columns = ['id', 'title']
+        columns = desired_columns.copy()
+        columns.append('unexistent_column')
+        desired_labels = ['Id', 'Title']
+        labels = desired_labels.copy()
+        labels.append('unexistent_label')
+
+        TaskFactory.create_batch(10, due=None)
+
+        tasks = session.query(Task).filter_by(state='open')
+
+        result_columns, result_labels = self.report._remove_null_columns(
+            tasks,
+            columns,
+            labels
+        )
+
+        assert result_columns == desired_columns
+        assert result_labels == desired_labels
+
+    def test_task_report_prints_id_title_and_project_if_project_existent(self):
         project = ProjectFactory.create()
         tasks = TaskFactory.create_batch(2, state='open')
         tasks[0].project = project
@@ -143,8 +168,9 @@ class TestList(BaseReport):
             self.labels[id_index],
             self.labels[project_index],
         ]
+        tasks_query = self.session.query(Task).filter_by(state='open')
 
-        self.report.print(columns=columns, labels=labels)
+        self.report.print(tasks=tasks_query, columns=columns, labels=labels)
 
         # Prepare desired report
         report_data = []
@@ -164,7 +190,7 @@ class TestList(BaseReport):
         )
         self.print.assert_called_once_with(self.tabulate.return_value)
 
-    def test_list_print_id_title_and_tags_if_present(self):
+    def test_task_report_print_id_title_and_tags_if_present(self):
         tasks = TaskFactory.create_batch(4, state='open')
         tags = TagFactory.create_batch(2)
 
@@ -183,8 +209,9 @@ class TestList(BaseReport):
             self.labels[id_index],
             self.labels[tags_index],
         ]
+        tasks_query = self.session.query(Task).filter_by(state='open')
 
-        self.report.print(columns=columns, labels=labels)
+        self.report.print(tasks=tasks_query, columns=columns, labels=labels)
 
         # Prepare desired report
         report_data = []
@@ -209,7 +236,7 @@ class TestList(BaseReport):
         )
         self.print.assert_called_once_with(self.tabulate.return_value)
 
-    def test_list_print_id_and_due_if_present(self):
+    def test_task_report_print_id_and_due_if_present(self):
         tasks = TaskFactory.create_batch(10, state='open')
 
         id_index = self.columns.index('id')
@@ -223,8 +250,9 @@ class TestList(BaseReport):
             self.labels[id_index],
             self.labels[due_index],
         ]
+        tasks_query = self.session.query(Task).filter_by(state='open')
 
-        self.report.print(columns=columns, labels=labels)
+        self.report.print(tasks=tasks_query, columns=columns, labels=labels)
 
         # Prepare desired report
         report_data = []
@@ -243,6 +271,23 @@ class TestList(BaseReport):
             tablefmt='simple'
         )
         self.print.assert_called_once_with(self.tabulate.return_value)
+
+    def test_task_report_print_doesnt_fail_if_some_tasks_doesnt_have_attr(
+        self,
+        session
+    ):
+        # The Task tasks don't have `recurrence` attribute
+
+        columns = ['id', 'recurrence']
+        labels = ['Id', 'Recurrence']
+
+        self.report = TaskReport(session, RecurrentTask)
+        TaskFactory.create_batch(10, state='open')
+        RecurrentTaskFactory.create_batch(10, state='open')
+
+        tasks = session.query(Task).filter_by(state='open')
+
+        self.report.print(tasks, columns, labels)
 
 
 @pytest.mark.usefixtures('base_setup')

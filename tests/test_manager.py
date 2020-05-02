@@ -1368,6 +1368,27 @@ class TestTaskManager(ManagerBaseTest):
 
         recurringMock.assert_called_once_with(parent_task)
 
+    @patch('pydo.manager.TaskManager._spawn_next_recurring')
+    def test_close_children_hook_doesnt_spawn_next_recurring_when_frozen(
+        self,
+        recurringMock
+    ):
+        parent_task = RecurrentTaskFactory(
+            state='frozen',
+            recurrence='1d',
+            recurrence_type='recurring',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager._close_children_hook(child_task)
+
+        assert recurringMock.called is False
+
     @patch('pydo.manager.TaskManager._spawn_next_repeating')
     def test_close_children_hook_spawn_next_repeating(self, repeatingMock):
         parent_task = RecurrentTaskFactory(
@@ -1385,6 +1406,27 @@ class TestTaskManager(ManagerBaseTest):
         self.manager._close_children_hook(child_task)
 
         repeatingMock.assert_called_once_with(parent_task)
+
+    @patch('pydo.manager.TaskManager._spawn_next_repeating')
+    def test_close_children_hook_doesnt_spawn_next_repeating_when_frozen(
+        self,
+        repeatingMock
+    ):
+        parent_task = RecurrentTaskFactory(
+            state='frozen',
+            recurrence='1d',
+            recurrence_type='repeating',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager._close_children_hook(child_task)
+
+        assert repeatingMock.called is False
 
     def test_generate_children_attributes_removes_unwanted_parent_data(self):
         parent_task = RecurrentTaskFactory()
@@ -1462,6 +1504,115 @@ class TestTaskManager(ManagerBaseTest):
         assert new_task.parent_id == parent_task.id
         assert new_task.title == parent_task.title
         assert new_task.due == now + datetime.timedelta(days=1)
+
+    def test_freeze_freezes_task_with_fulid(self):
+        task = self.factory.create(state='open')
+
+        self.manager.freeze(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+        )
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.state == 'frozen'
+
+    def test_unfreeze_unfreezes_task_with_fulid(self):
+        task = self.factory.create(state='frozen')
+
+        self.manager.unfreeze(
+            fulid().fulid_to_sulid(task.id, [task.id]),
+        )
+
+        modified_task = self.session.query(Task).get(task.id)
+
+        assert modified_task.state == 'open'
+
+    @patch('pydo.manager.TaskManager._unfreeze_parent_hook')
+    def test_unfreeze_spawns_unfreeze_parent_hook(self, hookMock):
+        parent_task = RecurrentTaskFactory(
+            state='frozen',
+        )
+
+        self.manager.unfreeze(parent_task.id)
+
+        hookMock.assert_called_once_with(parent_task)
+
+    @patch('pydo.manager.TaskManager._unfreeze_parent_hook')
+    def test_unfreeze_doesnt_spawn_unfreeze_parent_hook_on_child_tasks(
+        self,
+        hookMock
+    ):
+        task = TaskFactory(
+            state='frozen',
+        )
+
+        self.manager.unfreeze(task.id)
+
+        assert hookMock.called is False
+
+    @patch('pydo.manager.TaskManager._spawn_next_recurring')
+    def test_unfreeze_spawns_next_recurring_if_none_open_exists(
+        self,
+        recurringMock
+    ):
+        parent_task = RecurrentTaskFactory(
+            recurrence_type='recurring',
+            state='frozen',
+        )
+
+        self.manager.unfreeze(parent_task.id)
+
+        recurringMock.assert_called_once_with(parent_task)
+
+    @patch('pydo.manager.TaskManager._spawn_next_recurring')
+    def test_unfreeze_doesnt_spawns_next_recurring_if_one_open_exists(
+        self,
+        recurringMock
+    ):
+        parent_task = RecurrentTaskFactory(
+            recurrence_type='recurring',
+            state='frozen',
+        )
+        self.factory.create(
+            parent_id=parent_task.id,
+            state='open',
+        )
+
+        self.manager.unfreeze(parent_task.id)
+
+        assert recurringMock.called is False
+
+    @patch('pydo.manager.TaskManager._spawn_next_repeating')
+    def test_unfreeze_spawns_next_repeating_if_none_open_exists(
+        self,
+        repeatingMock
+    ):
+        parent_task = RecurrentTaskFactory(
+            recurrence_type='repeating',
+            state='frozen',
+        )
+
+        self.manager.unfreeze(parent_task.id)
+
+        repeatingMock.assert_called_once_with(parent_task)
+
+    @patch('pydo.manager.TaskManager._spawn_next_repeating')
+    def test_unfreeze_doesnt_spawns_next_repeating_if_one_open_exists(
+        self,
+        repeatingMock
+    ):
+        parent_task = RecurrentTaskFactory(
+            recurrence_type='repeating',
+            state='frozen',
+        )
+        self.factory.create(
+            parent_id=parent_task.id,
+            state='open',
+        )
+
+        self.manager.unfreeze(parent_task.id)
+
+        assert repeatingMock.called is False
 
 
 class TestDateManager:

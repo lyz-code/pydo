@@ -24,6 +24,7 @@ possible_task_states = [
     'open',
     'deleted',
     'completed',
+    'frozen',
 ]
 
 possible_task_types = [

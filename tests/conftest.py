@@ -11,7 +11,7 @@ temp_ddbb = tempfile.mkstemp()[1]
 os.environ['PYDO_DATABASE_URL'] = 'sqlite:///{}'.format(temp_ddbb)
 
 # It needs to be after the environmental variable
-from pydo import engine
+from pydo.models import engine
 from tests import factories
 
 

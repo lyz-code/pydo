@@ -49,9 +49,9 @@ class BaseReport():
             return None
 
 
-class List(BaseReport):
+class TaskReport(BaseReport):
     """
-    Class to print the list report.
+    Class to print tasks that match a filter.
 
     Arguments:
         session: Database session.
@@ -64,30 +64,45 @@ class List(BaseReport):
 
     Public attributes:
         session: Database session.
+        model (Model): Model of the task to print.
     """
 
-    def __init__(self, session):
+    def __init__(self, session, task_model=Task):
         super().__init__(session)
+        self.model = task_model
 
     def _remove_null_columns(self, tasks, columns, labels):
         """
         Method to remove the columns that have all null items.
 
         Arguments:
-            tasks (session.query): A Task session query
-            columns (list): Element attributes to print
-            labels (list): Headers of the attributes
+            tasks (session.query): A Task session query.
+            columns (list): Element attributes to print.
+            labels (list): Headers of the attributes.
         """
         for attribute in columns.copy():
             remove_attribute = False
             try:
                 # Task with attribute == None
-                if tasks.filter(getattr(Task, attribute).is_(None)).count() \
-                        == tasks.count():
+                if tasks.filter(
+                    getattr(self.model, attribute).is_(None)
+                ).count() == tasks.count():
                     remove_attribute = True
             except NotImplementedError:
                 # Task with empty relationship
-                if tasks.filter(getattr(Task, attribute).any()).count() == 0:
+                if tasks.filter(
+                    getattr(self.model, attribute).any()
+                ).count() == 0:
+                    remove_attribute = True
+            except AttributeError:
+                # Task without attribute
+                try:
+                    if tasks.filter(
+                        getattr(self.model, attribute).any()
+                    ).count() == 0:
+                        remove_attribute = True
+                except AttributeError:
+                    # There are no task with that attribute
                     remove_attribute = True
             if remove_attribute:
                 index_to_remove = columns.index(attribute)
@@ -95,16 +110,16 @@ class List(BaseReport):
                 labels.pop(index_to_remove)
         return columns, labels
 
-    def print(self, columns, labels):
+    def print(self, tasks, columns, labels):
         """
         Method to print the report
 
         Arguments:
+            tasks (Query): SQLAlchemy query with the tasks to print.
             columns (list): Element attributes to print
             labels (list): Headers of the attributes
         """
         report_data = []
-        tasks = self.session.query(Task).filter_by(state='open')
 
         columns, labels = self._remove_null_columns(tasks, columns, labels)
 
@@ -112,7 +127,7 @@ class List(BaseReport):
         sulids = fulid(
             self.config.get('fulid.characters'),
             self.config.get('fulid.forbidden_characters'),
-        ).sulids([task.id for task in tasks])
+        ).sulids([task.id for task in tasks.all()])
 
         for task in sorted(
             tasks.all(),
@@ -134,7 +149,10 @@ class List(BaseReport):
                 elif attribute == 'due':
                     task_report.append(self._date2str(task.due))
                 else:
-                    task_report.append(task.__getattribute__(attribute))
+                    try:
+                        task_report.append(task.__getattribute__(attribute))
+                    except AttributeError:
+                        pass
             report_data.append(task_report)
         print(tabulate(report_data, headers=labels, tablefmt='simple'))
 

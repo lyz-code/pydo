@@ -122,9 +122,17 @@ class TestArgparse:
         assert parsed.parent is True
         assert parsed.ulid == arguments[2]
 
-    def test_can_specify_list_subcommand(self):
-        parsed = self.parser.parse_args(['list'])
-        assert parsed.subcommand == 'list'
+    def test_can_specify_open_subcommand(self):
+        parsed = self.parser.parse_args(['open'])
+        assert parsed.subcommand == 'open'
+
+    def test_can_specify_recurring_subcommand(self):
+        parsed = self.parser.parse_args(['recurring'])
+        assert parsed.subcommand == 'recurring'
+
+    def test_can_specify_repeating_subcommand(self):
+        parsed = self.parser.parse_args(['repeating'])
+        assert parsed.subcommand == 'repeating'
 
     def test_can_specify_projects_subcommand(self):
         parsed = self.parser.parse_args(['projects'])
@@ -137,6 +145,52 @@ class TestArgparse:
     def test_can_specify_export_subcommand(self):
         parsed = self.parser.parse_args(['export'])
         assert parsed.subcommand == 'export'
+
+    def test_can_specify_freeze_subcommand(self):
+        arguments = [
+            'freeze',
+            ulid.new().str
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.ulid == arguments[1]
+        assert parsed.parent is False
+
+    def test_can_specify_freeze_parent_subcommand(self):
+        arguments = [
+            'freeze',
+            '-p',
+            ulid.new().str
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.ulid == arguments[2]
+        assert parsed.parent is True
+
+    def test_can_specify_unfreeze_subcommand(self):
+        arguments = [
+            'unfreeze',
+            ulid.new().str
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.ulid == arguments[1]
+        assert parsed.parent is False
+
+    def test_can_specify_unfreeze_parent_subcommand(self):
+        arguments = [
+            'unfreeze',
+            '-p',
+            ulid.new().str
+        ]
+        parsed = self.parser.parse_args(arguments)
+        assert parsed.subcommand == arguments[0]
+        assert parsed.ulid == arguments[2]
+        assert parsed.parent is True
+
+    def test_can_specify_frozen_subcommand(self):
+        parsed = self.parser.parse_args(['frozen'])
+        assert parsed.subcommand == 'frozen'
 
 
 class TestLogger:
