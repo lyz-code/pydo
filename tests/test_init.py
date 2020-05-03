@@ -59,7 +59,7 @@ class TestMain:
         assert loggerMock.called
 
     @patch('pydo.install')
-    def test_install_subcomand_calls_install(self, installMock):
+    def test_install_subcommand_calls_install(self, installMock):
         self.parser_args.subcommand = 'install'
         main()
         assert installMock.called
@@ -107,7 +107,7 @@ class TestMain:
 
         self.tm.assert_called_once_with(self.session)
 
-    def test_add_subcomand_creates_task(self):
+    def test_add_subcommand_creates_task(self):
         description = self.fake.sentence()
         self.parser_args.subcommand = 'add'
         self.tm.return_value._parse_arguments.return_value = {
@@ -120,7 +120,7 @@ class TestMain:
             description=description,
         )
 
-    def test_add_subcomand_creates_task_with_project(self):
+    def test_add_subcommand_creates_task_with_project(self):
         description = self.fake.sentence()
         project_id = self.fake.word()
 
@@ -137,7 +137,7 @@ class TestMain:
             project_id=project_id,
         )
 
-    def test_add_subcomand_creates_task_with_tags(self):
+    def test_add_subcommand_creates_task_with_tags(self):
         description = self.fake.sentence()
         tag = self.fake.word()
 
@@ -154,7 +154,7 @@ class TestMain:
             tags=[tag],
         )
 
-    def test_add_subcomand_creates_task_with_priority(self):
+    def test_add_subcommand_creates_task_with_priority(self):
         description = self.fake.sentence()
         priority = self.fake.random_number()
 
@@ -171,7 +171,7 @@ class TestMain:
             priority=priority,
         )
 
-    def test_done_subcomand_completes_task(self):
+    def test_done_subcommand_completes_task(self):
         arguments = [
             'done',
             ulid.new().str
@@ -187,7 +187,7 @@ class TestMain:
             parent=False,
         )
 
-    def test_done_parent_subcomand_completes_parent_task(self):
+    def test_done_parent_subcommand_completes_parent_task(self):
         arguments = [
             'done',
             '-p',
@@ -204,7 +204,7 @@ class TestMain:
             parent=True,
         )
 
-    def test_delete_subcomand_deletes_task(self):
+    def test_delete_subcommand_deletes_task(self):
         arguments = [
             'del',
             ulid.new().str
@@ -220,7 +220,7 @@ class TestMain:
             parent=False,
         )
 
-    def test_delete_parent_subcomand_deletes_parent_task(self):
+    def test_delete_parent_subcommand_deletes_parent_task(self):
         arguments = [
             'del',
             '-p',
@@ -245,7 +245,7 @@ class TestMain:
         ]
     )
     @patch('pydo.sessionmaker.return_value.return_value.query')
-    def test_open_subcomand_prints_report_by_default(self, mock, subcommand):
+    def test_open_subcommand_prints_report_by_default(self, mock, subcommand):
         self.parser_args.subcommand = subcommand
 
         main()
@@ -261,31 +261,8 @@ class TestMain:
             labels=self.config.get('report.open.labels').split(', '),
         )
 
-    def test_open_subcomand_doesnt_print_recurrent_parents(self):
-        self.parser_args.subcommand = 'open'
-
-        parent_task = factories.RecurrentTaskFactory(state='open',)
-
-        child_task = factories.TaskFactory.create(
-            state='open',
-            parent_id=parent_task.id,
-        )
-
-        desired_tasks = [child_task]
-
-        main()
-
-        self.task_report.assert_called_once_with(
-            self.session
-        )
-        self.task_report.return_value.print.assert_called_once_with(
-            tasks=desired_tasks,
-            columns=self.config.get('report.open.columns').split(', '),
-            labels=self.config.get('report.open.labels').split(', '),
-        )
-
     @patch('pydo.Projects')
-    def test_projects_subcomand_prints_report(self, projectMock):
+    def test_projects_subcommand_prints_report(self, projectMock):
         arguments = [
             'projects',
         ]
@@ -301,7 +278,7 @@ class TestMain:
         )
 
     @patch('pydo.Tags')
-    def test_tags_subcomand_prints_report(self, tagsMock):
+    def test_tags_subcommand_prints_report(self, tagsMock):
         arguments = [
             'tags',
         ]
@@ -316,7 +293,7 @@ class TestMain:
             labels=self.config.get('report.tags.labels').split(', ')
         )
 
-    def test_modify_subcomand_modifies_task(self):
+    def test_modify_subcommand_modifies_task(self):
         arguments = [
             'mod',
             ulid.new().str,
@@ -337,7 +314,7 @@ class TestMain:
             project='test',
         )
 
-    def test_modify_parent_subcomand_modifies_parent_task(self):
+    def test_modify_parent_subcommand_modifies_parent_task(self):
         arguments = [
             'mod',
             '-p',
@@ -360,12 +337,12 @@ class TestMain:
         )
 
     @patch('pydo.export')
-    def test_export_subcomand_calls_export(self, exportMock):
+    def test_export_subcommand_calls_export(self, exportMock):
         self.parser_args.subcommand = 'export'
         main()
         assert exportMock.called
 
-    def test_freeze_subcomand_freezes_task(self):
+    def test_freeze_subcommand_freezes_task(self):
         arguments = [
             'freeze',
             ulid.new().str
@@ -381,7 +358,7 @@ class TestMain:
             parent=False,
         )
 
-    def test_freeze_parent_subcomand_freezes_parent_task(self):
+    def test_freeze_parent_subcommand_freezes_parent_task(self):
         arguments = [
             'freeze',
             '-p',
@@ -398,7 +375,7 @@ class TestMain:
             parent=True,
         )
 
-    def test_unfreeze_subcomand_unfreezes_task(self):
+    def test_unfreeze_subcommand_unfreezes_task(self):
         arguments = [
             'unfreeze',
             ulid.new().str
@@ -414,7 +391,7 @@ class TestMain:
             parent=False,
         )
 
-    def test_unfreeze_parent_subcomand_unfreezes_task(self):
+    def test_unfreeze_parent_subcommand_unfreezes_task(self):
         arguments = [
             'unfreeze',
             '-p',
@@ -432,7 +409,7 @@ class TestMain:
         )
 
     @patch('pydo.sessionmaker.return_value.return_value.query')
-    def test_repeating_subcomand_prints_repeating_parent_tasks(self, mock):
+    def test_repeating_subcommand_prints_repeating_parent_tasks(self, mock):
         self.parser_args.subcommand = 'repeating'
 
         main()
@@ -452,7 +429,7 @@ class TestMain:
         )
 
     @patch('pydo.sessionmaker.return_value.return_value.query')
-    def test_recurring_subcomand_prints_recurring_parent_tasks(self, mock):
+    def test_recurring_subcommand_prints_recurring_parent_tasks(self, mock):
         self.parser_args.subcommand = 'recurring'
 
         main()
@@ -472,17 +449,17 @@ class TestMain:
         )
 
     @patch('pydo.sessionmaker.return_value.return_value.query')
-    def test_frozen_subcomand_prints_frozen_parent_tasks(self, mock):
+    def test_frozen_subcommand_prints_frozen_parent_tasks(self, mock):
         self.parser_args.subcommand = 'frozen'
 
         main()
 
-        assert call(models.RecurrentTask) in mock.mock_calls
+        assert call(models.Task) in mock.mock_calls
         assert call(state='frozen') in mock.return_value.filter_by.mock_calls
 
         self.task_report.assert_called_once_with(
             self.session,
-            models.Task
+            models.RecurrentTask
         )
         self.task_report.return_value.print.assert_called_once_with(
             tasks=mock.return_value.filter_by.return_value,

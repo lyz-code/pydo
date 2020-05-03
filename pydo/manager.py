@@ -842,30 +842,40 @@ class TaskManager(TableManager):
 
         self._close(id, 'completed', parent)
 
-    def freeze(self, id):
+    def freeze(self, id, parent=False):
         """
         Method to freeze a task.
 
         Arguments:
-            id (str): Ulid of the task
+            id (str): Ulid of the task.
+            parent (bool): Freeze the parent task instead(False by default).
         """
 
         fulid = self._get_fulid(id)
         task = self.session.query(Task).get(fulid)
-        task.state = 'frozen'
+
+        if parent and task.parent is not None:
+            task.parent.state = 'frozen'
+        else:
+            task.state = 'frozen'
         self.session.commit()
 
-    def unfreeze(self, id):
+    def unfreeze(self, id, parent=False):
         """
         Method to unfreeze a task.
 
         Arguments:
             id (str): Ulid of the task
+            parent (bool): Unfreeze the parent task instead(False by default).
         """
 
         fulid = self._get_fulid(id, 'frozen')
         task = self.session.query(Task).get(fulid)
-        task.state = 'open'
+        if parent and task.parent is not None:
+            task.parent.state = 'open'
+        else:
+            task.state = 'open'
+
         self.session.commit()
 
         if task.type != 'task':
@@ -1024,7 +1034,7 @@ class DateManager:
             return datetime.datetime.strptime(human_date, '%Y-%m-%dT%H:%M')
         elif re.match(r'[0-9]{4}.[0-9]{2}.[0-9]{2}', human_date,):
             return datetime.datetime.strptime(human_date, '%Y-%m-%d')
-        elif re.match(r'now', human_date):
+        elif re.match(r'[now|today]', human_date):
             return starting_date
         elif re.match(r'tomorrow', human_date):
             return starting_date + relativedelta(days=1)

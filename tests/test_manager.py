@@ -1516,6 +1516,30 @@ class TestTaskManager(ManagerBaseTest):
 
         assert modified_task.state == 'frozen'
 
+    def test_freeze_parent_freezes_parent_task_with_child_id(self):
+        parent_task = RecurrentTaskFactory(
+            state='open',
+            recurrence='1d',
+            recurrence_type='repeating',
+        )
+
+        child_task = TaskFactory.create(
+            state='open',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager.freeze(
+            child_task.id,
+            parent=True
+        )
+
+        result_child_task = self.session.query(Task).get(child_task.id)
+        result_parent_task = self.session.query(Task).get(parent_task.id)
+
+        assert result_child_task.state == 'open'
+        assert result_parent_task.state == 'frozen'
+
     def test_unfreeze_unfreezes_task_with_fulid(self):
         task = self.factory.create(state='frozen')
 
@@ -1526,6 +1550,30 @@ class TestTaskManager(ManagerBaseTest):
         modified_task = self.session.query(Task).get(task.id)
 
         assert modified_task.state == 'open'
+
+    def test_unfreeze_parent_unfreezes_parent_task_with_child_id(self):
+        parent_task = RecurrentTaskFactory(
+            state='frozen',
+            recurrence='1d',
+            recurrence_type='repeating',
+        )
+
+        child_task = TaskFactory.create(
+            state='frozen',
+            parent_id=parent_task.id,
+            title=parent_task.title,
+        )
+
+        self.manager.unfreeze(
+            child_task.id,
+            parent=True
+        )
+
+        result_child_task = self.session.query(Task).get(child_task.id)
+        result_parent_task = self.session.query(Task).get(parent_task.id)
+
+        assert result_child_task.state == 'frozen'
+        assert result_parent_task.state == 'open'
 
     @patch('pydo.manager.TaskManager._unfreeze_parent_hook')
     def test_unfreeze_spawns_unfreeze_parent_hook(self, hookMock):
@@ -1810,6 +1858,10 @@ class TestDateManager:
 
     def test_convert_date_accepts_now(self):
         assert self.manager.convert('now').day == \
+            self.now.day
+
+    def test_convert_date_accepts_today(self):
+        assert self.manager.convert('today').day == \
             self.now.day
 
     def test_convert_date_accepts_tomorrow(self):
