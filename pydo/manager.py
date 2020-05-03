@@ -1047,7 +1047,7 @@ class DateManager:
             return datetime.datetime.strptime(human_date, '%Y-%m-%dT%H:%M')
         elif re.match(r'[0-9]{4}.[0-9]{2}.[0-9]{2}', human_date,):
             return datetime.datetime.strptime(human_date, '%Y-%m-%d')
-        elif re.match(r'[now|today]', human_date):
+        elif re.match(r'(now|today)', human_date):
             return starting_date
         elif re.match(r'tomorrow', human_date):
             return starting_date + relativedelta(days=1)
