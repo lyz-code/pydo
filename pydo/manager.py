@@ -260,25 +260,38 @@ class TaskManager(TableManager):
 
     Public methods:
         add: Creates a new task.
-        delete: Deletes a task.
         complete: Completes a task.
+        delete: Deletes a task.
+        freeze: Freezes a task.
+        modify: Modifies a task.
+        modify_parent: Modifies the parent task.
+        unfreeze: Unfreezes a task.
 
     Internal methods:
         _add: Parent method to add table elements.
-        _update: Parent method to update table elements.
         _close: Closes a task.
-        _parse_attribute: Parse a Taskwarrior like add argument into a task
-            attribute.
-        _parse_arguments: Parse a Taskwarrior like add query into task
-            attributes.
-        _get_fulid: Method to get the task's fulid if necessary.
+        _close_children_hook: Method to call different hooks for each parent
+            type once a children has been closed.
+        _create_next_fulid: Method to create the next task's fulid.
         _generate_children_attributes: Method to generate the next children
             task attributes.
+        _get_fulid: Method to get the task's fulid if necessary.
+        _parse_arguments: Parse a Taskwarrior like add query into task
+            attributes.
+        _parse_attribute: Parse a Taskwarrior like add argument into a task
+            attribute.
+        _rm_tags: Method to delete tags from the Task attributes.
         _set: Method to set the task's attributes and get its fulid.
+        _set_agile: Method to set the agile attribute.
         _set_project: Method to set the project attribute.
         _set_tags: Method to set the tags attribute.
-        _rm_tags: Method to delete tags from the Task attributes.
-        _set_agile: Method to set the agile attribute.
+        _spawn_next_recurring: Method to spawn the next recurring children
+            task.
+        _spawn_next_repeating: Method to spawn the next repeating children
+            task.
+        _unfreeze_parent_hook: Method to call the different hooks for each
+            parent type once it's unfrozen
+        _update: Parent method to update table elements.
 
     Public attributes:
         date (DateManager): DateManager object.
