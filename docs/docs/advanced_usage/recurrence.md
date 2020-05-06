@@ -1,8 +1,4 @@
----
-title: Recurrence
-date: 20200503
-author: Lyz
----
+# Recurrence
 
 Recurrence is used to create tasks periodically, such as paying the rent or
 mowing the lawn.
