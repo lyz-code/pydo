@@ -21,8 +21,10 @@ children. The first one holds the template for the second. So each time a child
 is completed or deleted, the parent attributes are copied and the due date is
 set according to the recurrence type.
 
-It will create only the next actionable task. So if from the last completed
-children you've missed 3 tasks, those won't be created.
+`pydo` will only maintain one children per parent, so it won't create new tasks
+until the existent is either completed or deleted. Furthermore, it will create
+only the next actionable task. So if from the last completed children you've
+missed 3 tasks, those won't be created.
 
 # Create a recurring or repeating task.
 
