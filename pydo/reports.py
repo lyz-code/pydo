@@ -83,7 +83,7 @@ class TaskReport(BaseReport):
         for attribute in columns.copy():
             remove_attribute = False
             try:
-                # Task with attribute == None
+                # All tasks with attribute == None
                 if tasks.filter(
                     getattr(self.model, attribute).is_(None)
                 ).count() == tasks.count():
@@ -152,7 +152,7 @@ class TaskReport(BaseReport):
                     try:
                         task_report.append(task.__getattribute__(attribute))
                     except AttributeError:
-                        pass
+                        task_report.append('')
             report_data.append(task_report)
         print(tabulate(report_data, headers=labels, tablefmt='simple'))
 
