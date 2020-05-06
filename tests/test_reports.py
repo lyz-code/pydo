@@ -289,6 +289,31 @@ class TestTaskReport(BaseReport):
 
         self.report.print(tasks, columns, labels)
 
+    def test_task_report_print_fills_empty_if_task_doesnt_have_attr(
+        self,
+        session
+    ):
+        # If it doesn't get filled by an empty value, it will get filled with
+        # the next attribute data.
+
+        # The Task tasks don't have `recurrence` attribute
+
+        columns = ['id', 'recurrence']
+        labels = ['Id', 'Recurrence']
+
+        self.report = TaskReport(session, RecurrentTask)
+        TaskFactory.create_batch(1, state='open')
+        # RecurrentTaskFactory.create_batch(1, state='open')
+
+        tasks = session.query(Task).filter_by(state='open')
+
+        self.report.print(tasks, columns, labels)
+        self.tabulate.assert_called_once_with(
+            [['a', '']],
+            headers=labels,
+            tablefmt='simple',
+        )
+
 
 @pytest.mark.usefixtures('base_setup')
 class TestProjects(BaseReport):
