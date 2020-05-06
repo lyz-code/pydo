@@ -447,7 +447,15 @@ class TaskManager(TableManager):
         if len(id) < 10:
             tasks = self.session.query(Task).filter_by(state=state)
             task_fulids = [task.id for task in tasks]
-            fulid = self.fulid.sulid_to_fulid(id, task_fulids)
+            try:
+                fulid = self.fulid.sulid_to_fulid(id, task_fulids)
+            except KeyError:
+                self.log.error(
+                    'There is no {} task with fulid {}'.format(
+                        state,
+                        fulid,
+                    )
+                )
 
         return fulid
 

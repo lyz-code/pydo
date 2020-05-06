@@ -483,12 +483,15 @@ class TestTaskManager(ManagerBaseTest):
 
         assert task.id == self.manager._get_fulid(task.id)
 
-    def test_get_fulid_non_existent_task(self):
+    def test_get_fulid_non_existent_task_fails_gracefully(self):
         # Max 9 chars (otherwise it isn't a sulid)
         non_existent_id = 'N_E'
 
-        with pytest.raises(KeyError):
-            self.manager._get_fulid(non_existent_id)
+        self.manager._get_fulid(non_existent_id)
+
+        self.log_error.assert_called_once_with(
+            'There is no open task with fulid N_E'
+        )
 
     def test_set_project_existent(self):
         project = ProjectFactory.create()
