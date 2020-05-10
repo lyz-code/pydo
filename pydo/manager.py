@@ -341,7 +341,11 @@ class TaskManager(TableManager):
             else:
                 attributes[attribute_id] = attribute_value
 
-        attributes['title'] = ' '.join(attributes['title'])
+        if len(attributes['title']) > 0:
+            attributes['title'] = ' '.join(attributes['title'])
+        else:
+            del attributes['title']
+
         return attributes
 
     def _get_fulid(self, id):
