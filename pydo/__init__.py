@@ -41,6 +41,8 @@ def task_modify_commands(session, args):
 
     if args.subcommand == 'add':
         attributes = task_manager._parse_arguments(args.add_argument)
+        if 'title' not in attributes:
+            raise ValueError('The task must have a title')
         task_manager.add(
             **attributes
         )
