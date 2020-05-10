@@ -1,6 +1,6 @@
 from pydo.fulids import fulid
 from pydo.manager import ConfigManager
-from pydo.models import Project, Tag, Task, Config, possible_task_states
+from pydo import models
 
 import factory
 import random
@@ -26,7 +26,7 @@ class ConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
         ])
 
     class Meta:
-        model = Config
+        model = models.Config
         sqlalchemy_session_persistence = 'commit'
 
 
@@ -49,16 +49,16 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
     description = factory.Faker('sentence')
 
     class Meta:
-        model = Project
+        model = models.Project
         sqlalchemy_session_persistence = 'commit'
 
 
 class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
     id = factory.LazyFunction(lambda: fulid().new().str)
-
     title = factory.Faker('sentence')
-    state = factory.Faker('word', ext_word_list=possible_task_states)
+    state = factory.Faker('word', ext_word_list=models.possible_task_states)
     agile = factory.Faker('word', ext_word_list=['backlog', 'todo', None])
+    type = 'task'
     priority = factory.Faker('random_number')
 
     # Let half the tasks have a due date
@@ -74,7 +74,23 @@ class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
             return factory.Faker('date_time').generate({})
 
     class Meta:
-        model = Task
+        model = models.Task
+        sqlalchemy_session_persistence = 'commit'
+
+
+class RecurrentTaskFactory(TaskFactory):
+    recurrence = factory.Faker(
+        'word',
+        ext_word_list=['1d', '1rmo', '1y2mo30s']
+    )
+    recurrence_type = factory.Faker(
+        'word',
+        ext_word_list=['repeating', 'recurring']
+    )
+    type = 'recurrent_task'
+
+    class Meta:
+        model = models.RecurrentTask
         sqlalchemy_session_persistence = 'commit'
 
 
@@ -86,5 +102,5 @@ class TagFactory(factory.alchemy.SQLAlchemyModelFactory):
     description = factory.Faker('sentence')
 
     class Meta:
-        model = Tag
+        model = models.Tag
         sqlalchemy_session_persistence = 'commit'
