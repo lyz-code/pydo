@@ -24,6 +24,12 @@ possible_task_states = [
     'open',
     'deleted',
     'completed',
+    'frozen',
+]
+
+possible_task_types = [
+    'task',
+    'recurrent_task',
 ]
 
 db_path = os.path.expanduser('~/.local/share/pydo/main.db')
@@ -74,41 +80,38 @@ class Task(Base):
     fun = Column(Integer, doc='Task fun')
     project = relationship('Project', back_populates='tasks')
 
+    parent_id = Column(String, ForeignKey('task.id'))
+    parent = relationship('Task', remote_side=[id], backref='children')
+
+    type = Column(
+        String,
+        nullable=False,
+        doc='Task type: {}'.format(str(possible_task_types))
+    )
+    __mapper_args__ = {
+        'polymorphic_identity': 'task',
+        'polymorphic_on': type
+    }
+
     tags = relationship(
         'Tag',
         back_populates='tasks',
         secondary=task_tag_association_table
     )
 
-    def __init__(
-        self,
-        id,
-        title,
-        agile=None,
-        closed=None,
-        due=None,
-        wait=None,
-        body=None,
-        estimate=None,
-        fun=None,
-        priority=None,
-        state=None,
-        value=None,
-        willpower=None,
-    ):
-        self.id = id
-        self.agile = agile
-        self.closed = closed
-        self.due = due
-        self.wait = wait
-        self.title = title
-        self.estimate = estimate
-        self.body = body
-        self.fun = fun
-        self.priority = priority
-        self.state = state
-        self.value = value
-        self.willpower = willpower
+
+class RecurrentTask(Task):
+    __tablename__ = 'recurrent_task'
+    id = Column(String, ForeignKey('task.id'), primary_key=True)
+    recurrence_type = Column(
+        String,
+        doc="Recurrence type: ['repeating', 'recurring']"
+    )
+    recurrence = Column(String, doc='task recurrence in pydo date format')
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'recurrent_task',
+    }
 
 
 class Project(Base):
@@ -119,10 +122,6 @@ class Project(Base):
     id = Column(String, primary_key=True, doc='Project name')
     description = Column(String, doc='Project description')
     tasks = relationship('Task', back_populates='project')
-
-    def __init__(self, id, description):
-        self.id = id
-        self.description = description
 
 
 class Tag(Base):
@@ -138,10 +137,6 @@ class Tag(Base):
         back_populates='tags',
         secondary=task_tag_association_table
     )
-
-    def __init__(self, id, description):
-        self.id = id
-        self.description = description
 
 
 class Config(Base):
@@ -169,17 +164,3 @@ class Config(Base):
         String,
         doc="JSON list of possible values"
     )
-
-    def __init__(
-        self,
-        id,
-        default,
-        description=None,
-        user=None,
-        choices=None
-    ):
-        self.id = id
-        self.default = default
-        self.description = description
-        self.user = user
-        self.choices = choices

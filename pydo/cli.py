@@ -40,6 +40,12 @@ def load_parser():
         help='Task ulid',
     )
     modify_parser.add_argument(
+        "-p",
+        "--parent",
+        action='store_true',
+        help='Modify parent task instead',
+    )
+    modify_parser.add_argument(
         "modify_argument",
         type=str,
         help='Task modify arguments',
@@ -53,6 +59,12 @@ def load_parser():
         type=str,
         help='Task ulid',
     )
+    delete_parser.add_argument(
+        "-p",
+        "--parent",
+        action='store_true',
+        help='Delete parent task instead',
+    )
 
     complete_parser = subparser.add_parser('done')
     complete_parser.add_argument(
@@ -60,8 +72,42 @@ def load_parser():
         type=str,
         help='Task ulid',
     )
+    complete_parser.add_argument(
+        "-p",
+        "--parent",
+        action='store_true',
+        help='Complete parent task instead',
+    )
+    freeze_parser = subparser.add_parser('freeze')
+    freeze_parser.add_argument(
+        "ulid",
+        type=str,
+        help='Task ulid',
+    )
+    freeze_parser.add_argument(
+        "-p",
+        "--parent",
+        action='store_true',
+        help='Freeze parent task instead',
+    )
 
-    subparser.add_parser('list')
+    unfreeze_parser = subparser.add_parser('unfreeze')
+    unfreeze_parser.add_argument(
+        "ulid",
+        type=str,
+        help='Task ulid',
+    )
+    unfreeze_parser.add_argument(
+        "-p",
+        "--parent",
+        action='store_true',
+        help='Unfreeze parent task instead',
+    )
+
+    subparser.add_parser('open')
+    subparser.add_parser('recurring')
+    subparser.add_parser('repeating')
+    subparser.add_parser('frozen')
     subparser.add_parser('projects')
     subparser.add_parser('tags')
     subparser.add_parser('export')
