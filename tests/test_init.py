@@ -109,24 +109,29 @@ class TestMain:
         )
 
     def test_add_subcomand_creates_task(self):
+        title = self.fake.sentence()
         description = self.fake.sentence()
         self.parser_args.subcommand = 'add'
         self.tm.return_value._parse_arguments.return_value = {
+            'title': title,
             'description': description,
         }
 
         main()
 
         self.tm.return_value.add.assert_called_once_with(
+            title=title,
             description=description,
         )
 
     def test_add_subcomand_creates_task_with_project(self):
+        title = self.fake.sentence()
         description = self.fake.sentence()
         project_id = self.fake.word()
 
         self.parser_args.subcommand = 'add'
         self.tm.return_value._parse_arguments.return_value = {
+            'title': title,
             'description': description,
             'project_id': project_id,
         }
@@ -134,16 +139,19 @@ class TestMain:
         main()
 
         self.tm.return_value.add.assert_called_once_with(
+            title=title,
             description=description,
             project_id=project_id,
         )
 
     def test_add_subcomand_creates_task_with_tags(self):
+        title = self.fake.sentence()
         description = self.fake.sentence()
         tag = self.fake.word()
 
         self.parser_args.subcommand = 'add'
         self.tm.return_value._parse_arguments.return_value = {
+            'title': title,
             'description': description,
             'tags': [tag],
         }
@@ -151,16 +159,19 @@ class TestMain:
         main()
 
         self.tm.return_value.add.assert_called_once_with(
+            title=title,
             description=description,
             tags=[tag],
         )
 
     def test_add_subcomand_creates_task_with_priority(self):
+        title = self.fake.sentence()
         description = self.fake.sentence()
         priority = self.fake.random_number()
 
         self.parser_args.subcommand = 'add'
         self.tm.return_value._parse_arguments.return_value = {
+            'title': title,
             'description': description,
             'priority': priority,
         }
@@ -168,6 +179,7 @@ class TestMain:
         main()
 
         self.tm.return_value.add.assert_called_once_with(
+            title=title,
             description=description,
             priority=priority,
         )
