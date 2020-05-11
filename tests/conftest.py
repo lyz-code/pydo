@@ -11,12 +11,8 @@ temp_ddbb = tempfile.mkstemp()[1]
 os.environ['PYDO_DATABASE_URL'] = 'sqlite:///{}'.format(temp_ddbb)
 
 # It needs to be after the environmental variable
-from pydo import engine
-from tests.factories import \
-    ConfigFactory, \
-    ProjectFactory, \
-    TagFactory, \
-    TaskFactory
+from pydo.models import engine
+from tests import factories
 
 
 @pytest.fixture(scope='module')
@@ -51,10 +47,11 @@ def session(connection):
     transaction = connection.begin()
     session = sessionmaker()(bind=connection)
 
-    ConfigFactory._meta.sqlalchemy_session = session
-    ProjectFactory._meta.sqlalchemy_session = session
-    TagFactory._meta.sqlalchemy_session = session
-    TaskFactory._meta.sqlalchemy_session = session
+    factories.ConfigFactory._meta.sqlalchemy_session = session
+    factories.ProjectFactory._meta.sqlalchemy_session = session
+    factories.TagFactory._meta.sqlalchemy_session = session
+    factories.TaskFactory._meta.sqlalchemy_session = session
+    factories.RecurrentTaskFactory._meta.sqlalchemy_session = session
 
     yield session
 

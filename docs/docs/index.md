@@ -63,10 +63,10 @@ pydo add Buy eggs
 pydo add Bake cake
 ```
 
-Now let's see the list.
+Now let's see the open tasks.
 
 ```bash
-pydo list
+pydo open
 
 ID    Title
 ----  ---------
@@ -80,14 +80,14 @@ Suppose we bought our ingredients and wish to mark the first two tasks as done.
 ```
 pydo a done
 pydo s done
-pydo list
+pydo
 
 ID    Title
 ----  ---------
 d     Bake cake
 ```
 
-Those are the first three features, the `add`, `list` and `done` commands, but
+Those are the first three features, the `add`, `open` and `done` commands, but
 they represent all you really need to know, to get started with `pydo`.
 
 But there are hundreds of other features, so if you learn more, you can do more.

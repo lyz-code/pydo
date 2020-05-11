@@ -11,6 +11,7 @@ nav:
     - Tags: 'advanced_usage/tags.md'
     - Dates: 'advanced_usage/dates.md'
     - Priority: 'advanced_usage/priority.md'
+    - Recurrence: 'advanced_usage/recurrence.md'
     - Estimate: 'advanced_usage/estimate.md'
     - Value: 'advanced_usage/objective_value.md'
     - Willpower: 'advanced_usage/willpower.md'
