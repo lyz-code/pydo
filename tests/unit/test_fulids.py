@@ -30,23 +30,21 @@ class Testfulid:
             + " <fulid('{}')>>".format(self.fulid.str)
 
     def test_fulid_has_charset_attribute(self):
-        assert self.fulid.charset == \
-            list(config['fulid.characters']['default'])
+        assert self.fulid.charset == list(config.get('fulid.characters'))
 
     def test_fulid_has_forbidden_charset_attribute(self):
         assert self.fulid.forbidden_charset == \
-            list(config['fulid.forbidden_characters']['default'])
+            list(config.get('fulid.forbidden_characters'))
 
     def test_fulid_has_fulid_attribute_none_by_default(self):
         assert self.fulid.str is None
 
     def test_fulid_has_charset_attribute_set_by_default(self):
-        assert self.fulid.charset == \
-            list(config['fulid.characters']['default'])
+        assert self.fulid.charset == list(config.get('fulid.characters'))
 
     def test_fulid_has_forbidden_charset_attribute_set_by_default(self):
         assert self.fulid.forbidden_charset == \
-            list(config['fulid.forbidden_characters']['default'])
+            list(config.get('fulid.forbidden_characters'))
 
     def test_fulid_can_set_fulid_attribute(self):
         self.fulid = fulid(fulid='full_fulid_string')
@@ -78,14 +76,13 @@ class Testfulid:
 
     def test_fulid_generates_an_ulid_with_the_id_in_charset(self):
         for character in self.fulid.new().id():
-            assert character.lower() in \
-                config['fulid.characters']['default']
+            assert character.lower() in config.get('fulid.characters')
 
     def test_fulid_does_not_accept_invalid_terminal_characters(self):
         with pytest.raises(ValueError):
             fulid(
                 'ilou|&:;()<>~*@?!$#[]{}\\/\'"`',
-                config['fulid.forbidden_characters']['default'],
+                config.get('fulid.forbidden_characters'),
             )
 
     def test_fulid_sets_the_fulid_attribute(self):

@@ -21,7 +21,7 @@ fulid:
   # Characters forbidden to be used in the generation of ids, due to
   # ulid converting them to numbers or because they have a meaning
   # for the terminal.
-  forbidden_characters: ilou|&:;()<>~*@?!$#[]{}\\/\'"`
+  forbidden_characters: ilou|&:;()<>~*@?!$#[]{}\/'"`
 
 # Level of logging verbosity. One of ['info', 'debug', 'warning'].
 verbose: info
