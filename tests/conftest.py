@@ -44,7 +44,6 @@ def session(connection):
     transaction = connection.begin()
     session = sessionmaker()(bind=connection)
 
-    factories.ConfigFactory._meta.sqlalchemy_session = session
     factories.ProjectFactory._meta.sqlalchemy_session = session
     factories.TagFactory._meta.sqlalchemy_session = session
     factories.TaskFactory._meta.sqlalchemy_session = session

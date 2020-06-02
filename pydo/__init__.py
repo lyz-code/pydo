@@ -99,8 +99,8 @@ def main(argv=sys.argv[1:]):
         )
         TaskReport(session).print(
             tasks=open_tasks,
-            columns=config.get('report.open.columns').split(', '),
-            labels=config.get('report.open.labels').split(', ')
+            columns=config.get('report.open.columns'),
+            labels=config.get('report.open.labels'),
         )
     elif args.subcommand in ['repeating', 'recurring']:
         open_recurring_tasks = session.query(models.RecurrentTask).filter_by(
@@ -109,30 +109,26 @@ def main(argv=sys.argv[1:]):
         )
         TaskReport(session, models.RecurrentTask).print(
             tasks=open_recurring_tasks,
-            columns=config.get(
-                'report.{}.columns'.format(args.subcommand)
-            ).split(', '),
-            labels=config.get(
-                'report.{}.labels'.format(args.subcommand)
-            ).split(', ')
+            columns=config.get('report.{}.columns'.format(args.subcommand)),
+            labels=config.get('report.{}.labels'.format(args.subcommand)),
         )
     elif args.subcommand == 'frozen':
         TaskReport(session, models.RecurrentTask).print(
             tasks=session.query(models.Task).filter_by(
                 state='frozen',
             ),
-            columns=config.get('report.frozen.columns').split(', '),
-            labels=config.get('report.frozen.labels').split(', ')
+            columns=config.get('report.frozen.columns'),
+            labels=config.get('report.frozen.labels'),
         )
     elif args.subcommand == 'projects':
         Projects(session).print(
-            columns=config.get('report.projects.columns').split(', '),
-            labels=config.get('report.projects.labels').split(', ')
+            columns=config.get('report.projects.columns'),
+            labels=config.get('report.projects.labels'),
         )
     elif args.subcommand == 'tags':
         Tags(session).print(
-            columns=config.get('report.tags.columns').split(', '),
-            labels=config.get('report.tags.labels').split(', ')
+            columns=config.get('report.tags.columns'),
+            labels=config.get('report.tags.labels'),
         )
     elif args.subcommand == 'export':
         export(logging.getLogger('main'))

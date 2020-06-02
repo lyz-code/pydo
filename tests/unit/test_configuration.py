@@ -30,6 +30,24 @@ class TestConfig:
         self.log_patch.stop()
         self.sys_patch.stop()
 
+    def test_get_can_fetch_nested_items_with_dots(self):
+        self.config.data = {
+            'first': {
+                'second': 'value'
+            },
+        }
+
+        assert self.config.get('first.second') == 'value'
+
+    def test_config_can_fetch_nested_items_with_dictionary_notation(self):
+        self.config.data = {
+            'first': {
+                'second': 'value'
+            },
+        }
+
+        assert self.config['first']['second'] == 'value'
+
     def test_config_load(self):
         self.config.load(self.config_path)
         assert len(self.config.data['task']) > 0
@@ -71,8 +89,10 @@ class TestConfig:
     def test_save_config(self):
         tmp = tempfile.mkdtemp()
         save_file = os.path.join(tmp, 'yaml_save_test.yaml')
+        self.config.data = {'a': 'b'}
+
         self.config.save(save_file)
         with open(save_file, 'r') as f:
-            assert "task:" in f.read()
+            assert "a:" in f.read()
 
         shutil.rmtree(tmp)

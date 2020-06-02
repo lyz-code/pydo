@@ -1,7 +1,7 @@
 from faker import Faker
 from pydo import config
 from pydo.fulids import fulid
-from pydo.config import Config
+from pydo.configuration import Config
 from pydo.manager import TaskManager, DateManager
 from pydo.models import Task, Project, Tag, RecurrentTask
 from tests.factories import \

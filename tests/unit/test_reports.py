@@ -1,6 +1,6 @@
 from faker import Faker
 from pydo import config
-from pydo.config import Config
+from pydo.configuration import Config
 from pydo.models import RecurrentTask, Task
 from pydo.reports import TaskReport, Projects, Tags
 from tests.factories import \

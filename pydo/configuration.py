@@ -25,6 +25,8 @@ class Config(UserDict):
             Default: ~/.local/share/pydo/config.yaml
 
     Public methods:
+        get: Fetch the configuration value of the specified key.
+            If there are nested dictionaries, a dot notation can be used.
         load: Loads configuration from configuration YAML file.
         save: Saves configuration in the configuration YAML file.
 
@@ -34,6 +36,32 @@ class Config(UserDict):
 
     def __init__(self, config_path='~/.local/share/pydo/config.yaml'):
         self.load(os.path.expanduser(config_path))
+
+    def get(self, key):
+        """
+        Fetch the configuration value of the specified key. If there are nested
+        dictionaries, a dot notation can be used.
+
+        So if the configuration contents are:
+
+        self.data = {
+            'first': {
+                'second': 'value'
+            },
+        }
+
+        self.data.get('first.second') == 'value'
+
+        Arguments:
+            key(str): Configuration key to fetch
+        """
+        keys = key.split('.')
+        value = self.data.copy()
+
+        for key in keys:
+            value = value[key]
+
+        return value
 
     def load(self, yaml_path):
         """
