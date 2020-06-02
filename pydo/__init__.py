@@ -17,8 +17,14 @@
 # along with pydo.  If not, see <http://www.gnu.org/licenses/>.
 
 from pydo.cli import load_logger, load_parser
+log = load_logger()
+
+import os
+from pydo.configuration import Config
+config = Config(os.getenv('PYDO_CONFIG', '~/.local/share/pydo/config.yaml'))
+
 from pydo import models
-from pydo.manager import TaskManager, ConfigManager
+from pydo.manager import TaskManager
 from pydo.ops import export, install
 from pydo.reports import TaskReport, Projects, Tags
 from sqlalchemy.orm import sessionmaker
@@ -69,11 +75,11 @@ def task_modify_commands(session, args):
 def main(argv=sys.argv[1:]):
     parser = load_parser()
     args = parser.parse_args(argv)
-    load_logger()
+
+    log.info('test')
 
     connection = models.engine.connect()
     session = sessionmaker()(bind=connection)
-    config = ConfigManager(session)
 
     if args.subcommand == 'install':
         install(session, logging.getLogger('main'))

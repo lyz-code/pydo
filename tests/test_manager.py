@@ -1,12 +1,11 @@
 from faker import Faker
+from pydo import config
 from pydo.fulids import fulid
-from pydo.manager import TaskManager, ConfigManager, DateManager
-from pydo.manager import pydo_default_config
-from pydo.models import Task, Config, Project, Tag, RecurrentTask
+from pydo.config import Config
+from pydo.manager import TaskManager, DateManager
+from pydo.models import Task, Project, Tag, RecurrentTask
 from tests.factories import \
-    ConfigFactory, \
     ProjectFactory, \
-    PydoConfigFactory, \
     RecurrentTaskFactory, \
     TagFactory, \
     TaskFactory
@@ -109,7 +108,6 @@ class TestTaskManager(ManagerBaseTest):
 
     @pytest.fixture(autouse=True)
     def setup(self, session):
-        PydoConfigFactory(session).create()
         self.session = session
 
         self.manager = TaskManager(session)
@@ -123,8 +121,8 @@ class TestTaskManager(ManagerBaseTest):
         TaskManager(self.session)
 
         fulidMock.assert_called_with(
-            pydo_default_config['fulid.characters']['default'],
-            pydo_default_config['fulid.forbidden_characters']['default'],
+            config['fulid.characters']['default'],
+            config['fulid.forbidden_characters']['default'],
         )
         assert isinstance(self.manager.fulid, fulid)
 
@@ -771,7 +769,7 @@ class TestTaskManager(ManagerBaseTest):
 
         generated_task = self.session.query(Task).one()
         assert generated_task.agile == \
-            pydo_default_config['task.default.agile']['default']
+            config['task.default.agile']['default']
 
     def test_raise_error_if_add_task_assigns_unvalid_agile_state(self):
         title = self.fake.sentence()
@@ -1335,7 +1333,7 @@ class TestTaskManager(ManagerBaseTest):
         self.log_error.assert_called_once_with('There is no task with that id')
 
     def test_config_manager_loaded_in_attribute(self):
-        assert isinstance(self.manager.config, ConfigManager)
+        assert isinstance(self.manager.config, Config)
 
     def test_date_manager_loaded_in_attribute(self):
         assert isinstance(self.manager.date, DateManager)
@@ -1876,40 +1874,3 @@ class TestDateManager:
         starting_date = datetime.date(2020, 1, 12)
         assert self.manager.convert('yesterday', starting_date) == \
             datetime.date(2020, 1, 11)
-
-
-@pytest.mark.usefixtures('base_setup')
-class TestConfigManager(ManagerBaseTest):
-    """
-    Class to test the ConfigManager object.
-
-    Public attributes:
-        datetime (mock): datetime mock.
-        fake (Faker object): Faker object.
-        log (mock): logging mock
-        log_debug (mock): log.debug mock
-        session (Session object): Database session.
-        manager (ConfigManager object): ConfigManager object to test
-    """
-
-    @pytest.fixture(autouse=True)
-    def setup(self, session):
-        self.manager = ConfigManager(session)
-        self.model = Config
-        self.factory = ConfigFactory
-
-        yield 'setup'
-
-    def test_seed_populates_with_expected_values(self):
-        self.manager.seed()
-
-        for attribute_key, attribute_value in pydo_default_config.items():
-            self.session.query(Config).get(attribute_key)
-
-    def test_get_property_returns_default_value(self):
-        config = self.factory.create(user=None)
-        assert self.manager.get(config.id) == config.default
-
-    def test_get_property_returns_user_defined_over_default(self):
-        config = self.factory.create(user='user_value')
-        assert self.manager.get(config.id) == 'user_value'

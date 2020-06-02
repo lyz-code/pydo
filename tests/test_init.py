@@ -1,7 +1,6 @@
 from faker import Faker
-from pydo import main
+from pydo import config, main
 from pydo import models
-from pydo.manager import ConfigManager
 from tests import factories
 from unittest.mock import call, patch
 
@@ -36,7 +35,7 @@ class TestMain:
         self.tm_patch = patch('pydo.TaskManager', autospect=True)
         self.tm = self.tm_patch.start()
 
-        self.config = ConfigManager(session)
+        self.config = config()
         factories.PydoConfigFactory(session).create()
 
         yield 'setup'

@@ -3,132 +3,16 @@ Module to store the main class of pydo
 
 Classes:
     TaskManager: Class to manipulate the tasks data
-    ConfigManager: Class to manipulate the pydo configuration
 """
 from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
+from pydo import config
 from pydo.cli import load_logger
 from pydo.fulids import fulid
-from pydo.models import Task, Config, Project, Tag, RecurrentTask
+from pydo.models import Task, Project, Tag, RecurrentTask
 
 import datetime
-import json
 import logging
 import re
-
-pydo_default_config = {
-    'verbose_level': {
-        'default': 'info',
-        'choices': ['info', 'debug', 'warning'],
-        'description': 'Set the logging verbosity level',
-    },
-    'fulid.characters': {
-        'default': 'asdfghjwer',
-        'choices': '',
-        'description': 'Characters used for the generation of identifiers.'
-    },
-    'fulid.forbidden_characters': {
-        'default': 'ilou|&:;()<>~*@?!$#[]{}\\/\'"`',
-        'choices': '',
-        'description': 'Characters forbidden to be used in the generation'
-        'of ids, due to ulid converting them to numbers or because they'
-        'have a meaning for the terminal',
-    },
-    'report.date_format': {
-        'default': '%Y-%m-%d %H:%M',
-        'choices': '',
-        'description': 'Datetime strftime compatible string to print dates',
-    },
-    'report.open.columns': {
-        'default': 'id, title, project_id, priority, tags, due',
-        'choices': 'id, title, description, project_id, priority, tags, '
-        'agile, estimate, willpower, value, fun',
-        'description': 'Ordered coma separated list of Task attributes '
-        'to print',
-    },
-    'report.open.labels': {
-        'default': 'ID, Title, Project, Pri, Tags, Due',
-        'choices': '',
-        'description': 'Ordered coma separated list of names for the '
-        'Task attributes to print',
-    },
-    'report.repeating.columns': {
-        'default': 'id, title, recurrence, project_id, priority, tags, due',
-        'choices': 'id, title, recurrence, description, project_id, priority, '
-        'tags, agile, estimate, willpower, value, fun',
-        'description': 'Ordered coma separated list of Task attributes '
-        'to print',
-    },
-    'report.repeating.labels': {
-        'default': 'ID, Title, Recurrence, Project, Pri, Tags, Due',
-        'choices': '',
-        'description': 'Ordered coma separated list of names for the '
-        'Task attributes to print',
-    },
-    'report.recurring.columns': {
-        'default': 'id, title, recurrence, project_id, priority, tags, due',
-        'choices': 'id, title, recurrence, description, project_id, priority, '
-        'tags, agile, estimate, willpower, value, fun',
-        'description': 'Ordered coma separated list of Task attributes '
-        'to print',
-    },
-    'report.recurring.labels': {
-        'default': 'ID, Title, Recurrence, Project, Pri, Tags, Due',
-        'choices': '',
-        'description': 'Ordered coma separated list of names for the '
-        'Task attributes to print',
-    },
-    'report.frozen.columns': {
-        'default': 'id, title, recurrence, recurrence_type, project_id, '
-        'priority, tags, due, parent_id',
-        'choices': 'id, title, recurrence, description, project_id, priority, '
-        'tags, agile, estimate, willpower, value, fun, recurrence, '
-        'recurrence_type, parent_id',
-        'description': 'Ordered coma separated list of Task attributes '
-        'to print',
-    },
-    'report.frozen.labels': {
-        'default': 'ID, Title, Recurrence, Recurrence Type, Project, Pri, '
-        'Tags, Due, Parent',
-        'choices': '',
-        'description': 'Ordered coma separated list of names for the '
-        'Task attributes to print',
-    },
-    'report.projects.columns': {
-        'default': 'id, task.count, description',
-        'choices': '',
-        'description': 'Ordered coma separated list of Project attributes '
-        'to print',
-    },
-    'report.projects.labels': {
-        'default': 'Name, Tasks, Description',
-        'choices': '',
-        'description': 'Ordered coma separated list of names for the '
-        'Project attributes to print',
-    },
-    'report.tags.columns': {
-        'default': 'id, task.count, description',
-        'choices': '',
-        'description': 'Ordered coma separated list of Tag attributes '
-        'to print',
-    },
-    'report.tags.labels': {
-        'default': 'Name, Tasks, Description',
-        'choices': '',
-        'description': 'Ordered coma separated list of names for the '
-        'Tag attributes to print',
-    },
-    'task.default.agile': {
-        'default': None,
-        'choices': 'See task.agile.states',
-        'description': 'Default task agile state if not specified.',
-    },
-    'task.agile.states': {
-        'default': 'backlog, todo, doing, review, complete',
-        'choices': '',
-        'description': 'Coma separated list of agile states the task '
-        'can transition to.',
-    },
-}
 
 load_logger()
 
@@ -303,7 +187,7 @@ class TaskManager(TableManager):
 
     def __init__(self, session):
         super().__init__(session, Task)
-        self.config = ConfigManager(self.session)
+        self.config = config(self.session)
         self.date = DateManager()
         self.fulid = fulid(
             self.config.get('fulid.characters'),
@@ -917,101 +801,6 @@ class TaskManager(TableManager):
                 self._spawn_next_recurring(task)
             elif task.recurrence_type == 'repeating':
                 self._spawn_next_repeating(task)
-
-
-class ConfigManager(TableManager):
-    """
-    Class to manipulate the pydo configuration.
-
-    Arguments:
-        session (session object): Database session
-
-    Public methods:
-        add: Creates a new configuration element.
-        get: Return the configuration value.
-        seed: Generates the default config data in an idempotent way.
-
-    Internal methods:
-
-    Public attributes:
-        session (session object): Database session
-        log (logging object): Logger
-    """
-
-    def __init__(self, session):
-        super().__init__(session, Config)
-
-    def add(
-        self,
-        property,
-        choices=None,
-        description=None,
-        user=None,
-        default=None
-    ):
-        """
-        Use parent method to create a new configuration
-
-        Arguments:
-            choices (str): JSON list of possible values.
-            default (str): Default value of the property.
-            description (str): Property description.
-            property (str): Property identifier
-            user (str): User defined value of the property.
-        """
-
-        config_attributes = {
-            'choices': choices,
-            'default': default,
-            'description': description,
-            'property': property,
-            'user': user,
-        }
-        self._add(
-            config_attributes['property'],
-            config_attributes,
-        )
-
-    def seed(self):
-        """
-        Generates the default config data in an idempotent way.
-        """
-
-        for attribute_key, attribute_data in pydo_default_config.items():
-            config = self.session.query(Config).get(attribute_key)
-            if config is not None:
-                config.description = attribute_data['description']
-                config.default = attribute_data['default']
-                config.choices = json.dumps(attribute_data['choices'])
-                self.session.add(config)
-                self.session.commit()
-            else:
-                self.add(
-                    property=attribute_key,
-                    description=attribute_data['description'],
-                    default=attribute_data['default'],
-                    choices=json.dumps(attribute_data['choices']),
-                    user=None
-                )
-
-    def get(self, id):
-        """
-        Return the configuration value.
-
-        Arguments:
-            id (str): Configuration element identifier
-
-        Returns:
-            value (str): Configuration value
-            raises: ValueError if element is not found
-        """
-
-        config = self._get(id)
-
-        if config.user is not None:
-            return config.user
-        else:
-            return config.default
 
 
 class DateManager:

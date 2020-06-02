@@ -6,9 +6,9 @@ Classes:
     List: Class to print the list report.
 """
 
+from pydo import config
 from pydo.fulids import fulid
 from pydo.models import Task, Project, Tag
-from pydo.manager import ConfigManager
 from tabulate import tabulate
 
 
@@ -18,11 +18,11 @@ class BaseReport():
 
     Arguments:
         session: Database session.
-        config: ConfigManager object.
+        config: Config object.
 
     Public attributes:
         session: Database session.
-        config: ConfigManager object.
+        config: Config object.
 
     Internal methods:
         _date2str: Returns a string with the config report.date_format format
@@ -30,7 +30,7 @@ class BaseReport():
 
     def __init__(self, session):
         self.session = session
-        self.config = ConfigManager(session)
+        self.config = config
 
     def _date2str(self, date):
         """

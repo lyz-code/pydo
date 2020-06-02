@@ -1,10 +1,10 @@
 from faker import Faker
-from pydo.manager import ConfigManager
+from pydo import config
+from pydo.config import Config
 from pydo.models import RecurrentTask, Task
 from pydo.reports import TaskReport, Projects, Tags
 from tests.factories import \
     ProjectFactory, \
-    PydoConfigFactory, \
     RecurrentTaskFactory, \
     TagFactory, \
     TaskFactory
@@ -22,7 +22,7 @@ class BaseReport:
         self.report: The report class to test.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
+        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -39,8 +39,7 @@ class BaseReport:
             autospect=True
         )
         self.tabulate = self.tabulate_patch.start()
-        self.config = ConfigManager(session)
-        PydoConfigFactory(session).create()
+        self.config = config()
         self.session = session
 
         yield 'base_setup'
@@ -52,7 +51,7 @@ class BaseReport:
         assert self.report.session is self.session
 
     def test_config_attribute_exists(self):
-        assert isinstance(self.report.config, ConfigManager)
+        assert isinstance(self.report.config, Config)
 
     def test_date_to_string_converts_with_desired_format(self):
         date = self.fake.date_time()
@@ -70,7 +69,7 @@ class TestTaskReport(BaseReport):
     Class to test the TaskReport report.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
+        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -321,7 +320,7 @@ class TestProjects(BaseReport):
     Class to test the Projects report.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
+        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -445,7 +444,7 @@ class TestTags(BaseReport):
     Class to test the Tags report.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
+        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
