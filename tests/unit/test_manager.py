@@ -1,7 +1,6 @@
 from faker import Faker
 from pydo import config
 from pydo.fulids import fulid
-from pydo.configuration import Config
 from pydo.manager import TaskManager, DateManager
 from pydo.models import Task, Project, Tag, RecurrentTask
 from tests.factories import \
@@ -121,8 +120,8 @@ class TestTaskManager(ManagerBaseTest):
         TaskManager(self.session)
 
         fulidMock.assert_called_with(
-            config['fulid.characters']['default'],
-            config['fulid.forbidden_characters']['default'],
+            config.get('fulid.characters'),
+            config.get('fulid.forbidden_characters'),
         )
         assert isinstance(self.manager.fulid, fulid)
 
@@ -769,7 +768,7 @@ class TestTaskManager(ManagerBaseTest):
 
         generated_task = self.session.query(Task).one()
         assert generated_task.agile == \
-            config['task.default.agile']['default']
+            config.get('task.agile.default')
 
     def test_raise_error_if_add_task_assigns_unvalid_agile_state(self):
         title = self.fake.sentence()
@@ -1331,9 +1330,6 @@ class TestTaskManager(ManagerBaseTest):
         self.manager.complete('non_existent_id')
 
         self.log_error.assert_called_once_with('There is no task with that id')
-
-    def test_config_manager_loaded_in_attribute(self):
-        assert isinstance(self.manager.config, Config)
 
     def test_date_manager_loaded_in_attribute(self):
         assert isinstance(self.manager.date, DateManager)

@@ -187,11 +187,10 @@ class TaskManager(TableManager):
 
     def __init__(self, session):
         super().__init__(session, Task)
-        self.config = config(self.session)
         self.date = DateManager()
         self.fulid = fulid(
-            self.config.get('fulid.characters'),
-            self.config.get('fulid.forbidden_characters'),
+            config.get('fulid.characters'),
+            config.get('fulid.forbidden_characters'),
         )
         self.recurrence = TableManager(session, RecurrentTask)
 
@@ -450,7 +449,7 @@ class TaskManager(TableManager):
             agile (str): Task agile state.
         """
         if agile is not None and \
-                agile not in self.config.get('task.agile.states').split(', '):
+                agile not in config.get('task.agile.allowed_states'):
             raise ValueError(
                 'Agile state {} is not between the specified '
                 'by task.agile.states'.format(agile)

@@ -10,7 +10,7 @@ task:
     - recurrent_task
   agile:
     # Default task agile state.
-    default: None
+    default:
     # Agile allowed states.
     allowed_states: [backlog, todo, doing, review, complete]
 

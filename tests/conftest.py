@@ -5,8 +5,13 @@ from sqlalchemy.orm import sessionmaker
 
 import os
 import pytest
+import tempfile
 
 os.environ['PYDO_CONFIG'] = 'assets/config.yaml'
+
+temp_ddbb = tempfile.mkstemp()[1]
+sqlalchemy_url = 'sqlite:///{}'.format(temp_ddbb)
+os.environ['PYDO_DATABASE_URL'] = sqlalchemy_url
 
 # It needs to be after the environmental variable
 from tests import factories
@@ -20,7 +25,7 @@ def connection():
     '''
 
     # Create database connection
-    connection = create_engine('sqlite://').connect()
+    connection = create_engine(sqlalchemy_url).connect()
 
     # Applies all alembic migrations.
     config = Config('pydo/migrations/alembic.ini')
