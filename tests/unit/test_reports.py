@@ -1,6 +1,5 @@
 from faker import Faker
 from pydo import config
-from pydo.configuration import Config
 from pydo.models import RecurrentTask, Task
 from pydo.reports import TaskReport, Projects, Tags
 from tests.factories import \
@@ -22,7 +21,6 @@ class BaseReport:
         self.report: The report class to test.
 
     Public attributes:
-        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -39,7 +37,6 @@ class BaseReport:
             autospect=True
         )
         self.tabulate = self.tabulate_patch.start()
-        self.config = config()
         self.session = session
 
         yield 'base_setup'
@@ -50,13 +47,10 @@ class BaseReport:
     def test_session_attribute_exists(self):
         assert self.report.session is self.session
 
-    def test_config_attribute_exists(self):
-        assert isinstance(self.report.config, Config)
-
     def test_date_to_string_converts_with_desired_format(self):
         date = self.fake.date_time()
         assert self.report._date2str(date) == date.strftime(
-            self.config.get('report.date_format')
+            config.get('report.date_format')
         )
 
     def test_date_to_string_converts_None_to_None(self):
@@ -69,7 +63,6 @@ class TestTaskReport(BaseReport):
     Class to test the TaskReport report.
 
     Public attributes:
-        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -79,8 +72,8 @@ class TestTaskReport(BaseReport):
     @pytest.fixture(autouse=True)
     def setup(self, session):
         self.report = TaskReport(session)
-        self.columns = self.config.get('report.open.columns').split(', ')
-        self.labels = self.config.get('report.open.labels').split(', ')
+        self.columns = config.get('report.open.columns').copy()
+        self.labels = config.get('report.open.labels').copy()
 
         yield 'setup'
 
@@ -320,7 +313,6 @@ class TestProjects(BaseReport):
     Class to test the Projects report.
 
     Public attributes:
-        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -330,8 +322,8 @@ class TestProjects(BaseReport):
     @pytest.fixture(autouse=True)
     def setup(self, session):
         self.report = Projects(session)
-        self.columns = self.config.get('report.projects.columns').split(', ')
-        self.labels = self.config.get('report.projects.labels').split(', ')
+        self.columns = config.get('report.projects.columns')
+        self.labels = config.get('report.projects.labels')
         self.tasks = TaskFactory.create_batch(20, state='open')
 
         yield 'setup'
@@ -444,7 +436,6 @@ class TestTags(BaseReport):
     Class to test the Tags report.
 
     Public attributes:
-        config (Config): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -454,8 +445,8 @@ class TestTags(BaseReport):
     @pytest.fixture(autouse=True)
     def setup(self, session):
         self.report = Tags(session)
-        self.columns = self.config.get('report.tags.columns').split(', ')
-        self.labels = self.config.get('report.tags.labels').split(', ')
+        self.columns = config.get('report.tags.columns')
+        self.labels = config.get('report.tags.labels')
         self.tasks = TaskFactory.create_batch(20, state='open')
 
         yield 'setup'

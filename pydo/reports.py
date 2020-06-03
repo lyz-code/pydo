@@ -18,11 +18,9 @@ class BaseReport():
 
     Arguments:
         session: Database session.
-        config: Config object.
 
     Public attributes:
         session: Database session.
-        config: Config object.
 
     Internal methods:
         _date2str: Returns a string with the config report.date_format format
@@ -30,7 +28,6 @@ class BaseReport():
 
     def __init__(self, session):
         self.session = session
-        self.config = config
 
     def _date2str(self, date):
         """
@@ -44,7 +41,7 @@ class BaseReport():
             str: converted date string.
         """
         try:
-            return date.strftime(self.config.get('report.date_format'))
+            return date.strftime(config.get('report.date_format'))
         except AttributeError:
             return None
 
@@ -55,7 +52,6 @@ class TaskReport(BaseReport):
 
     Arguments:
         session: Database session.
-        config: ConfigManager object.
 
     Public methods:
         print: Method to print the report.
@@ -125,8 +121,8 @@ class TaskReport(BaseReport):
 
         # Transform the fulids into sulids
         sulids = fulid(
-            self.config.get('fulid.characters'),
-            self.config.get('fulid.forbidden_characters'),
+            config.get('fulid.characters'),
+            config.get('fulid.forbidden_characters'),
         ).sulids([task.id for task in tasks.all()])
 
         for task in sorted(
@@ -163,7 +159,6 @@ class Projects(BaseReport):
 
     Arguments:
         session: Database session.
-        config: ConfigManager object.
 
     Public methods:
         print: print report.
@@ -172,7 +167,6 @@ class Projects(BaseReport):
 
     Public attributes:
         session: Database session.
-        config: ConfigManager object.
     """
 
     def __init__(self, session):
@@ -231,7 +225,6 @@ class Tags(BaseReport):
 
     Arguments:
         session: Database session.
-        config: ConfigManager object.
 
     Public methods:
         print: print report.
@@ -240,7 +233,6 @@ class Tags(BaseReport):
 
     Public attributes:
         session: Database session.
-        config: ConfigManager object.
     """
 
     def __init__(self, session):
