@@ -76,8 +76,6 @@ def main(argv=sys.argv[1:]):
     parser = load_parser()
     args = parser.parse_args(argv)
 
-    log.info('test')
-
     connection = models.engine.connect()
     session = sessionmaker()(bind=connection)
 

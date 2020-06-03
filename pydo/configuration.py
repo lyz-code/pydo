@@ -6,11 +6,11 @@ Classes:
 """
 
 from collections import UserDict
-from yaml.scanner import ScannerError
+from ruamel.yaml import YAML
+from ruamel.yaml.scanner import ScannerError
 
 import logging
 import os
-import yaml
 import sys
 
 log = logging.getLogger(__name__)
@@ -31,11 +31,13 @@ class Config(UserDict):
         save: Saves configuration in the configuration YAML file.
 
     Attributes and properties:
+        config_path (str): Path to the configuration file.
         data(dict): Program configuration.
     """
 
     def __init__(self, config_path='~/.local/share/pydo/config.yaml'):
-        self.load(os.path.expanduser(config_path))
+        self.config_path = os.path.expanduser(config_path)
+        self.load()
 
     def get(self, key):
         """
@@ -63,17 +65,15 @@ class Config(UserDict):
 
         return value
 
-    def load(self, yaml_path):
+    def load(self):
         """
         Loads configuration from configuration YAML file.
-
-        Arguments:
-            yaml_path(str): Path to the file to open.
         """
+
         try:
-            with open(os.path.expanduser(yaml_path), 'r') as f:
+            with open(os.path.expanduser(self.config_path), 'r') as f:
                 try:
-                    self.data = yaml.safe_load(f)
+                    self.data = YAML().load(f)
                 except ScannerError as e:
                     log.error(
                         'Error parsing yaml of configuration file '
@@ -85,17 +85,16 @@ class Config(UserDict):
                     sys.exit(1)
         except FileNotFoundError:
             log.error(
-                'Error opening configuration file {}'.format(yaml_path)
+                'Error opening configuration file {}'.format(self.config_path)
             )
             sys.exit(1)
 
-    def save(self, yaml_path):
+    def save(self):
         """
         Saves configuration in the configuration YAML file.
-
-        Arguments:
-            yaml_path(str): Path to the file to save.
         """
 
-        with open(os.path.expanduser(yaml_path), 'w+') as f:
-            yaml.dump(self.data, f, default_flow_style=False)
+        with open(os.path.expanduser(self.config_path), 'w+') as f:
+            yaml = YAML()
+            yaml.default_flow_style = False
+            yaml.dump(self.data, f)

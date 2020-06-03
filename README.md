@@ -101,10 +101,14 @@ To install pydo, simply:
 pip3 install git+git://github.com/lyz-code/pydo
 ```
 
-The instalation method will create a new pydo database at:
+The installation method will create a new pydo database at:
 ```
 ~/.local/share/pydo/main.db
 ```
+
+`pydo` configuration is done through the yaml file located at
+`~/.local/share/pydo/config.yaml`. The default template is provided at
+installation time.
 
 # What's next?
 

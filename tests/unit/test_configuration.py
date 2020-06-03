@@ -1,6 +1,6 @@
 from pydo.configuration import Config
 from unittest.mock import patch
-from yaml.scanner import ScannerError
+from ruamel.yaml.scanner import ScannerError
 
 import os
 import pytest
@@ -49,19 +49,19 @@ class TestConfig:
         assert self.config['first']['second'] == 'value'
 
     def test_config_load(self):
-        self.config.load(self.config_path)
+        self.config.load()
         assert len(self.config.data['task']) > 0
 
-    @patch('pydo.configuration.yaml')
+    @patch('pydo.configuration.YAML')
     def test_load_handles_wrong_file_format(self, yamlMock):
-        yamlMock.safe_load.side_effect = ScannerError(
+        yamlMock.return_value.load.side_effect = ScannerError(
             'error',
             '',
             'problem',
             'mark',
         )
 
-        self.config.load(self.config_path)
+        self.config.load()
         self.log.error.assert_called_once_with(
             'Error parsing yaml of configuration file mark: problem'
         )
@@ -71,7 +71,7 @@ class TestConfig:
     def test_load_handles_file_not_found(self, openMock):
         openMock.side_effect = FileNotFoundError()
 
-        self.config.load(self.config_path)
+        self.config.load()
         self.log.error.assert_called_once_with(
             'Error opening configuration file {}'.format(
                 self.config_path
@@ -82,16 +82,15 @@ class TestConfig:
     @patch('pydo.configuration.Config.load')
     def test_init_calls_config_load(self, loadMock):
         Config()
-        loadMock.assert_called_once_with(
-            os.path.expanduser('~/.local/share/pydo/config.yaml')
-        )
+        loadMock.assert_called_once_with()
 
     def test_save_config(self):
         tmp = tempfile.mkdtemp()
         save_file = os.path.join(tmp, 'yaml_save_test.yaml')
+        self.config = Config(save_file)
         self.config.data = {'a': 'b'}
 
-        self.config.save(save_file)
+        self.config.save()
         with open(save_file, 'r') as f:
             assert "a:" in f.read()
 
