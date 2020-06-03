@@ -107,8 +107,9 @@ The installation method will create a new pydo database at:
 ```
 
 `pydo` configuration is done through the yaml file located at
-`~/.local/share/pydo/config.yaml`. The default template is provided at
-installation time.
+`~/.local/share/pydo/config.yaml`. The [default
+template](https://github.com/lyz-code/pydo/blob/master/assets/config.yaml) is
+provided at installation time.
 
 # What's next?
 
