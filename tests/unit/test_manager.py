@@ -28,8 +28,6 @@ class ManagerBaseTest:
         datetime (mock): datetime mock.
         fake (Faker object): Faker object.
         log (mock): logging mock
-        log_debug (mock): log.debug mock
-        log_error (mock): log.error mock
         session (Session object): Database session.
     """
 
@@ -38,10 +36,8 @@ class ManagerBaseTest:
         self.datetime_patch = patch('pydo.manager.datetime', autospect=True)
         self.datetime = self.datetime_patch.start()
         self.fake = Faker()
-        self.log_patch = patch('pydo.manager.logging', autospect=True)
+        self.log_patch = patch('pydo.manager.log', autospect=True)
         self.log = self.log_patch.start()
-        self.log_debug = self.log.getLogger.return_value.debug
-        self.log_error = self.log.getLogger.return_value.error
         self.session = session
 
         yield 'base_setup'
@@ -51,10 +47,6 @@ class ManagerBaseTest:
 
     def test_session_attribute_exists(self):
         assert self.manager.session is self.session
-
-    def test_log_attribute_exists(self):
-        self.log.getLogger.assert_called_with('main')
-        assert self.manager.log == self.log.getLogger.return_value
 
     def test_add_table_element_method_exists(self):
         assert 'add' in dir(self.manager)
@@ -100,7 +92,6 @@ class TestTaskManager(ManagerBaseTest):
         datetime (mock): datetime mock.
         fake (Faker object): Faker object.
         log (mock): logging mock
-        log_debug (mock): log.debug mock
         session (Session object): Database session.
         manager (TaskManager object): TaskManager object to test
     """
@@ -486,7 +477,7 @@ class TestTaskManager(ManagerBaseTest):
 
         self.manager._get_fulid(non_existent_id)
 
-        self.log_error.assert_called_once_with(
+        self.log.error.assert_called_once_with(
             'There is no open task with fulid N_E'
         )
 
@@ -633,7 +624,7 @@ class TestTaskManager(ManagerBaseTest):
         assert generated_task.title == title
         assert generated_task.state == 'open'
         assert generated_task.project is None
-        self.log_debug.assert_called_with(
+        self.log.debug.assert_called_with(
             'Added task {}: {}'.format(
                 generated_task.id,
                 generated_task.title,
@@ -852,7 +843,7 @@ class TestTaskManager(ManagerBaseTest):
             due=None,
         )
 
-        self.log_error.assert_called_once_with(
+        self.log.error.assert_called_once_with(
             'You need to specify a due date for recurring tasks'
         )
 
@@ -1076,7 +1067,7 @@ class TestTaskManager(ManagerBaseTest):
 
         self.manager.modify_parent(child_task.id, title=title)
 
-        self.log_error.assert_called_once_with(
+        self.log.error.assert_called_once_with(
             "Task {} doesn't have a parent task".format(child_task.id)
         )
 
@@ -1128,7 +1119,7 @@ class TestTaskManager(ManagerBaseTest):
         assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'deleted'
-        self.log_debug.assert_called_with(
+        self.log.debug.assert_called_with(
             'Deleted task {}: {}'.format(
                 modified_task.id,
                 modified_task.title,
@@ -1148,7 +1139,7 @@ class TestTaskManager(ManagerBaseTest):
         assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'deleted'
-        self.log_debug.assert_called_with(
+        self.log.debug.assert_called_with(
             'Deleted task {}: {}'.format(
                 modified_task.id,
                 modified_task.title,
@@ -1182,7 +1173,7 @@ class TestTaskManager(ManagerBaseTest):
                 result_child_task.id,
                 result_child_task.title,
             )
-        ) in self.log_debug.mock_calls
+        ) in self.log.debug.mock_calls
 
         assert result_parent_task.closed == closed
         assert result_parent_task.state == 'deleted'
@@ -1191,7 +1182,7 @@ class TestTaskManager(ManagerBaseTest):
                 result_parent_task.id,
                 result_parent_task.title,
             )
-        ) in self.log_debug.mock_calls
+        ) in self.log.debug.mock_calls
 
     def test_delete_non_parent_task_deletes_child_and_fails_graceful(self):
         child_task = TaskFactory.create(
@@ -1212,9 +1203,9 @@ class TestTaskManager(ManagerBaseTest):
                 result_child_task.id,
                 result_child_task.title,
             )
-        ) in self.log_debug.mock_calls
+        ) in self.log.debug.mock_calls
 
-        self.log_error.assert_called_once_with(
+        self.log.error.assert_called_once_with(
             "Task {} doesn't have a parent task".format(child_task.id)
         )
 
@@ -1233,7 +1224,7 @@ class TestTaskManager(ManagerBaseTest):
         assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'completed'
-        self.log_debug.assert_called_with(
+        self.log.debug.assert_called_with(
             'Completed task {}: {}'.format(
                 modified_task.id,
                 modified_task.title,
@@ -1253,7 +1244,7 @@ class TestTaskManager(ManagerBaseTest):
         assert modified_task.closed == closed
         assert modified_task.title == task.title
         assert modified_task.state == 'completed'
-        self.log_debug.assert_called_with(
+        self.log.debug.assert_called_with(
             'Completed task {}: {}'.format(
                 modified_task.id,
                 modified_task.title,
@@ -1287,7 +1278,7 @@ class TestTaskManager(ManagerBaseTest):
                 result_child_task.id,
                 result_child_task.title,
             )
-        ) in self.log_debug.mock_calls
+        ) in self.log.debug.mock_calls
 
         assert result_parent_task.closed == closed
         assert result_parent_task.state == 'completed'
@@ -1296,7 +1287,7 @@ class TestTaskManager(ManagerBaseTest):
                 result_parent_task.id,
                 result_parent_task.title,
             )
-        ) in self.log_debug.mock_calls
+        ) in self.log.debug.mock_calls
 
     def test_complete_non_parent_task_completes_child_and_fails_graceful(self):
         child_task = TaskFactory.create(
@@ -1317,9 +1308,9 @@ class TestTaskManager(ManagerBaseTest):
                 result_child_task.id,
                 result_child_task.title,
             )
-        ) in self.log_debug.mock_calls
+        ) in self.log.debug.mock_calls
 
-        self.log_error.assert_called_once_with(
+        self.log.error.assert_called_once_with(
             "Task {} doesn't have a parent task".format(child_task.id)
         )
 
@@ -1329,7 +1320,7 @@ class TestTaskManager(ManagerBaseTest):
 
         self.manager.complete('non_existent_id')
 
-        self.log_error.assert_called_once_with('There is no task with that id')
+        self.log.error.assert_called_once_with('There is no task with that id')
 
     def test_date_manager_loaded_in_attribute(self):
         assert isinstance(self.manager.date, DateManager)

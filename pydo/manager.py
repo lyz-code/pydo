@@ -6,7 +6,6 @@ Classes:
 """
 from dateutil.relativedelta import relativedelta, MO, TU, WE, TH, FR, SA, SU
 from pydo import config
-from pydo.cli import load_logger
 from pydo.fulids import fulid
 from pydo.models import Task, Project, Tag, RecurrentTask
 
@@ -14,7 +13,7 @@ import datetime
 import logging
 import re
 
-load_logger()
+log = logging.getLogger(__name__)
 
 
 class TableManager:
@@ -34,11 +33,9 @@ class TableManager:
 
     Public attributes:
         session (session object): Database session
-        log (logging object): Logger
     """
 
     def __init__(self, session, table_model):
-        self.log = logging.getLogger('main')
         self.model = table_model
         self.session = session
 
@@ -64,7 +61,7 @@ class TableManager:
 
         self.session.add(obj)
         self.session.commit()
-        self.log.debug(
+        log.debug(
             'Added {} {}: {}'.format(
                 self.model.__name__.lower(),
                 id,
@@ -127,7 +124,7 @@ class TableManager:
                     setattr(table_element, attribute_key, attribute_value)
 
             self.session.commit()
-            self.log.debug(
+            log.debug(
                 'Modified {}: {}'.format(
                     id,
                     object_values,
@@ -180,7 +177,6 @@ class TaskManager(TableManager):
     Public attributes:
         date (DateManager): DateManager object.
         fulid (fulid object): Fulid manager and generator object.
-        log (logging object): Logger
         session (session object): Database session
         recurrence (TableManager): RecurrenceTask manager
     """
@@ -333,7 +329,7 @@ class TaskManager(TableManager):
             try:
                 fulid = self.fulid.sulid_to_fulid(id, task_fulids)
             except KeyError:
-                self.log.error(
+                log.error(
                     'There is no {} task with fulid {}'.format(
                         state,
                         fulid,
@@ -542,7 +538,7 @@ class TaskManager(TableManager):
 
         if 'recurrence' in task_attributes:
             if task_attributes['due'] is None:
-                self.log.error(
+                log.error(
                     'You need to specify a due date for {} tasks'.format(
                         task_attributes['recurrence_type']
                     )
@@ -608,7 +604,7 @@ class TaskManager(TableManager):
         child_task = self.session.query(Task).get(fulid)
 
         if child_task.parent_id is None:
-            self.log.error(
+            log.error(
                 "Task {} doesn't have a parent task".format(child_task.id)
             )
         else:
@@ -627,7 +623,7 @@ class TaskManager(TableManager):
         try:
             id = self._get_fulid(id)
         except KeyError:
-            self.log.error('There is no task with that id')
+            log.error('There is no task with that id')
             return
 
         task = self.session.query(Task).get(id)
@@ -637,7 +633,7 @@ class TaskManager(TableManager):
 
         if parent:
             if task.parent_id is None:
-                self.log.error(
+                log.error(
                     "Task {} doesn't have a parent task".format(task.id)
                 )
             else:
@@ -646,7 +642,7 @@ class TaskManager(TableManager):
             self._close_children_hook(task)
 
         self.session.commit()
-        self.log.debug(
+        log.debug(
             '{} task {}: {}'.format(
                 state.title(),
                 task.id,
