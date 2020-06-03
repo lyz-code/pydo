@@ -106,7 +106,7 @@ class TestTaskReport(BaseReport):
         desired_columns.pop(due_index)
         desired_labels.pop(due_index)
 
-        TaskFactory.create_batch(10, due=None)
+        TaskFactory.create_batch(100, due=None)
 
         tasks = session.query(Task).filter_by(state='open')
 
@@ -130,7 +130,7 @@ class TestTaskReport(BaseReport):
         labels = desired_labels.copy()
         labels.append('unexistent_label')
 
-        TaskFactory.create_batch(10, due=None)
+        TaskFactory.create_batch(100, due=None)
 
         tasks = session.query(Task).filter_by(state='open')
 
