@@ -1,17 +1,19 @@
 from alembic.command import upgrade
 from alembic.config import Config
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import os
 import pytest
 import tempfile
 
-temp_ddbb = tempfile.mkstemp()[1]
+os.environ['PYDO_CONFIG'] = 'assets/config.yaml'
 
-os.environ['PYDO_DATABASE_URL'] = 'sqlite:///{}'.format(temp_ddbb)
+temp_ddbb = tempfile.mkstemp()[1]
+sqlalchemy_url = 'sqlite:///{}'.format(temp_ddbb)
+os.environ['PYDO_DATABASE_URL'] = sqlalchemy_url
 
 # It needs to be after the environmental variable
-from pydo.models import engine
 from tests import factories
 
 
@@ -23,7 +25,7 @@ def connection():
     '''
 
     # Create database connection
-    connection = engine.connect()
+    connection = create_engine(sqlalchemy_url).connect()
 
     # Applies all alembic migrations.
     config = Config('pydo/migrations/alembic.ini')
@@ -47,7 +49,6 @@ def session(connection):
     transaction = connection.begin()
     session = sessionmaker()(bind=connection)
 
-    factories.ConfigFactory._meta.sqlalchemy_session = session
     factories.ProjectFactory._meta.sqlalchemy_session = session
     factories.TagFactory._meta.sqlalchemy_session = session
     factories.TaskFactory._meta.sqlalchemy_session = session

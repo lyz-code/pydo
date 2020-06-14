@@ -1,10 +1,9 @@
 from faker import Faker
-from pydo.manager import ConfigManager
+from pydo import config
 from pydo.models import RecurrentTask, Task
 from pydo.reports import TaskReport, Projects, Tags
 from tests.factories import \
     ProjectFactory, \
-    PydoConfigFactory, \
     RecurrentTaskFactory, \
     TagFactory, \
     TaskFactory
@@ -22,7 +21,6 @@ class BaseReport:
         self.report: The report class to test.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -39,8 +37,6 @@ class BaseReport:
             autospect=True
         )
         self.tabulate = self.tabulate_patch.start()
-        self.config = ConfigManager(session)
-        PydoConfigFactory(session).create()
         self.session = session
 
         yield 'base_setup'
@@ -51,13 +47,10 @@ class BaseReport:
     def test_session_attribute_exists(self):
         assert self.report.session is self.session
 
-    def test_config_attribute_exists(self):
-        assert isinstance(self.report.config, ConfigManager)
-
     def test_date_to_string_converts_with_desired_format(self):
         date = self.fake.date_time()
         assert self.report._date2str(date) == date.strftime(
-            self.config.get('report.date_format')
+            config.get('report.date_format')
         )
 
     def test_date_to_string_converts_None_to_None(self):
@@ -70,7 +63,6 @@ class TestTaskReport(BaseReport):
     Class to test the TaskReport report.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -80,8 +72,8 @@ class TestTaskReport(BaseReport):
     @pytest.fixture(autouse=True)
     def setup(self, session):
         self.report = TaskReport(session)
-        self.columns = self.config.get('report.open.columns').split(', ')
-        self.labels = self.config.get('report.open.labels').split(', ')
+        self.columns = config.get('report.open.columns').copy()
+        self.labels = config.get('report.open.labels').copy()
 
         yield 'setup'
 
@@ -114,7 +106,7 @@ class TestTaskReport(BaseReport):
         desired_columns.pop(due_index)
         desired_labels.pop(due_index)
 
-        TaskFactory.create_batch(10, due=None)
+        TaskFactory.create_batch(100, due=None)
 
         tasks = session.query(Task).filter_by(state='open')
 
@@ -138,7 +130,7 @@ class TestTaskReport(BaseReport):
         labels = desired_labels.copy()
         labels.append('unexistent_label')
 
-        TaskFactory.create_batch(10, due=None)
+        TaskFactory.create_batch(100, due=None)
 
         tasks = session.query(Task).filter_by(state='open')
 
@@ -321,7 +313,6 @@ class TestProjects(BaseReport):
     Class to test the Projects report.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -331,8 +322,8 @@ class TestProjects(BaseReport):
     @pytest.fixture(autouse=True)
     def setup(self, session):
         self.report = Projects(session)
-        self.columns = self.config.get('report.projects.columns').split(', ')
-        self.labels = self.config.get('report.projects.labels').split(', ')
+        self.columns = config.get('report.projects.columns')
+        self.labels = config.get('report.projects.labels')
         self.tasks = TaskFactory.create_batch(20, state='open')
 
         yield 'setup'
@@ -445,7 +436,6 @@ class TestTags(BaseReport):
     Class to test the Tags report.
 
     Public attributes:
-        config (ConfigManager): Default pydo configuration manager.
         print (mock): print mock.
         fake (Faker object): Faker object.
         tabulate (mock): tabulate mock.
@@ -455,8 +445,8 @@ class TestTags(BaseReport):
     @pytest.fixture(autouse=True)
     def setup(self, session):
         self.report = Tags(session)
-        self.columns = self.config.get('report.tags.columns').split(', ')
-        self.labels = self.config.get('report.tags.labels').split(', ')
+        self.columns = config.get('report.tags.columns')
+        self.labels = config.get('report.tags.labels')
         self.tasks = TaskFactory.create_batch(20, state='open')
 
         yield 'setup'

@@ -1,10 +1,12 @@
 import logging
 import os
+import shutil
 
 from setuptools import find_packages, setup
-from setuptools.command.develop import develop
 from setuptools.command.egg_info import egg_info
 from setuptools.command.install import install
+
+log = logging.getLogger(__name__)
 
 
 class PostInstallCommand(install):
@@ -12,30 +14,6 @@ class PostInstallCommand(install):
 
     def run(self):
         install.run(self)
-        logger = logging.getLogger("main")
-        try:
-            data_directory = os.path.expanduser("~/.local/share/pydo")
-            os.makedirs(data_directory)
-            logger.info("Data directory created")
-        except FileExistsError:
-            logger.info("Data directory already exits")
-        import pydo
-
-        pydo.main(["install"])
-
-
-class PostDevelopCommand(develop):
-    """Post-installation for develop mode."""
-
-    def run(self):
-        develop.run(self)
-        logger = logging.getLogger("main")
-        try:
-            data_directory = os.path.expanduser("~/.local/share/pydo")
-            os.makedirs(data_directory)
-            logger.info("Data directory created")
-        except FileExistsError:
-            logger.info("Data directory already exits")
         import pydo
 
         pydo.main(["install"])
@@ -46,13 +24,22 @@ class PostEggInfoCommand(egg_info):
 
     def run(self):
         egg_info.run(self)
-        logger = logging.getLogger("main")
         try:
             data_directory = os.path.expanduser("~/.local/share/pydo")
             os.makedirs(data_directory)
-            logger.info("Data directory created")
+            log.info("Data directory created")
         except FileExistsError:
-            logger.info("Data directory already exits")
+            log.info("Data directory already exits")
+
+        config_path = os.path.join(data_directory, 'config.yaml')
+        if os.path.isfile(config_path) and os.access(config_path, os.R_OK):
+            log.info(
+                "Configuration file already exists, check the documentation "
+                "for the new version changes."
+            )
+        else:
+            shutil.copyfile('assets/config.yaml', config_path)
+            log.info("Copied default configuration template")
         import pydo
 
         pydo.main(["install"])
@@ -69,26 +56,26 @@ setup(
     license="GPLv3",
     long_description=open("README.md").read(),
     packages=find_packages(exclude=("tests",)),
-    package_data={"pydo": ["migrations/*", "migrations/versions/*",]},
+    package_data={"pydo": ["migrations/*", "migrations/versions/*"]},
     entry_points={"console_scripts": ["pydo = pydo:main"]},
     cmdclass={
         "install": PostInstallCommand,
-        "develop": PostDevelopCommand,
         "egg_info": PostEggInfoCommand,
     },
     setup_requires=[
+        "alembic>=1.3.1",
         "argcomplete>=1.11.1",
         "SQLAlchemy>=1.3.11",
-        "alembic>=1.3.1",
         "python-dateutil>=2.8.1",
         "tabulate>=0.8.7",
         "ulid-py>=0.0.12",
     ],
     install_requires=[
-        "argcomplete>=1.11.1",
-        "SQLAlchemy>=1.3.11",
         "alembic>=1.3.1",
+        "argcomplete>=1.11.1",
         "python-dateutil>=2.8.1",
+        "ruamel.yaml>=0.16.10",
+        "SQLAlchemy>=1.3.11",
         "tabulate>=0.8.7",
         "ulid-py>=0.0.12",
     ],

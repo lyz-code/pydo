@@ -23,8 +23,6 @@ class TestInstall:
     def setup(self, session):
         self.alembic_patch = patch('pydo.ops.alembic', autospect=True)
         self.alembic = self.alembic_patch.start()
-        self.config_patch = patch('pydo.ops.ConfigManager', autospect=True)
-        self.config = self.config_patch.start()
         self.homedir = os.path.expanduser('~')
         self.log = Mock()
         self.log_info = self.log.info
@@ -38,7 +36,6 @@ class TestInstall:
         yield 'setup'
 
         self.alembic_patch.stop()
-        self.config_patch.stop()
         self.os_patch.stop()
 
     def test_creates_the_data_directory_if_it_doesnt_exist(self):
@@ -68,12 +65,6 @@ class TestInstall:
 
         self.alembic.config.main.assert_called_with(argv=alembic_args)
         assert call('Database initialized') in self.log_info.mock_calls
-
-    def test_seed_config_table(self):
-        install(self.session, self.log)
-
-        assert self.config.return_value.seed.called
-        assert call('Configuration initialized') in self.log_info.mock_calls
 
 
 class TestExport:
@@ -110,7 +101,6 @@ class TestExport:
         assert 'task' in generated_data
         assert 'project' in generated_data
         assert 'tag' in generated_data
-        assert 'config' in generated_data
         assert 'task_tag_association' in generated_data
 
     def test_export_prints_desired_json(self):

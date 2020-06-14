@@ -6,7 +6,6 @@ Functions:
     export: Function to export the database to json to stdout.
 """
 
-from pydo.manager import ConfigManager
 from pydo.models import engine
 from sqlalchemy import MetaData
 
@@ -44,11 +43,6 @@ def install(session, log):
     ]
     alembic.config.main(argv=alembic_args)
     log.info('Database initialized')
-
-    # Initialize the config database
-    configmanager = ConfigManager(session)
-    configmanager.seed()
-    log.info('Configuration initialized')
 
 
 def export(log):

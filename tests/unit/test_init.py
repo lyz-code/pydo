@@ -1,8 +1,6 @@
 from faker import Faker
-from pydo import main
+from pydo import config, main
 from pydo import models
-from pydo.manager import ConfigManager
-from tests import factories
 from unittest.mock import call, patch
 
 import pytest
@@ -36,8 +34,7 @@ class TestMain:
         self.tm_patch = patch('pydo.TaskManager', autospect=True)
         self.tm = self.tm_patch.start()
 
-        self.config = ConfigManager(session)
-        factories.PydoConfigFactory(session).create()
+        self.config = config
 
         yield 'setup'
 
@@ -51,12 +48,6 @@ class TestMain:
         self.parser.parse_args = True
         main()
         assert self.parser.called
-
-    @patch('pydo.load_logger')
-    def test_main_loads_logger(self, loggerMock):
-        self.parser.parse_args = True
-        main()
-        assert loggerMock.called
 
     @patch('pydo.install')
     def test_install_subcommand_calls_install(self, installMock):
@@ -257,8 +248,8 @@ class TestMain:
         self.task_report.assert_called_once_with(self.session)
         self.task_report.return_value.print.assert_called_once_with(
             tasks=mock.return_value.filter_by.return_value,
-            columns=self.config.get('report.open.columns').split(', '),
-            labels=self.config.get('report.open.labels').split(', '),
+            columns=self.config.get('report.open.columns'),
+            labels=self.config.get('report.open.labels'),
         )
 
     @patch('pydo.Projects')
@@ -273,8 +264,8 @@ class TestMain:
         projectMock.assert_called_once_with(self.session)
 
         projectMock.return_value.print.assert_called_once_with(
-            columns=self.config.get('report.projects.columns').split(', '),
-            labels=self.config.get('report.projects.labels').split(', ')
+            columns=self.config.get('report.projects.columns'),
+            labels=self.config.get('report.projects.labels')
         )
 
     @patch('pydo.Tags')
@@ -289,8 +280,8 @@ class TestMain:
         tagsMock.assert_called_once_with(self.session)
 
         tagsMock.return_value.print.assert_called_once_with(
-            columns=self.config.get('report.tags.columns').split(', '),
-            labels=self.config.get('report.tags.labels').split(', ')
+            columns=self.config.get('report.tags.columns'),
+            labels=self.config.get('report.tags.labels')
         )
 
     def test_modify_subcommand_modifies_task(self):
@@ -424,8 +415,8 @@ class TestMain:
         )
         self.task_report.return_value.print.assert_called_once_with(
             tasks=mock.return_value.filter_by.return_value,
-            columns=self.config.get('report.repeating.columns').split(', '),
-            labels=self.config.get('report.repeating.labels').split(', '),
+            columns=self.config.get('report.repeating.columns'),
+            labels=self.config.get('report.repeating.labels'),
         )
 
     @patch('pydo.sessionmaker.return_value.return_value.query')
@@ -444,8 +435,8 @@ class TestMain:
         )
         self.task_report.return_value.print.assert_called_once_with(
             tasks=mock.return_value.filter_by.return_value,
-            columns=self.config.get('report.recurring.columns').split(', '),
-            labels=self.config.get('report.recurring.labels').split(', '),
+            columns=self.config.get('report.recurring.columns'),
+            labels=self.config.get('report.recurring.labels'),
         )
 
     @patch('pydo.sessionmaker.return_value.return_value.query')
@@ -463,6 +454,6 @@ class TestMain:
         )
         self.task_report.return_value.print.assert_called_once_with(
             tasks=mock.return_value.filter_by.return_value,
-            columns=self.config.get('report.frozen.columns').split(', '),
-            labels=self.config.get('report.frozen.labels').split(', '),
+            columns=self.config.get('report.frozen.columns'),
+            labels=self.config.get('report.frozen.labels'),
         )
