@@ -103,38 +103,3 @@ class TestProject(BaseModelTest):
             description=self.dummy_instance.description,
         )
         self.model_attributes = ['id', 'description']
-
-
-@pytest.mark.usefixtures('base_setup')
-class TestConfig(BaseModelTest):
-
-    @pytest.fixture(autouse=True)
-    def setup(self, session):
-        self.dummy_instance = factories.ConfigFactory.create()
-        self.model = models.Config(
-            id=self.dummy_instance.id,
-            default=self.dummy_instance.default,
-            user=self.dummy_instance.user,
-            description=self.dummy_instance.description,
-            choices=self.dummy_instance.choices,
-        )
-        self.model_attributes = [
-            'id',
-            'default',
-            'user',
-            'description',
-            'choices',
-        ]
-
-
-@pytest.mark.usefixtures('base_setup')
-class TestTag(BaseModelTest):
-
-    @pytest.fixture(autouse=True)
-    def setup(self, session):
-        self.dummy_instance = factories.TagFactory.create()
-        self.model = models.Tag(
-            id=self.dummy_instance.id,
-            description=self.dummy_instance.description,
-        )
-        self.model_attributes = ['id', 'description']

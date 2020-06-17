@@ -18,19 +18,9 @@ from sqlalchemy import \
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
+from pydo import config
+
 import os
-
-possible_task_states = [
-    'open',
-    'deleted',
-    'completed',
-    'frozen',
-]
-
-possible_task_types = [
-    'task',
-    'recurrent_task',
-]
 
 db_path = os.path.expanduser('~/.local/share/pydo/main.db')
 engine = create_engine(
@@ -66,7 +56,9 @@ class Task(Base):
     state = Column(
         String,
         nullable=False,
-        doc='Possible states of the task:{}'.format(str(possible_task_states))
+        doc='Possible states of the task:{}'.format(
+            str(config['task']['allowed_states'])
+        )
     )
     project_id = Column(
         Integer,
@@ -86,7 +78,7 @@ class Task(Base):
     type = Column(
         String,
         nullable=False,
-        doc='Task type: {}'.format(str(possible_task_types))
+        doc='Task type: {}'.format(str(config['task']['allowed_types']))
     )
     __mapper_args__ = {
         'polymorphic_identity': 'task',
@@ -136,31 +128,4 @@ class Tag(Base):
         'Task',
         back_populates='tags',
         secondary=task_tag_association_table
-    )
-
-
-class Config(Base):
-    """
-    Class to define the pydo configuration model.
-    """
-    __tablename__ = 'config'
-    id = Column(String, primary_key=True, doc="Property identifier")
-    default = Column(
-        String,
-        doc="Default value of the property"
-    )
-
-    description = Column(
-        String,
-        doc="Property description"
-    )
-
-    user = Column(
-        String,
-        doc="User defined value of the property"
-    )
-
-    choices = Column(
-        String,
-        doc="JSON list of possible values"
     )

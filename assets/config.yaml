@@ -1,0 +1,74 @@
+fulid:
+  # Characters used for the generation of identifiers.
+  characters: asdfghjwer
+
+  # Characters forbidden to be used in the generation of ids, due to
+  # ulid converting them to numbers or because they have a meaning
+  # for the terminal.
+  forbidden_characters: ilou|&:;()<>~*@?!$#[]{}\/'"`
+
+# Configuration of the reports.
+report:
+  # Datetime strftime compatible string to print dates.
+  date_format: '%Y-%m-%d %H:%M'
+
+  # Configuration of the frozen report.
+  frozen:
+    # Ordered list of Task attributes to print.
+    columns: [id, title, recurrence, recurrence_type, project_id, priority, tags, due, parent_id]
+    # Ordered list of names for the Task attributes to print.
+    labels: [ID, Title, Recurrence, Recurrence Type, Project, Pri, Tags, Due, Parent]
+
+  # Configuration of the open report.
+  open:
+    # Ordered list of Task attributes to print.
+    columns: [id, title, project_id, priority, tags, due]
+    # Ordered list of names for the Task attributes to print.
+    labels: [ID, Title, Project, Pri, Tags, Due]
+
+  # Configuration of the projects report.
+  projects:
+    # Ordered list of Task attributes to print.
+    columns: [id, task.count, description]
+    # Ordered list of names for the Task attributes to print.
+    labels: [Name, Tasks, Description]
+
+  # Configuration of the repeating report.
+  repeating:
+    # Ordered list of Task attributes to print.
+    columns: [id, title, recurrence, project_id, priority, tags, due]
+    # Ordered list of names for the Task attributes to print.
+    labels: [ID, Title, Recurrence, Project, Pri, Tags, Due]
+
+  # Configuration of the recurring report.
+  recurring:
+    # Ordered list of Task attributes to print.
+    columns: [id, title, recurrence, project_id, priority, tags, due]
+    # Ordered list of names for the Task attributes to print.
+    labels: [ID, Title, Recurrence, Project, Pri, Tags, Due]
+
+  # Configuration of the projects report.
+  tags:
+    # Ordered list of Task attributes to print.
+    columns: [id, task.count, description]
+    # Ordered list of names for the Task attributes to print.
+    labels: [Name, Tasks, Description]
+
+task:
+  allowed_states:
+    - open
+    - deleted
+    - completed
+    - frozen
+  # Defined by the database schema. You probably don't want to touch this.
+  allowed_types:
+    - task
+    - recurrent_task
+  agile:
+    # Default task agile state.
+    default:
+    # Agile allowed states.
+    allowed_states: [backlog, todo, doing, review, complete]
+
+# Level of logging verbosity. One of ['info', 'debug', 'warning'].
+verbose: info
