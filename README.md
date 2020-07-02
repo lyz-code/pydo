@@ -1,44 +1,35 @@
-[![Actions
-Status](https://github.com/lyz-code/pydo/workflows/Python%20package/badge.svg)](https://github.com/lyz-code/pydo/actions)
+[![Actions Status](https://github.com/lyz-code/pydo/workflows/Tests/badge.svg)](https://github.com/lyz-code/pydo/actions)
+[![Actions Status](https://github.com/lyz-code/pydo/workflows/Build/badge.svg)](https://github.com/lyz-code/pydo/actions)
+[![Coverage Status](https://coveralls.io/repos/github/lyz-code/pydo/badge.svg?branch=master)](https://coveralls.io/github/lyz-code/pydo?branch=master)
 
 # Pydo
 
-`pydo` is a free software command line task manager built with
-[Python](https://en.wikipedia.org/wiki/Python_%28programming_language%29) and
-[SQLAlchemy](https://en.wikipedia.org/wiki/SQLAlchemy).
-
-`pydo` scales to fit your workflow. Use it as a simple app that captures tasks,
-shows you the list, and removes tasks from that list. Leverage its capabilities
-though, and it becomes a sophisticated data query tool that can help you stay
-organized, and get through your work.
-
-* [Documentation](https://lyz-code.github.io/pydo)
-* [Issue tracker](https://github.com/lyz-code/pydo/issues)
-* [Contributing](https://lyz-code.github.io/pydo/contributing)
+`pydo` is a free software command line task manager built in
+[Python](https://en.wikipedia.org/wiki/Python_%28programming_language%29).
 
 # Why another CLI Task Manager?
 
-[Taskwarrior](https://taskwarrior.org/) has been the gold standard for CLI task managers so far. However,
-It has the following inconveniences:
+[Taskwarrior](https://taskwarrior.org/) has been the gold standard for CLI task
+managers so far. However, It has the following inconveniences:
 
 * It uses a plaintext file as data storage.
 * It stores the data in a non standard way in different files.
 * It's written in C, which I don't speak.
 * It's development has come to [code maintenance
-  only](https://github.com/GothenburgBitFactory/taskwarrior/graphs/code-frequency).
-* There are several issues with how it handles
-  [recurrence](https://taskwarrior.org/docs/design/recurrence.html).
+    only](https://github.com/GothenburgBitFactory/taskwarrior/graphs/code-frequency).
+* There are many issues with how it handles
+    [recurrence](https://taskwarrior.org/docs/design/recurrence.html).
 * It doesn't have [friendly task
-    identifiers](https://lyz-code.github.io/pydo/developing/fulids).
+    identifiers](https://lyz-code.github.io/pydo/developing/sulids).
 * There is no way of accessing the task time tracking from the python library.
 
 And lacks the following features:
 
 * Native Kanban or Scrum support.
 * Task estimations.
-* Task criteria [validation](https://en.wikipedia.org/wiki/Software_verification_and_validation).
 * Easy report creation.
 * Easy way to manage the split of a task in subtasks.
+* Freezing of recurrent tasks.
 
 Most of the above points can be addressed through the [Taskwarrior plugin
 system](https://taskwarrior.org/docs/3rd-party.html) or
@@ -53,75 +44,80 @@ I won't be able to add support for the features I need.
 
 # A quick demonstration
 
-Let's see `pydo` in action. We'll first add a few tasks to our list.
+Let's see `pydo` in action. We'll first add three tasks to our list.
 
 ```bash
-pydo add Buy milk
-pydo add Buy eggs
-pydo add Bake cake
+$: pydo add Buy milk
+  [+] Added task 0: Buy milk
+$: pydo add Buy eggs
+  [+] Added task 1: Buy eggs
+$: pydo add Bake cake
+  [+] Added task 2: Bake cake
 ```
 
 Now let's see the list.
 
 ```bash
-pydo list
-
-ID    Title
-----  ---------
-d     Bake cake
-s     Buy eggs
-a     Buy milk
+$: pydo list
+     ╷
+  ID │ Description
+╺━━━━┿━━━━━━━━━━━━━╸
+  0  │ Buy milk
+  1  │ Buy eggs
+  2  │ Bake cake
+     ╵
 ```
 
 Suppose we bought our ingredients and wish to mark the first two tasks as done.
 
-```
-pydo a done
-pydo s done
-pydo list
+```bash
+$: pydo do 0 1
+  [+] Closed task 0: Buy milk with state done
+  [+] Closed task 1: Buy eggs with state done
 
-ID    Title
-----  ---------
-d     Bake cake
+$: pydo list
+     ╷
+  ID │ Description
+╺━━━━┿━━━━━━━━━━━━━╸
+  2  │ Bake cake
+     ╵
 ```
 
 Those are the first three features, the `add`, `list` and `done` commands, but
-they represent all you really need to know, to get started with `pydo`.
+they represent all you need to know, to get started with `pydo`.
 
 But there are hundreds of other features, so if you learn more, you can do more.
-It's entirely up to you to choose how you use `pydo`. Stick to the simple
+It's entirely up to you to choose how you use `pydo`. Stick to the
 three commands above, or learn about sophisticated agile support, custom reports,
-user defined metadata and many more.
+user defined metadata and more.
 
-# Installation
+# Install
 
-To install pydo, simply:
+To install pydo, run:
 
 ```bash
-pip3 install git+git://github.com/lyz-code/pydo
+pip install pydo
 ```
 
-The installation method will create a new pydo database at:
-```
-~/.local/share/pydo/main.db
-```
+The installation method will create a new pydo database at
+`~/.local/share/pydo/database.tinydb`.
 
-`pydo` configuration is done through the yaml file located at
+`pydo` reads it's configuration from the yaml file located at
 `~/.local/share/pydo/config.yaml`. The [default
 template](https://github.com/lyz-code/pydo/blob/master/assets/config.yaml) is
 provided at installation time.
 
 # What's next?
 
-Probably the most important next step is to simply start using `pydo`.
+Probably the most important next step is to start using `pydo`.
 Capture your tasks, don't try to remember them. Review your task list to keep it
 current. Consult your task list to guide your actions. Develop the habit.
 
-It doesn't take long until you realize that you might want to modify your
+It doesn't take long until you realize that you might want to change your
 workflow. Perhaps you are missing due dates, and need more defined deadlines.
 Perhaps you need to make greater use of tags to help you filter tasks
-differently. You'll know if your workflow is not really helping you as much as
-it could.
+differently. You'll know if your workflow is not helping you as much as it
+could.
 
 This is when you might look closer at the
 [docs](https://lyz-code.github.io/pydo) and the recommended Best Practices.

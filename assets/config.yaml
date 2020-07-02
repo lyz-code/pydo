@@ -1,74 +1,103 @@
-fulid:
-  # Characters used for the generation of identifiers.
-  characters: asdfghjwer
-
-  # Characters forbidden to be used in the generation of ids, due to
-  # ulid converting them to numbers or because they have a meaning
-  # for the terminal.
-  forbidden_characters: ilou|&:;()<>~*@?!$#[]{}\/'"`
-
+---
 # Configuration of the reports.
-report:
+reports:
   # Datetime strftime compatible string to print dates.
   date_format: '%Y-%m-%d %H:%M'
 
-  # Configuration of the frozen report.
-  frozen:
-    # Ordered list of Task attributes to print.
-    columns: [id, title, recurrence, recurrence_type, project_id, priority, tags, due, parent_id]
-    # Ordered list of names for the Task attributes to print.
-    labels: [ID, Title, Recurrence, Recurrence Type, Project, Pri, Tags, Due, Parent]
+  # Equivalence between task attributes and how they are shown in the reports
+  task_attribute_labels:
+    id_: ID
+    description: Description
+    agile: Agile
+    body: Body
+    closed: Closed
+    created: Created
+    due: Due
+    estimate: Est
+    fun: Fun
+    parent_id: Parent
+    area: Area
+    priority: Pri
+    state: State
+    recurrence: Recur
+    recurrence_type: RecurType
+    tags: Tags
+    value: Val
+    wait: Wait
+    willpower: WP
 
-  # Configuration of the open report.
-  open:
-    # Ordered list of Task attributes to print.
-    columns: [id, title, project_id, priority, tags, due]
-    # Ordered list of names for the Task attributes to print.
-    labels: [ID, Title, Project, Pri, Tags, Due]
+  # Definition of reports over a group of tasks:
+  #
+  # Each of them has the following properties:
+  #   * report_name: It's the key that identifies the report.
+  #   * columns: Ordered list of task attributes to print.
+  #   * filter: Dictionary of task properties that narrow down the tasks you
+  #       want to print.
+  task_reports:
+    # Open: Print active tasks.
+    open:
+      filter:
+        active: true
+        type: task
+      columns:
+        - id_
+        - description
+        - area
+        - priority
+        - tags
+        - due
+        - parent_id
 
-  # Configuration of the projects report.
-  projects:
-    # Ordered list of Task attributes to print.
-    columns: [id, task.count, description]
-    # Ordered list of names for the Task attributes to print.
-    labels: [Name, Tasks, Description]
+    # Closed: Print inactive tasks.
+    closed:
+      filter:
+        active: false
+        type: task
+      columns:
+        - id_
+        - description
+        - area
+        - priority
+        - tags
+        - due
+        - parent_id
 
-  # Configuration of the repeating report.
-  repeating:
-    # Ordered list of Task attributes to print.
-    columns: [id, title, recurrence, project_id, priority, tags, due]
-    # Ordered list of names for the Task attributes to print.
-    labels: [ID, Title, Recurrence, Project, Pri, Tags, Due]
+    # Recurring: Print repeating and recurring active parent tasks.
+    recurring:
+      filter:
+        active: true
+        type: recurrent_task
+      columns:
+        - id_
+        - description
+        - recurrence
+        - recurrence_type
+        - area
+        - priority
+        - tags
+        - due
 
-  # Configuration of the recurring report.
-  recurring:
-    # Ordered list of Task attributes to print.
-    columns: [id, title, recurrence, project_id, priority, tags, due]
-    # Ordered list of names for the Task attributes to print.
-    labels: [ID, Title, Recurrence, Project, Pri, Tags, Due]
-
-  # Configuration of the projects report.
-  tags:
-    # Ordered list of Task attributes to print.
-    columns: [id, task.count, description]
-    # Ordered list of names for the Task attributes to print.
-    labels: [Name, Tasks, Description]
-
-task:
-  allowed_states:
-    - open
-    - deleted
-    - completed
-    - frozen
-  # Defined by the database schema. You probably don't want to touch this.
-  allowed_types:
-    - task
-    - recurrent_task
-  agile:
-    # Default task agile state.
-    default:
-    # Agile allowed states.
-    allowed_states: [backlog, todo, doing, review, complete]
+    # Frozen: Print repeating and recurring inactive parent tasks.
+    frozen:
+      filter:
+        state: frozen
+        type: recurrent_task
+      columns:
+        - id_
+        - description
+        - recurrence
+        - recurrence_type
+        - area
+        - priority
+        - tags
+        - due
+        - parent_id
 
 # Level of logging verbosity. One of ['info', 'debug', 'warning'].
 verbose: info
+
+# URL specifying the connection to the database. For example:
+#   * tinydb: tinydb:////home/user/database.tinydb
+#   * sqlite: sqlite:////home/user/mydb.sqlite
+#   * mysql: mysql://scott:tiger@localhost/mydatabase
+database_url: tinydb:///~/.local/share/pydo/database.tinydb
