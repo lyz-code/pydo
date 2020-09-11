@@ -17,6 +17,7 @@ nav:
     - Willpower: 'advanced_usage/willpower.md'
     - Fun: 'advanced_usage/fun.md'
     - Export: 'advanced_usage/export.md'
+  - Future Features: future_features.md
   - Contributing: 'contributing.md'
   - Developing:
     - Database Schema: 'developing/database_schema.md'
