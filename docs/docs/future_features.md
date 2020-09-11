@@ -144,6 +144,9 @@ I've still not figured out how to vary the total attribute values over the time.
     lead to depletion. In the long term, the use of self-control can strengthen
     and improve over time.
 
+* [Social interaction](https://en.wikipedia.org/wiki/Social_relation): Measures
+    the amount of relationship you can endure with other human beings.
+
 * [Wisdom](https://en.wikipedia.org/wiki/Wisdom): Measures the ability to think
     and act using knowledge, experience, understanding, common sense and
     insight. It's associated with attributes such as unbiased judgment,
