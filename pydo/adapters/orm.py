@@ -6,17 +6,8 @@ Functions:
         SQLAlchemy ones.
 """
 
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    MetaData,
-    String,
-    Table,
-    Text,
-)
+from sqlalchemy import (Column, DateTime, Float, ForeignKey, Integer, MetaData,
+                        String, Table, Text)
 from sqlalchemy.orm import mapper, relationship
 
 from pydo.model.project import Project
@@ -111,7 +102,10 @@ def start_mappers():
         polymorphic_identity="task",
         exclude_properties={"recurrence", "recurrence_type"},
         properties={
-            "parent": relationship(Task, remote_side=[task.c.id], backref="children")
+            "parent": relationship(Task, remote_side=[task.c.id], backref="children"),
+            "project": relationship(
+                Project, primaryjoin=task.c.project_id == project.c.id, backref="tasks",
+            ),
         },
     )
     mapper(RecurrentTask, inherits=Task, polymorphic_identity="recurrent_task")

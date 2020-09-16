@@ -5,6 +5,8 @@ Classes:
     fulid: Class to generate friendly ulids based on a character set.
 """
 
+from typing import Optional
+
 import ulid
 
 
@@ -40,10 +42,10 @@ class fulid:
 
     def __init__(
         self,
-        character_set="asdfghjwer",
-        forbidden_charset="ilou|&:;()<>~*@?!$#[]{}\\/'\"`",
-        fulid=None,
-    ):
+        character_set: str = "asdfghjwer",
+        forbidden_charset: str = "ilou|&:;()<>~*@?!$#[]{}\\/'\"`",
+        fulid: Optional[str] = None,
+    ) -> None:
         self.charset = list(character_set)
         self.forbidden_charset = list(forbidden_charset)
         self.str = fulid

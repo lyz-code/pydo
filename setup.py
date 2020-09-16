@@ -57,6 +57,7 @@ setup(
     install_requires=[
         "alembic",
         "Click",
+        "click-default-group",
         "ruamel.yaml",
         "SQLAlchemy",
         "tabulate",

@@ -297,51 +297,46 @@ class TestCliDoAndDel:
         ) in caplog.record_tuples
 
 
-# @pytest.mark.skip("Not yet")
-# class TestMain:
-#
-#     def test_delete_subcommand_deletes_task(self):
-#         arguments = ["del", ulid.new().str]
-#         self.parser_args.subcommand = arguments[0]
-#         self.parser_args.ulid = arguments[1]
-#         self.parser_args.parent = False
-#
-#         main()
-#
-#         self.tm.return_value.delete.assert_called_once_with(
-#             id=arguments[1], parent=False,
-#         )
-#
-#     def test_delete_parent_subcommand_deletes_parent_task(self):
-#         arguments = ["del", "-p", ulid.new().str]
-#         self.parser_args.subcommand = arguments[0]
-#         self.parser_args.ulid = arguments[1]
-#         self.parser_args.parent = True
-#
-#         main()
-#
-#         self.tm.return_value.delete.assert_called_once_with(
-#             id=arguments[1], parent=True,
-#         )
-#
-#     @pytest.mark.parametrize("subcommand", ["open", None,])
-#     @patch("pydo.sessionmaker.return_value.return_value.query")
-#     def test_open_subcommand_prints_report_by_default(self, mock, subcommand):
-#         self.parser_args.subcommand = subcommand
-#
-#         main()
-#
-#         assert call(model.Task) in mock.mock_calls
-#         assert call(
-#             state="open", type="task") in mock.return_value.filter_by.mock_calls
-#
-#         self.task_report.assert_called_once_with(self.session)
-#         self.task_report.return_value.print.assert_called_once_with(
-#             tasks=mock.return_value.filter_by.return_value,
-#             columns=self.config.get("report.open.columns"),
-#             labels=self.config.get("report.open.labels"),
-#         )
-#
+class TestCliOpen:
+    def test_print_open_report(self, runner, insert_tasks_e2e):
+        result = runner.invoke(cli, ["open"])
+
+        assert result.exit_code == 0
+        assert re.match(r"ID +Description", result.output)
+
+    def test_print_open_report_if_no_arguments(self, runner, insert_tasks_e2e):
+        result = runner.invoke(cli, [""])
+
+        assert result.exit_code == 0
+        assert re.match(r"ID +Description", result.output)
+
+    def test_print_open_report_can_specify_filter(self, runner, insert_tasks_e2e):
+        result = runner.invoke(cli, ["open", f"pri:{insert_tasks_e2e[0].priority}"])
+
+        assert result.exit_code == 0
+        assert re.match(r"ID +Description", result.output)
+
+    def test_print_open_handles_no_tasks(self, runner, caplog):
+        result = runner.invoke(cli, ["open"])
+
+        assert result.exit_code == 0
+        assert (
+            "pydo.entrypoints.cli",
+            logging.INFO,
+            "No open tasks found that match the filter criteria",
+        ) in caplog.record_tuples
+
+    def test_print_open_handles_wrong_date(self, runner, caplog):
+        result = runner.invoke(cli, ["open", "due:invalid_due"])
+
+        assert result.exit_code == 1
+        assert (
+            "pydo.entrypoints.cli",
+            logging.ERROR,
+            "Unable to parse the date string invalid_due, please enter a valid one",
+        ) in caplog.record_tuples
+
+
 #     @patch("pydo.Projects")
 #     def test_projects_subcommand_prints_report(self, projectMock):
 #         arguments = [
@@ -645,34 +640,3 @@ class TestCliDoAndDel:
 #     def test_can_specify_install_subcommand(self):
 #         parsed = self.parser.parse_args(["install"])
 #         assert parsed.subcommand == "install"
-#
-#
-# @pytest.mark.skip("Not yet")
-# class TestLogger:
-#     @pytest.fixture(autouse=True)
-#     def setup(self):
-#         self.logging_patch = patch("pydo.cli.logging", autospect=True)
-#         self.logging = self.logging_patch.start()
-#
-#         self.logging.DEBUG = 10
-#         self.logging.INFO = 20
-#         self.logging.WARNING = 30
-#         self.logging.ERROR = 40
-#
-#         yield "setup"
-#
-#         self.logging_patch.stop()
-#
-#     def test_logger_is_configured_by_default(self):
-#         load_logger()
-#         self.logging.addLevelName.assert_has_calls(
-#             [
-#                 call(logging.INFO, "[\033[36mINFO\033[0m]"),
-#                 call(logging.ERROR, "[\033[31mERROR\033[0m]"),
-#                 call(logging.DEBUG, "[\033[32mDEBUG\033[0m]"),
-#                 call(logging.WARNING, "[\033[33mWARNING\033[0m]"),
-#             ]
-#         )
-#         self.logging.basicConfig.assert_called_with(
-#             level=logging.INFO, format="  %(levelname)s %(message)s",
-#        )

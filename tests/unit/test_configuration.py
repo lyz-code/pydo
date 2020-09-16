@@ -26,7 +26,7 @@ class TestConfig:
 
     def test_config_load(self, config):
         config.load()
-        assert len(config.data["task"]) > 0
+        assert config.data["verbose"] == "info"
 
     def test_save_config(self, config):
         config.data = {"a": "b"}

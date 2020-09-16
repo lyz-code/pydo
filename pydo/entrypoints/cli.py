@@ -13,15 +13,17 @@ import sys
 from typing import Any, Dict, Tuple
 
 import click
+from click_default_group import DefaultGroup
 
-from pydo import exceptions, services
-from pydo.entrypoints import load_config, load_logger, load_repository, load_session
+from pydo import exceptions, services, views
+from pydo.entrypoints import (load_config, load_logger, load_repository,
+                              load_session)
 
 load_logger()
 log = logging.getLogger(__name__)
 
 
-@click.group()
+@click.group(cls=DefaultGroup, default="open", default_if_no_args=True)
 @click.option(
     "-c",
     "--config_path",
@@ -102,6 +104,27 @@ def rm(ctx: Any, task_filter: Tuple, close_date: str, close_parent: bool) -> Non
     except exceptions.EntityNotFoundError as e:
         log.error(str(e))
         sys.exit(1)
+
+
+@cli.command(context_settings=dict(ignore_unknown_options=True,))
+@click.argument("task_filter", nargs=-1, type=click.UNPROCESSED)
+@click.pass_context
+def open(ctx: Any, task_filter: Tuple) -> None:
+    """
+    Function to define the interface to show the open tasks.
+    """
+
+    try:
+        task_attributes: Dict = services.parse_task_arguments(list(task_filter))
+    except exceptions.DateParseError as e:
+        log.error(str(e))
+        sys.exit(1)
+
+    try:
+        views.open(ctx.obj["repo"], ctx.obj["config"], task_attributes)
+    except exceptions.EntityNotFoundError as e:
+        log.info(str(e))
+        sys.exit(0)
 
 
 @cli.command()

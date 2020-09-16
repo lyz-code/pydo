@@ -94,7 +94,9 @@ class Task(Entity):
         self.parent_id = parent_id
         self.priority = priority
         self.project_id = project_id
+        self.project: Optional["Project"] = None
         self.tag_ids = tag_ids
+        self.tags: Optional[List["Tag"]] = None
         self.type = type
         self.value = value
         self.wait = wait
@@ -143,6 +145,22 @@ class Task(Entity):
         """
 
         return f"<Task {self.id}>"
+
+    def _get_attributes(self) -> Dict:
+        """
+        Method to extract the entity attributes to a dictionary.
+        """
+
+        attributes = super()._get_attributes()
+
+        # Pop the orm generated attributes
+        for attribute in ["parent", "project", "tags"]:
+            try:
+                attributes.pop(attribute)
+            except KeyError:
+                pass
+
+        return attributes
 
     @property
     def agile(self) -> Optional[str]:

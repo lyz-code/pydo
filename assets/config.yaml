@@ -1,3 +1,4 @@
+---
 fulid:
   # Characters used for the generation of identifiers.
   characters: asdfghjwer
@@ -15,16 +16,52 @@ report:
   # Configuration of the frozen report.
   frozen:
     # Ordered list of Task attributes to print.
-    columns: [id, description, recurrence, recurrence_type, project_id, priority, tags, due, parent_id]
+    columns:
+      - id
+      - description
+      - recurrence
+      - recurrence_type
+      - project_id
+      - priority
+      - tag_ids
+      - due
+      - parent_id
     # Ordered list of names for the Task attributes to print.
-    labels: [ID, Description, Recurrence, Recurrence Type, Project, Pri, Tags, Due, Parent]
+    labels:
+      - ID
+      - Description
+      - Recurrence
+      - Recurrence Type
+      - Project
+      - Pri
+      - Tags
+      - Due
+      - Parent
 
   # Configuration of the open report.
   open:
     # Ordered list of Task attributes to print.
-    columns: [id, description, project_id, priority, tags, due]
+    columns:
+      - id
+      - description
+      - recurrence
+      - recurrence_type
+      - project_id
+      - priority
+      - tag_ids
+      - due
+      - parent_id
     # Ordered list of names for the Task attributes to print.
-    labels: [ID, Description, Project, Pri, Tags, Due]
+    labels:
+      - ID
+      - Description
+      - Recurrence
+      - Recurrence Type
+      - Project
+      - Pri
+      - Tags
+      - Due
+      - Parent
 
   # Configuration of the projects report.
   projects:
@@ -36,14 +73,14 @@ report:
   # Configuration of the repeating report.
   repeating:
     # Ordered list of Task attributes to print.
-    columns: [id, description, recurrence, project_id, priority, tags, due]
+    columns: [id, description, recurrence, project_id, priority, tag_ids, due]
     # Ordered list of names for the Task attributes to print.
     labels: [ID, Description, Recurrence, Project, Pri, Tags, Due]
 
   # Configuration of the recurring report.
   recurring:
     # Ordered list of Task attributes to print.
-    columns: [id, description, recurrence, project_id, priority, tags, due]
+    columns: [id, description, recurrence, project_id, priority, tag_ids, due]
     # Ordered list of names for the Task attributes to print.
     labels: [ID, Description, Recurrence, Project, Pri, Tags, Due]
 
@@ -53,10 +90,6 @@ report:
     columns: [id, task.count, description]
     # Ordered list of names for the Task attributes to print.
     labels: [Name, Tasks, Description]
-
-task:
-  agile_default_state:
-    # Agile allowed states.
 
 # Level of logging verbosity. One of ['info', 'debug', 'warning'].
 verbose: info

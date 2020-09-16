@@ -359,7 +359,7 @@ def insert_tasks(repo):
     Fixture to insert three Tasks in the FakeRepository.
     """
 
-    tasks = factories.TaskFactory.create_batch(3, state="open")
+    tasks = sorted(factories.TaskFactory.create_batch(3, state="open"))
     [repo.add(task) for task in tasks]
     repo.commit()
 
