@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 @click.group(cls=DefaultGroup, default="open", default_if_no_args=True)
 @click.option(
     "-c",
-    "--config_path",
+    "--Config_path",
     default="~/.local/share/pydo/config.yaml",
     help="configuration file path",
     envvar="PYDO_CONFIG_PATH",
@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def cli(ctx: Any, config_path: str, verbose: bool) -> None:
     """
-    Function to define the main click group.
+    Free software command line task manager.
     """
 
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
@@ -49,12 +49,16 @@ def cli(ctx: Any, config_path: str, verbose: bool) -> None:
     load_logger(verbose)
 
 
-@cli.command(context_settings=dict(ignore_unknown_options=True,))
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
 @click.argument("task_args", nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def add(ctx: Any, task_args: Tuple) -> None:
     """
-    Function to define the interface to add tasks.
+    Subcommand to add tasks.
     """
 
     try:
@@ -70,14 +74,18 @@ def add(ctx: Any, task_args: Tuple) -> None:
         sys.exit(1)
 
 
-@cli.command(context_settings=dict(ignore_unknown_options=True,))
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
 @click.option("-d", "--close_date", default="now")
 @click.option("-p", "--close_parent", is_flag=True)
 @click.argument("task_filter", nargs=-1, required=True, type=click.UNPROCESSED)
 @click.pass_context
 def do(ctx: Any, task_filter: Tuple, close_date: str, close_parent: bool) -> None:
     """
-    Function to define the interface to complete tasks.
+    Subcommand to complete tasks.
     """
     try:
         services.do_tasks(
@@ -88,14 +96,18 @@ def do(ctx: Any, task_filter: Tuple, close_date: str, close_parent: bool) -> Non
         sys.exit(1)
 
 
-@cli.command(context_settings=dict(ignore_unknown_options=True,))
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
 @click.option("-d", "--close_date", default="now")
 @click.option("-p", "--close_parent", is_flag=True)
 @click.argument("task_filter", nargs=-1, required=True, type=click.UNPROCESSED)
 @click.pass_context
 def rm(ctx: Any, task_filter: Tuple, close_date: str, close_parent: bool) -> None:
     """
-    Function to define the interface to delete tasks.
+    Subcommand to delete tasks.
     """
     try:
         services.rm_tasks(
@@ -106,12 +118,49 @@ def rm(ctx: Any, task_filter: Tuple, close_date: str, close_parent: bool) -> Non
         sys.exit(1)
 
 
-@cli.command(context_settings=dict(ignore_unknown_options=True,))
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
+@click.option(
+    "-p",
+    "--modify_parent",
+    help="For children tasks, also modify the parent task.",
+    is_flag=True,
+)
+@click.argument("task_filter", required=True)
+@click.argument("task_args", nargs=-1, required=True, type=click.UNPROCESSED)
+@click.pass_context
+def mod(ctx: Any, task_filter: str, task_args: Tuple, modify_parent: bool) -> None:
+    """
+    Subcommand to modify tasks.
+    """
+    try:
+        task_attributes: Dict = services.parse_task_arguments(list(task_args))
+    except exceptions.DateParseError as e:
+        log.error(str(e))
+        sys.exit(1)
+
+    try:
+        services.modify_tasks(
+            ctx.obj["repo"], task_filter, task_attributes, modify_parent
+        )
+    except exceptions.EntityNotFoundError as e:
+        log.error(str(e))
+        sys.exit(1)
+
+
+@cli.command(
+    context_settings=dict(
+        ignore_unknown_options=True,
+    )
+)
 @click.argument("task_filter", nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def open(ctx: Any, task_filter: Tuple) -> None:
     """
-    Function to define the interface to show the open tasks.
+    Show the open tasks.
     """
 
     try:

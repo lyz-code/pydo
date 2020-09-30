@@ -49,7 +49,7 @@ import os
 import random
 import re
 from shutil import copyfile
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
 import pytest
 from deepdiff import extract, grep
@@ -170,6 +170,10 @@ class FakeRepository(repository.AbstractRepository):
         elif isinstance(entity, Tag):
             self._tag.add(entity)
         elif isinstance(entity, Task):
+            if entity.project_id is not None:
+                entity.project = self.get(Project, entity.project_id)
+            if entity.tag_ids is not None:
+                entity.tags = [self.get(Tag, tag_id) for tag_id in entity.tag_ids]
             self._task.add(entity)
 
     def apply_migrations(self) -> None:
@@ -271,13 +275,15 @@ class FakeRepository(repository.AbstractRepository):
 
     def msearch(
         self, entity_model: Type[types.Entity], fields: Dict
-    ) -> Union[List[types.Entity], None]:
+    ) -> List[types.Entity]:
         """
         Method to obtain the entities whose attributes match several conditions.
 
         fields is a dictionary with the `key`:`value` to search.
 
         It assumes that the attributes of the entities are str.
+
+        If None is found an EntityNotFoundError is raised.
         """
 
         all_entities = self.all(entity_model)
@@ -294,7 +300,10 @@ class FakeRepository(repository.AbstractRepository):
             try:
                 entities_with_value["matched_values"]
             except KeyError:
-                return None
+                raise exceptions.EntityNotFoundError(
+                    f"There are no {self.entity_model_to_str(entity_model)}s "
+                    "that match the task filter"
+                )
 
             for path in entities_with_value["matched_values"]:
                 entity_id = re.sub(r"root\['(.*)'\]\[.*", r"\1", path)
@@ -306,7 +315,15 @@ class FakeRepository(repository.AbstractRepository):
                     )
 
             entity_attributes = matching_entity_attributes
-        return [entities_dict[key] for key in entity_attributes.keys()]
+        entities = [entities_dict[key] for key in entity_attributes.keys()]
+
+        if len(entities) == 0:
+            raise exceptions.EntityNotFoundError(
+                f"There are no {self.entity_model_to_str(entity_model)}s "
+                "that match the task filter"
+            )
+        else:
+            return entities
 
     def search(
         self, entity_model: Type[types.Entity], field: str, value: str

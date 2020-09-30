@@ -4,10 +4,10 @@ date: 20200301
 author: Lyz
 ---
 
-All you need to know to use `pydo` effectively are these four commands (`add`, `do`, `del`,
-`open`).
+All you need to know to use `pydo` effectively are these five commands (`add`,
+`do`, `rm`, `mod` and `open`).
 
-# Add
+# add
 
 To add a task run:
 
@@ -21,7 +21,7 @@ It is also possible to immediately add tags or projects when creating a task:
 pydo add Improve the pydo manual pro:task_management +python
 ```
 
-# Open
+# open
 
 To see the open tasks run:
 
@@ -31,7 +31,7 @@ pydo open
 
 By default, `open` is the default command, so you can execute `pydo` alone.
 
-# Do
+# do
 
 If you've completed a task, run:
 
@@ -42,12 +42,29 @@ pydo do {{ task_filter }}
 Where `{{ task_filter }}`  can be a task id extracted from the `open` report or
 a task expression like `pro:task_management +python`.
 
-# Delete
+# rm
 
 If you no longer need a task, run:
 
 ```bash
 pydo del {{ task_filter }}
+```
+
+# mod
+
+To modify existent tasks use the following syntax.
+
+```bash
+pydo mod '{{ task_filter }}' {{ task_attributes }}
+```
+
+Notice that the `task_filter` needs to be quoted if the filter contains more
+than one word.
+
+For example, to change the description of the first task, we'd do:
+
+```bash
+pydo a Improve the pydo documentation
 ```
 
 If you are new to `pydo`, it is recommended that you stop here, go and start to

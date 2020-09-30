@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytest
 
-from pydo import services
+from pydo import exceptions, services
 from pydo.fulids import fulid
 from pydo.model.project import Project
 from pydo.model.tag import Tag
@@ -327,458 +327,157 @@ class TestTaskFilter:
         assert extracted_tasks == sorted(tasks_to_extract)
 
 
-#     @patch("pydo.manager.TaskManager._spawn_next_recurring")
-#     def test_close_children_hook_doesnt_spawn_next_recurring_when_frozen(
-#         self, recurringMock
-#     ):
-#         parent_task = RecurrentTaskFactory(
-#             state="frozen", recurrence="1d", recurrence_type="recurring",
-#         )
-#
-#         child_task = TaskFactory.create(
-#             state="open", parent_id=parent_task.id,
-#             description=parent_task.description,
-#         )
-#
-#         self.manager._close_children_hook(child_task)
-#
-#         assert recurringMock.called is False
-#
-#     @patch("pydo.manager.TaskManager._spawn_next_repeating")
-#     def test_close_children_hook_doesnt_spawn_next_repeating_when_frozen(
-#         self, repeatingMock
-#     ):
-#         parent_task = RecurrentTaskFactory(
-#             state="frozen", recurrence="1d", recurrence_type="repeating",
-#         )
-#
-#         child_task = TaskFactory.create(
-#             state="open", parent_id=parent_task.id,
-#             description=parent_task.description,
-#         )
-#
-#         self.manager._close_children_hook(child_task)
-#
-#         assert repeatingMock.called is False
-#
-# @pytest.mark.usefixtures("base_setup")
-# class OldTestTaskManager:
-#     """
-#     Class to test the TaskManager object.
-#
-#     Public attributes:
-#         datetime (mock): datetime mock.
-#         fake (Faker object): Faker object.
-#         log (mock): logging mock
-#         session (Session object): Database session.
-#         manager (TaskManager object): TaskManager object to test
-#     """
-#
-#     def test_rm_tags_existent(self):
-#         tag1 = TagFactory.create()
-#         tag2 = TagFactory.create()
-#         tag3 = TagFactory.create()
-#         task_attributes = {"tags": [tag1, tag2, tag3]}
-#
-#         self.manager._rm_tags(task_attributes, [tag1.id, tag2.id])
-#
-#         assert task_attributes["tags"] == [tag3]
-#
-#     def test_rm_tags_non_existent(self):
-#         tag1 = TagFactory.create()
-#         tag2 = TagFactory.create()
-#         tag3 = TagFactory.create()
-#         task_attributes = {"tags": [tag1, tag2, tag3]}
-#
-#         with pytest.raises(ValueError):
-#             self.manager._rm_tags(task_attributes, ["tag4", "tag5"])
-#
-#     def test_set_empty_value_removes_attribute_from_existing_task(self):
-#         task = self.factory.create()
-#         project = ProjectFactory.create()
-#         agile = "todo"
-#         estimate = 2
-#         arbitrary_attribute_value = self.fake.word()
-#
-#         task.project = project
-#         task.agile = agile
-#         task.estimate = estimate
-#         task.arbitrary_attribute = arbitrary_attribute_value
-#
-#         fulid, task_attributes = self.manager._set(
-#             id=task.id, project_id="", agile="", arbitrary_attribute=""
-#         )
-#
-#         assert fulid == task.id
-#         assert task_attributes["project"] is None
-#         assert task_attributes["agile"] is None
-#         assert task_attributes["arbitrary_attribute"] is None
-#
-#     def test_set_empty_tag_throws_error(self):
-#         add_arguments = [
-#             "+",
-#         ]
-#
-#         with pytest.raises(ValueError):
-#             self.manager._parse_arguments(add_arguments)
-#
-#     def test_set_empty_tag_for_removal_throws_error(self):
-#         add_arguments = [
-#             "-",
-#         ]
-#
-#         with pytest.raises(ValueError):
-#             self.manager._parse_arguments(add_arguments)
-#
-#     # repo.short_id_to_id
-#     def test_get_fulid_from_sulid(self):
-#         task = self.factory.create(state="open")
-#         sulid = self.manager.fulid.fulid_to_sulid(task.id, [task.id])
-#
-#         assert task.id == self.manager._get_fulid(sulid)
-#
-#     # repo.short_id_to_id
-#     def test_get_fulid_from_fulid(self):
-#         task = self.factory.create(state="open")
-#
-#         assert task.id == self.manager._get_fulid(task.id)
-#
-#     # repo.short_id_to_id
-#     def test_get_fulid_non_existent_task_fails_gracefully(self):
-#         # Max 9 chars (otherwise it isn't a sulid)
-#         non_existent_id = "N_E"
-#
-#         self.manager._get_fulid(non_existent_id)
-#
-#         self.log.error.assert_called_once_with("There is no open task with fulid N_E")
-#
-#     def test_modify_task_modifies_arbitrary_attribute(self):
-#         task = self.factory.create(state="open")
-#         non_existent_attribute_value = self.fake.word()
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]),
-#             non_existent=non_existent_attribute_value,
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.non_existent is non_existent_attribute_value
-#
-#     def test_modify_task_modifies_arbitrary_attribute_any_state(self):
-#         task = self.factory.create()
-#         non_existent_attribute_value = self.fake.word()
-#
-#         self.manager.modify(task.id, non_existent=non_existent_attribute_value)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.non_existent is non_existent_attribute_value
-#
-#     def test_modify_task_modifies_project(self):
-#         old_project = ProjectFactory.create()
-#         new_project = ProjectFactory.create()
-#         task = self.factory.create(state="open")
-#         task.project = old_project
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), project_id=new_project.id
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.project is new_project
-#
-#     def test_modify_task_generates_project_if_doesnt_exist(self):
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), project_id="non_existent"
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#         project = self.session.query(Project).get("non_existent")
-#
-#         assert modified_task.project is project
-#         assert isinstance(project, Project)
-#
-#     def test_modify_task_adds_tags(self):
-#         tag_1 = TagFactory.create()
-#         tag_2 = TagFactory.create()
-#         task = self.factory.create(state="open")
-#         task.tags = [tag_1]
-#
-#         self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]),
-#         tags=[tag_2.id])
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#         assert modified_task.tags == [tag_1, tag_2]
-#
-#     def test_modify_task_removes_tags(self):
-#         tag = TagFactory.create()
-#         task = self.factory.create(state="open")
-#         task.tags = [tag]
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), tags_rm=[tag.id]
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#         assert modified_task.tags == []
-#
-#     def test_modify_task_generates_tag_if_doesnt_exist(self):
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), tags=["non_existent"]
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#         tag = self.session.query(Tag).get("non_existent")
-#
-#         assert modified_task.tags == [tag]
-#         assert isinstance(tag, Tag)
-#
-#     def test_modify_task_modifies_priority(self):
-#         priority = self.fake.random_number()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), priority=priority
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.priority == priority
-#
-#     def test_modify_task_modifies_value(self):
-#         value = self.fake.random_number()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]), value=value)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.value == value
-#
-#     def test_modify_task_modifies_willpower(self):
-#         willpower = self.fake.random_number()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), willpower=willpower
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.willpower == willpower
-#
-#     def test_modify_task_modifies_fun(self):
-#         fun = self.fake.random_number()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]), fun=fun)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.fun == fun
-#
-#     def test_modify_task_modifies_estimate(self):
-#         estimate = self.fake.random_number()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(
-#             fulid().fulid_to_sulid(task.id, [task.id]), estimate=estimate
-#         )
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.estimate == estimate
-#
-#     def test_modify_task_modifies_body(self):
-#         body = self.fake.sentence()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]), body=body)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.body == body
-#
-#     def test_modify_parent_only_modifies_desired_attributes(self):
-#         body = self.fake.sentence()
-#         parent_task = RecurrentTaskFactory(
-#             state="open", recurrence="1d", recurrence_type="recurring",
-#         )
-#
-#         child_task = TaskFactory.create(
-#             state="open", parent_id=parent_task.id,
-#             description=parent_task.description,
-#         )
-#
-#         self.manager.modify_parent(child_task.id, body=body)
-#
-#         result_parent_task = self.session.query(Task).get(parent_task.id)
-#
-#         assert result_parent_task.body == body
-#         assert result_parent_task.recurrence == parent_task.recurrence
-#         assert result_parent_task.recurrence_type == parent_task.recurrence_type
-#         assert result_parent_task.due == parent_task.due
-#
-#     def test_modify_parent_doesnt_modify_child(self):
-#         body = self.fake.sentence()
-#         parent_task = RecurrentTaskFactory(
-#             state="open", recurrence="1d", recurrence_type="recurring",
-#         )
-#
-#         child_task = TaskFactory.create(
-#             state="open",
-#             parent_id=parent_task.id, description=parent_task.description,
-#         )
-#
-#         self.manager.modify_parent(child_task.id, body=body)
-#
-#         result_child_task = self.session.query(Task).get(child_task.id)
-#         result_parent_task = self.session.query(Task).get(parent_task.id)
-#
-#         assert result_parent_task.body == body
-#         assert result_child_task.body != body
-#
-#     def test_modify_parent_fails_gracefully_if_non_existent(self):
-#         description = self.fake.sentence()
-#         child_task = TaskFactory.create(
-#         state="open", parent_id=None, description=description,)
-#
-#         self.manager.modify_parent(child_task.id, description=description)
-#
-#         self.log.error.assert_called_once_with(
-#             "Task {} doesn't have a parent task".format(child_task.id)
-#         )
-#
-#     def test_raise_error_if_add_task_modifies_unvalid_agile_state(self):
-#         task = self.factory.create(state="open")
-#         agile = self.fake.word()
-#
-#         with pytest.raises(ValueError):
-#             self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]),
-#             agile=agile)
-#
-#     def test_modify_task_modifies_agile(self):
-#         agile = "todo"
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]), agile=agile)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.agile == agile
-#
-#     def test_modify_task_modifies_due(self):
-#         due = self.fake.date_time()
-#         task = self.factory.create(state="open")
-#
-#         self.manager.modify(fulid().fulid_to_sulid(task.id, [task.id]), due=due)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#
-#         assert modified_task.due == due
-#
-#     def test_delete_task_by_sulid(self):
-#         task = self.factory.create(state="open")
-#         closed = self.fake.date_time()
-#         self.datetime.datetime.now.return_value = closed
-#
-#         assert self.session.query(Task).one()
-#
-#         self.manager.delete(fulid().fulid_to_sulid(task.id, [task.id]),)
+class TestTaskMod:
+    def test_modify_raises_error_if_no_task_matches(self, repo, faker):
+        with pytest.raises(exceptions.EntityNotFoundError):
+            services.modify_tasks(
+                repo, "Unexistent task", {"description": faker.word()}
+            )
 
-#         modified_task = self.session.query(Task).get(task.id)
-#         assert modified_task.closed == closed
-#         assert modified_task.description == task.description
-#         assert modified_task.state == "deleted"
-#         self.log.debug.assert_called_with(
-#             "Deleted task {}: {}".format(modified_task.id, modified_task.description,)
-#         )
-#
-#     def test_delete_task_by_fulid(self):
-#         task = self.factory.create(state="open")
-#         closed = self.fake.date_time()
-#         self.datetime.datetime.now.return_value = closed
-#
-#         assert self.session.query(Task).one()
-#
-#         self.manager.delete(task.id)
-#
-#         modified_task = self.session.query(Task).get(task.id)
-#         assert modified_task.closed == closed
-#         assert modified_task.description == task.description
-#         assert modified_task.state == "deleted"
-#         self.log.debug.assert_called_with(
-#             "Deleted task {}: {}".format(modified_task.id, modified_task.description,)
-#         )
-#
-#     def test_delete_parent_task_by_fulid_also_deletes_child(self):
-#         parent_task = RecurrentTaskFactory(
-#             state="open", recurrence="1d", recurrence_type="recurring",
-#         )
-#
-#         child_task = TaskFactory.create(
-#             state="open",
-#             parent_id=parent_task.id, description=parent_task.description,
-#         )
-#         closed = self.fake.date_time()
-#         self.datetime.datetime.now.return_value = closed
-#
-#         self.manager.delete(child_task.id, parent=True)
-#
-#         result_parent_task = self.session.query(Task).get(parent_task.id)
-#         result_child_task = self.session.query(Task).get(child_task.id)
-#
-#         assert result_child_task.closed == closed
-#         assert result_child_task.state == "deleted"
-#         assert (
-#             call(
-#                 "Deleted task {}: {}".format(
-#                     result_child_task.id, result_child_task.description,
-#                 )
-#             )
-#             in self.log.debug.mock_calls
-#         )
-#
-#         assert result_parent_task.closed == closed
-#         assert result_parent_task.state == "deleted"
-#         assert (
-#             call(
-#                 "Deleted task {}: {}".format(
-#                     result_parent_task.id, result_parent_task.description,
-#                 )
-#             )
-#             in self.log.debug.mock_calls
-#         )
-#
-#     def test_delete_non_parent_task_deletes_child_and_fails_graceful(self):
-#         child_task = TaskFactory.create(state="open", parent_id=None)
-#         closed = self.fake.date_time()
-#         self.datetime.datetime.now.return_value = closed
-#
-#         self.manager.delete(child_task.id, parent=True)
-#
-#         result_child_task = self.session.query(Task).get(child_task.id)
-#
-#         assert result_child_task.closed == closed
-#         assert result_child_task.state == "deleted"
-#         assert (
-#             call(
-#                 "Deleted task {}: {}".format(
-#                     result_child_task.id, result_child_task.description,
-#                 )
-#             )
-#             in self.log.debug.mock_calls
-#         )
-#
-#         self.log.error.assert_called_once_with(
-#             "Task {} doesn't have a parent task".format(child_task.id)
-#         )
+    def test_modify_task_modifies_task_attributes(
+        self, repo, faker, insert_task, caplog
+    ):
+        task = insert_task
+        description = faker.sentence()
+
+        services.modify_tasks(repo, task.id, {"description": description})
+
+        modified_task = repo.get(Task, task.id)
+
+        assert modified_task.description == description
+        assert (
+            "pydo.services",
+            logging.INFO,
+            f"Modified task {task.id}.",
+        ) in caplog.record_tuples
+
+    def test_modify_task_modifies_project(self, repo, faker, insert_task):
+        task = insert_task
+        project_id = faker.word()
+
+        services.modify_tasks(repo, task.id, {"project_id": project_id})
+
+        modified_task = repo.get(Task, task.id)
+        created_project = repo.get(Project, project_id)
+
+        assert modified_task.project_id == project_id
+        assert created_project.id == project_id
+
+    def test_modify_task_unsets_project(self, repo, faker, insert_task):
+        task = insert_task
+        task.project_id = faker.word()
+        repo.add(task)
+        repo.commit()
+
+        services.modify_tasks(repo, task.id, {"project_id": None})
+
+        modified_task = repo.get(Task, task.id)
+
+        assert modified_task.project_id is None
+
+    def test_modify_task_adds_tags(self, repo, faker, insert_task, insert_tags):
+        task = insert_task
+        tags = insert_tags
+
+        services.modify_tasks(repo, task.id, {"tag_ids": [tags[1].id]})
+
+        modified_task = repo.get(Task, task.id)
+        created_tag = repo.get(Tag, tags[1].id)
+
+        assert modified_task.tag_ids == [tags[1].id]
+        assert created_tag.id == tags[1].id
+
+    def test_modify_task_removes_tags(self, repo, faker, insert_task, insert_tags):
+        task = insert_task
+        tags = insert_tags
+        task.tag_ids = [tag.id for tag in tags]
+        repo.add(task)
+        repo.commit()
+
+        services.modify_tasks(repo, task.id, {"tags_rm": [tags[1].id, tags[2].id]})
+
+        modified_task = repo.get(Task, task.id)
+
+        assert modified_task.tag_ids == [tags[0].id]
+
+    def test_modify_task_warns_if_task_doesnt_have_any_tag(
+        self, repo, faker, insert_task, caplog
+    ):
+        task = insert_task
+
+        services.modify_tasks(repo, task.id, {"tags_rm": ["unexistent_tag"]})
+
+        assert (
+            "pydo.services",
+            logging.WARNING,
+            f"Task {task.id} doesn't have any tag assigned.",
+        ) in caplog.record_tuples
+
+    def test_modify_task_warns_if_task_doesnt_have_tag_assigned(
+        self, repo, faker, insert_task, insert_tags, caplog
+    ):
+        task = insert_task
+        tags = insert_tags
+        task.tag_ids = [tag.id for tag in tags]
+        repo.add(task)
+        repo.commit()
+
+        services.modify_tasks(repo, task.id, {"tags_rm": ["unexistent_tag"]})
+
+        assert (
+            "pydo.services",
+            logging.WARNING,
+            f"Task {task.id} doesn't have the tag unexistent_tag assigned.",
+        ) in caplog.record_tuples
+
+    def test_modify_task_modifies_parent_attributes(
+        self, repo, faker, insert_parent_task
+    ):
+        parent_task, child_task = insert_parent_task
+        description = faker.sentence()
+
+        services.modify_tasks(
+            repo, child_task.id, {"description": description}, modify_parent=True
+        )
+
+        modified_child_task = repo.get(Task, child_task.id)
+        modified_parent_task = repo.get(Task, parent_task.id)
+
+        assert modified_child_task.description == description
+        assert modified_parent_task.description == description
+
+    def test_modify_parent_task_doesnt_modify_child(
+        self, repo, faker, insert_parent_task
+    ):
+        parent_task, child_task = insert_parent_task
+        description = faker.sentence()
+
+        services.modify_tasks(repo, parent_task.id, {"description": description})
+
+        modified_child_task = repo.get(Task, child_task.id)
+
+        assert modified_child_task.description != description
+
+    def test_modify_child_task_parent_notifies_orphan_if_no_parent(
+        self, repo, faker, insert_task, caplog
+    ):
+        task = insert_task
+        description = faker.sentence()
+
+        services.modify_tasks(
+            repo, task.id, {"description": description}, modify_parent=True
+        )
+
+        modified_task = repo.get(Task, task.id)
+
+        assert modified_task.description == description
+        assert (
+            "pydo.services",
+            logging.WARNING,
+            f"Task {task.id} doesn't have a parent task.",
+        ) in caplog.record_tuples
+
+
 #
 #     def test_freeze_freezes_task_with_fulid(self):
 #         task = self.factory.create(state="open")
@@ -894,70 +593,36 @@ class TestTaskFilter:
 #         self.manager.unfreeze(parent_task.id)
 #
 #         assert repeatingMock.called is False
+#     @patch("pydo.manager.TaskManager._spawn_next_recurring")
+#     def test_close_children_hook_doesnt_spawn_next_recurring_when_frozen(
+#         self, recurringMock
+#     ):
+#         parent_task = RecurrentTaskFactory(
+#             state="frozen", recurrence="1d", recurrence_type="recurring",
+#         )
 #
+#         child_task = TaskFactory.create(
+#             state="open", parent_id=parent_task.id,
+#             description=parent_task.description,
+#         )
 #
-# @pytest.mark.skip("Probably wont need it after refactor")
-# class OldManagerBaseTest:
-#     """
-#     Abstract base test class to ensure that all the managers have the same
-#     interface.
+#         self.manager._close_children_hook(child_task)
 #
-#     The Children classes must define the following attributes:
-#         self.manager: the manager class to test.
-#         self.model: the sqlalchemy model to test.
-#         self.factory: a factory_boy object to create dummy objects.
+#         assert recurringMock.called is False
 #
-#     Public attributes:
-#         datetime (mock): datetime mock.
-#         fake (Faker object): Faker object.
-#         log (mock): logging mock
-#         session (Session object): Database session.
-#     """
+#     @patch("pydo.manager.TaskManager._spawn_next_repeating")
+#     def test_close_children_hook_doesnt_spawn_next_repeating_when_frozen(
+#         self, repeatingMock
+#     ):
+#         parent_task = RecurrentTaskFactory(
+#             state="frozen", recurrence="1d", recurrence_type="repeating",
+#         )
 #
-#     @pytest.fixture(autouse=True)
-#     def base_setup(self, session):
-#         self.datetime_patch = patch("pydo.manager.datetime", autospect=True)
-#         self.datetime = self.datetime_patch.start()
-#         self.fake = Faker()
-#         self.log_patch = patch("pydo.manager.log", autospect=True)
-#         self.log = self.log_patch.start()
-#         self.session = session
+#         child_task = TaskFactory.create(
+#             state="open", parent_id=parent_task.id,
+#             description=parent_task.description,
+#         )
 #
-#         yield "base_setup"
+#         self.manager._close_children_hook(child_task)
 #
-#         self.datetime_patch.stop()
-#         self.log_patch.stop()
-#
-#     def test_session_attribute_exists(self):
-#         assert self.manager.session is self.session
-#
-#     def test_get_element(self):
-#         element = self.factory.create()
-#         assert self.manager._get(element.id) == element
-#
-#     def test_get_raises_valueerror_if_property_doesnt_exist(self):
-#         with pytest.raises(ValueError):
-#             self.manager._get("unexistent_property")
-#
-#     def test_update_table_element_method_exists(self):
-#         assert "_update" in dir(self.manager)
-#
-#     def test_update_element(self):
-#         element = self.factory.create()
-#
-#         attribute_value = self.fake.sentence()
-#         object_values = {"arbitrary_key": attribute_value}
-#         self.manager._update(element.id, object_values)
-#
-#         assert element.arbitrary_key == attribute_value
-#
-#     def test_update_raises_valueerror_if_element_doesnt_exist(self):
-#         fake_element_id = self.fake.word()
-#
-#         with pytest.raises(ValueError):
-#             self.manager._update(fake_element_id)
-#
-#     def test_extract_attributes(self):
-#         element = self.factory.create()
-#         attributes = self.manager._get_attributes(element)
-#         assert attributes["id"] == element.id
+#         assert repeatingMock.called is False

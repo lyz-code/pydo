@@ -107,14 +107,16 @@ def open(
     if entity_filter is not None:
         search = {**search, **entity_filter}
 
-    tasks = repo.msearch(Task, search)
-    columns = config.get("report.open.columns")
-    labels = config.get("report.open.labels")
-
-    if tasks is None:
+    try:
+        tasks = repo.msearch(Task, search)
+    except exceptions.EntityNotFoundError:
         raise exceptions.EntityNotFoundError(
             "No open tasks found that match the filter criteria"
         )
+
+    columns = config.get("report.open.columns")
+    labels = config.get("report.open.labels")
+
     if not isinstance(columns, list):
         raise ValueError("The columns configuration of the open report is not a list.")
     if not isinstance(labels, list):

@@ -45,7 +45,7 @@ class TestSQLAlchemyRepositoryWithoutSchema:
 
         repo.apply_migrations()
 
-        rows = list(session.execute(f"SELECT * FROM alembic_version"))
+        rows = list(session.execute("SELECT * FROM alembic_version"))
         assert len(rows) > 0
 
 
@@ -142,23 +142,71 @@ class TestSQLAlchemyRepositoryWithSeveralObjects:
 
         assert retrieved_obj == [expected_obj]
 
-    def test_repository_msearch_returns_none_if_unexistent_key(
+    def test_repository_msearch_raises_error_if_unexistent_key(
         self, factory, table, session, obj_model, insert_objects_sql, repo_sql
     ):
         filter = {"unexistent": "value"}
 
-        retrieved_obj = repo_sql.msearch(obj_model, filter)
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo_sql.msearch(obj_model, filter)
 
-        assert retrieved_obj is None
-
-    def test_repository_msearch_returns_none_if_unexistent_value(
+    def test_repository_msearch_raises_error_if_unexistent_value(
         self, factory, table, session, obj_model, insert_objects_sql, repo_sql
     ):
         filter = {"description": "unexistent value"}
 
-        retrieved_obj = repo_sql.msearch(obj_model, filter)
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo_sql.msearch(obj_model, filter)
 
-        assert retrieved_obj is None
+
+class TestSQLAlchemyRepositoryPopulatesRelationships:
+    def test_repository_sets_tasks_project_attribute_on_get(
+        self, repo_sql, session, insert_project_sql
+    ):
+        task = factories.TaskFactory.create(state="open")
+        project = insert_project_sql(session)
+        session.execute(
+            "INSERT INTO task (id, description, state, type, project_id)"
+            "VALUES ("
+            f'"{task.id}", "{task.description}", "{task.state}", "task", "{project.id}"'
+            ")"
+        )
+
+        task = repo_sql.get(Task, task.id)
+
+        assert task.project == project
+
+    def test_repository_sets_tasks_tags_attribute_on_add(
+        self, repo_sql, session, insert_tag_sql
+    ):
+        task = factories.TaskFactory.create(state="open")
+        tags = [insert_tag_sql(session), insert_tag_sql(session)]
+        task.tag_ids = [tag.id for tag in tags]
+
+        repo_sql.add(task)
+        repo_sql.commit()
+
+        rows = list(
+            session.execute('SELECT task_id, tag_id FROM "task_tag_association"')
+        )
+
+        assert (task.id, tags[0].id) in rows
+        assert (task.id, tags[1].id) in rows
+
+    def test_repository_sets_tasks_tags_attribute_on_get(
+        self, repo_sql, session, insert_tag_sql, insert_task_sql
+    ):
+        task = insert_task_sql(session)
+        tag = insert_tag_sql(session)
+
+        session.execute(
+            "INSERT INTO task_tag_association (task_id, tag_id)"
+            f'VALUES ("{task.id}", "{tag.id}")'
+        )
+
+        task = repo_sql.get(Task, task.id)
+
+        assert task.tags == [tag]
 
 
 @pytest.mark.parametrize("factory,table", add_fixtures)
@@ -249,25 +297,62 @@ class TestFakeRepositoryWithSeveralObject:
 
         assert retrieved_obj == [expected_obj]
 
-    def test_repository_msearch_returns_none_if_unexistent_key(
+    def test_repository_msearch_raises_error_if_unexistent_key(
         self, factory, table, session, obj_model, insert_objects, repo
     ):
         filter = {"unexistent": "value"}
 
-        retrieved_obj = repo.msearch(obj_model, filter)
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo.msearch(obj_model, filter)
 
-        try:
-            assert retrieved_obj is None
-        except Exception:
-            # Trying to catch a bug that happens sometimes
-            __import__("pdb").set_trace()  # XXX BREAKPOINT
-            retrieved_obj = repo.msearch(obj_model, filter)
-
-    def test_repository_msearch_returns_none_if_unexistent_value(
+    def test_repository_msearch_raises_error_if_unexistent_value(
         self, factory, table, session, obj_model, insert_objects, repo
     ):
         filter = {"description": "unexistent value"}
 
-        retrieved_obj = repo.msearch(obj_model, filter)
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo.msearch(obj_model, filter)
 
-        assert retrieved_obj is None
+
+class TestFakeRepositoryPopulatesRelationships:
+    def test_repository_sets_tasks_project_attribute_on_set(self, repo, insert_project):
+        task = factories.TaskFactory.create(state="open")
+        project = insert_project
+        task.project_id = project.id
+
+        repo.add(task)
+
+        assert repo._select_table(Task)[0].project == project
+
+    def test_repository_sets_tasks_project_attribute_on_get(self, repo, insert_project):
+        task = factories.TaskFactory.create(state="open")
+        project = insert_project
+        task.project_id = project.id
+        task.project = project
+        repo._task.add(task)
+
+        task = repo.get(Task, task.id)
+
+        assert task.project == project
+
+    def test_repository_sets_tasks_tags_attribute_on_add(self, repo, insert_tags):
+        task = factories.TaskFactory.create(state="open")
+        tags = insert_tags
+        task.tag_ids = [tag.id for tag in tags]
+
+        repo.add(task)
+        repo.commit()
+
+        assert repo._select_table(Task)[0].tags == tags
+
+    def test_repository_sets_tasks_tags_attribute_on_get(self, repo, insert_tag):
+        task = factories.TaskFactory.create(state="open")
+        tag = insert_tag
+
+        task.tag_ids = [tag.id]
+        task.tags = [tag]
+        repo._task.add(task)
+
+        task = repo.get(Task, task.id)
+
+        assert task.tags == [tag]

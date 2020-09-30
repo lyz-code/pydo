@@ -23,6 +23,7 @@ from alembic.config import Config as AlembicConfig
 
 from pydo import exceptions, fulids, types
 from pydo.config import Config
+from pydo.model.tag import Tag
 from pydo.model.task import Task
 
 log = logging.getLogger(__name__)
@@ -112,11 +113,13 @@ class AbstractRepository(abc.ABC):
     @abc.abstractmethod
     def msearch(
         self, entity_model: Type[types.Entity], fields: Dict
-    ) -> Union[List[types.Entity], None]:
+    ) -> List[types.Entity]:
         """
         Method to obtain the entities whose attributes match several conditions.
 
         fields is a dictionary with the {key}:{value} to search.
+
+        If None is found an EntityNotFoundError is raised.
         """
 
         raise NotImplementedError
@@ -213,6 +216,11 @@ class SqlAlchemyRepository(AbstractRepository):
         """
         Method to append an entity to the repository.
         """
+        try:
+            if isinstance(entity, Task) and len(entity.tag_ids) > 0:
+                entity.tags = [self.get(Tag, tag_id) for tag_id in entity.tag_ids]
+        except KeyError:
+            pass
 
         self.session.add(entity)
 
@@ -257,11 +265,13 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def msearch(
         self, entity_model: Type[types.Entity], fields: Dict
-    ) -> Union[List[types.Entity], None]:
+    ) -> List[types.Entity]:
         """
         Method to obtain the entities whose attributes match several conditions.
 
         fields is a dictionary with the {key}:{value} to search.
+
+        If None is found an EntityNotFoundError is raised.
         """
 
         query = self.session.query(entity_model)
@@ -269,12 +279,18 @@ class SqlAlchemyRepository(AbstractRepository):
             for key, value in fields.items():
                 query = query.filter(getattr(entity_model, key).like(f"%{value}"))
         except AttributeError:
-            return None
+            raise exceptions.EntityNotFoundError(
+                f"There are no {self.entity_model_to_str(entity_model)}s "
+                "that match the task filter"
+            )
 
         result = query.all()
 
         if len(result) == 0:
-            return None
+            raise exceptions.EntityNotFoundError(
+                f"There are no {self.entity_model_to_str(entity_model)}s "
+                "that match the task filter"
+            )
         else:
             return result
 

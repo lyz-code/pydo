@@ -61,9 +61,6 @@
 #     if args.subcommand == "install":
 #         install(session, logging.getLogger("main"))
 #     elif args.subcommand in [
-#         "add",
-#         "del",
-#         "done",
 #         "freeze",
 #         "mod",
 #         "unfreeze",

@@ -77,13 +77,14 @@ tag = Table(
     Column("state", String(64), nullable=False),
     Column("closed", DateTime),
     Column("created", DateTime),
-    # tasks = relationship(
-    #     'Task',
-    #     back_populates='tags',
-    #     secondary=task_tag_association_table
-    # )
 )
 
+task_tag_association_table = Table(
+    "task_tag_association",
+    metadata,
+    Column("task_id", Integer, ForeignKey("task.id")),
+    Column("tag_id", Integer, ForeignKey("tag.id")),
+)
 
 # Relationships
 
@@ -104,7 +105,12 @@ def start_mappers():
         properties={
             "parent": relationship(Task, remote_side=[task.c.id], backref="children"),
             "project": relationship(
-                Project, primaryjoin=task.c.project_id == project.c.id, backref="tasks",
+                Project,
+                primaryjoin=task.c.project_id == project.c.id,
+                backref="tasks",
+            ),
+            "tags": relationship(
+                Tag, backref="tasks", secondary=task_tag_association_table
             ),
         },
     )
@@ -117,11 +123,3 @@ def start_mappers():
     #         collection_class=set,
     #     )
     # })
-
-
-# task_tag_association_table = Table(
-#     'task_tag_association',
-#     Base.metadata,
-#     Column('task_id', Integer, ForeignKey('task.id')),
-#     Column('tag_id', Integer, ForeignKey('tag.id'))
-# )

@@ -138,7 +138,7 @@ class TestCliAdd:
         assert re.match(
             f"Added repeating task .*: {description}", caplog.records[0].msg
         )
-        assert re.match(f"Added first child task with id.*", caplog.records[1].msg)
+        assert re.match("Added first child task with id.*", caplog.records[1].msg)
 
     def test_add_recurring_task(self, runner, faker, caplog):
         description = faker.sentence()
@@ -147,7 +147,7 @@ class TestCliAdd:
         assert re.match(
             f"Added recurring task .*: {description}", caplog.records[0].msg
         )
-        assert re.match(f"Added first child task with id.*", caplog.records[1].msg)
+        assert re.match("Added first child task with id.*", caplog.records[1].msg)
 
     def test_add_recurrent_task_fails_gently_if_no_due(self, runner, faker, caplog):
         description = faker.sentence()
@@ -293,7 +293,44 @@ class TestCliDoAndDel:
         assert (
             "pydo.entrypoints.cli",
             logging.ERROR,
-            f"No Task found with id unexistent_task",
+            "No Task found with id unexistent_task",
+        ) in caplog.record_tuples
+
+
+class TestCliMod:
+    def test_modify_task(self, runner, insert_tasks_e2e, faker, caplog):
+        task = insert_tasks_e2e[0]
+        description = faker.sentence()
+
+        result = runner.invoke(cli, ["mod", task.id, description])
+        assert result.exit_code == 0
+        assert re.match(f"Modified task {task.id}", caplog.records[0].msg)
+
+    def test_modify_parent_task(self, runner, insert_parent_task_e2e, faker, caplog):
+        parent, child = insert_parent_task_e2e
+
+        parent_id = parent.id
+        child_id = child.id
+        description = faker.sentence()
+
+        result = runner.invoke(cli, ["mod", "-p", child.id, description])
+
+        assert result.exit_code == 0
+        assert re.match(f"Modified task {child_id}.", caplog.records[0].msg)
+        assert re.match(f"Modified task {parent_id}.", caplog.records[1].msg)
+
+    def test_modify_task_fails_gracefully_if_none_found(
+        self, faker, runner, insert_task_e2e, caplog
+    ):
+        description = faker.sentence()
+
+        result = runner.invoke(cli, ["mod", "unexistent_task", description])
+
+        assert result.exit_code == 1
+        assert (
+            "pydo.entrypoints.cli",
+            logging.ERROR,
+            "No Task found with id unexistent_task",
         ) in caplog.record_tuples
 
 

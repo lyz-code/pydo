@@ -4,6 +4,7 @@ Module to store the operation functions needed to maintain the program.
 Functions:
     add_task: Create a new task.
     do_tasks: Complete tasks that match a task filter.
+    modify_tasks: Modify the attributes of the tasks matching a filter.
     rm_tasks: Delete tasks that match a task filter.
 
     tasks_from_task_filter: Extract task ids from a task filter
@@ -33,7 +34,7 @@ Internal functions:
 import logging
 import re
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from pydo import exceptions
 from pydo.adapters import repository
@@ -123,7 +124,10 @@ def _set_task_tags(repo: repository.AbstractRepository, task: Task) -> None:
     A new tag will be created if it doesn't exist yet.
     """
 
-    if task.tag_ids is None:
+    try:
+        if task.tag_ids is None:
+            return
+    except AttributeError:
         return
 
     for tag_id in task.tag_ids:
@@ -229,10 +233,6 @@ def _close_tasks(
 
     tasks = tasks_from_task_filter(repo, task_filter)
 
-    if tasks is None:
-        raise exceptions.EntityNotFoundError(
-            "No Tasks were found with that task filter"
-        )
     for task in tasks:
         _close_task(repo, task, state, close_date_str, delete_parent)
 
@@ -328,9 +328,11 @@ def parse_task_arguments(task_args: List[str], mode: str = "add") -> Dict:
 
 def tasks_from_task_filter(
     repo: repository.AbstractRepository, task_filter: str
-) -> Optional[List[Task]]:
+) -> List[Task]:
     """
     Function to extract task ids from a task filter.
+
+    If none is found, an EntityNotFoundError error is raised.
     """
     tasks = []
     task_attributes = parse_task_arguments(task_filter.split(" "), "filter")
@@ -373,6 +375,47 @@ def rm_tasks(
     """
 
     _close_tasks(repo, task_filter, "deleted", complete_date_str, delete_parent)
+
+
+def modify_tasks(
+    repo: repository.AbstractRepository,
+    task_filter: str,
+    task_attributes: Dict,
+    modify_parent: bool = False,
+) -> None:
+    """
+    Function to modify the attributes of the tasks matching a filter.
+    """
+
+    tasks = tasks_from_task_filter(repo, task_filter)
+    for task in tasks:
+        for attribute, value in task_attributes.items():
+            if attribute == "tags_rm":
+                if task.tag_ids is None:
+                    log.warning(
+                        f"Task {task.id} doesn't have any tag assigned.",
+                    )
+                else:
+                    for tag in value:
+                        try:
+                            task.tag_ids.remove(tag)
+                        except ValueError:
+                            log.warning(
+                                f"Task {task.id} doesn't have the tag {tag} assigned."
+                            )
+            else:
+                task.__setattr__(attribute, value)
+        _configure_task(repo, task)
+        repo.add(task)
+
+        log.info(f"Modified task {task.id}.")
+
+        if modify_parent:
+            if task.parent_id is not None:
+                modify_tasks(repo, task.parent_id, task_attributes)
+            else:
+                log.warning(f"Task {task.id} doesn't have a parent task.")
+    repo.commit()
 
 
 # import json

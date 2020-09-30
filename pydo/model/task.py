@@ -13,6 +13,8 @@ from typing import Dict, Iterable, List, Optional
 from pydo import exceptions
 from pydo.model import Entity
 from pydo.model.date import convert_date
+from pydo.model.project import Project
+from pydo.model.tag import Tag
 
 log = logging.getLogger(__name__)
 
@@ -95,8 +97,10 @@ class Task(Entity):
         self.priority = priority
         self.project_id = project_id
         self.project: Optional["Project"] = None
+        if tag_ids is None:
+            tag_ids = []
         self.tag_ids = tag_ids
-        self.tags: Optional[List["Tag"]] = None
+        self.tags: List["Tag"] = []
         self.type = type
         self.value = value
         self.wait = wait
