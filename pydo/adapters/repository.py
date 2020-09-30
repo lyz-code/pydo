@@ -219,7 +219,7 @@ class SqlAlchemyRepository(AbstractRepository):
         try:
             if isinstance(entity, Task) and len(entity.tag_ids) > 0:
                 entity.tags = [self.get(Tag, tag_id) for tag_id in entity.tag_ids]
-        except KeyError:
+        except AttributeError:
             pass
 
         self.session.add(entity)

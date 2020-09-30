@@ -38,14 +38,22 @@ def _print_entities(
     for entity in entities:
         entity_line = []
         for attribute in columns:
-            try:
-                value = getattr(entity, attribute)
-            except AttributeError:
-                value = ""
-            if isinstance(value, list):
-                value = ", ".join(value)
-            elif isinstance(value, datetime):
-                value = _date2str(config, value)
+            if isinstance(entity, Task) and attribute == "tags":
+                value = ", ".join([tag.id for tag in entity.tags])
+            elif isinstance(entity, Task) and attribute == "project":
+                if entity.project is not None:
+                    value = entity.project.id
+                else:
+                    value = ""
+            else:
+                try:
+                    value = getattr(entity, attribute)
+                except AttributeError:
+                    value = ""
+                if isinstance(value, list):
+                    value = ", ".join(value)
+                elif isinstance(value, datetime):
+                    value = _date2str(config, value)
             entity_line.append(value)
         report_data.append(entity_line)
     print(tabulate(report_data, headers=labels, tablefmt="simple"))
@@ -125,6 +133,9 @@ def open(
     # Convert task ids in short ids.
     short_ids = repo.fulid.sulids([task.id for task in tasks])
     for task in tasks:
+        # The following line is required for the tags to be loaded in the report,
+        # otherwise it appears as empty :S
+        task.tags
         task.id = short_ids[task.id]
 
     _print_entities(config, tasks, columns, labels)

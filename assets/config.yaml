@@ -21,9 +21,9 @@ report:
       - description
       - recurrence
       - recurrence_type
-      - project_id
+      - project
       - priority
-      - tag_ids
+      - tags
       - due
       - parent_id
     # Ordered list of names for the Task attributes to print.
@@ -46,9 +46,9 @@ report:
       - description
       - recurrence
       - recurrence_type
-      - project_id
+      - project
       - priority
-      - tag_ids
+      - tags
       - due
       - parent_id
     # Ordered list of names for the Task attributes to print.
@@ -73,14 +73,14 @@ report:
   # Configuration of the repeating report.
   repeating:
     # Ordered list of Task attributes to print.
-    columns: [id, description, recurrence, project_id, priority, tag_ids, due]
+    columns: [id, description, recurrence, project, priority, tags, due]
     # Ordered list of names for the Task attributes to print.
     labels: [ID, Description, Recurrence, Project, Pri, Tags, Due]
 
   # Configuration of the recurring report.
   recurring:
     # Ordered list of Task attributes to print.
-    columns: [id, description, recurrence, project_id, priority, tag_ids, due]
+    columns: [id, description, recurrence, project, priority, tags, due]
     # Ordered list of names for the Task attributes to print.
     labels: [ID, Description, Recurrence, Project, Pri, Tags, Due]
 

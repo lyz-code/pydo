@@ -107,6 +107,84 @@ class TestGenericReport:
 
         assert err == ""
 
+    def test_print_entities_can_print_tags(self, config, capsys):
+
+        # ID                          Tags
+        # --------------------------  ------
+        # 01EKFRS0EXDC9VSMM83AAAAAAA  course
+        # 01EKFRS0EXQWQ8S094BAAAAAAA
+        # 01EKFRS0EYJR1Z6XWTHAAAAAAA
+
+        columns = ["id", "tags"]
+        labels = ["ID", "Tags"]
+
+        # Generate the tasks
+        tag = factories.TagFactory.create()
+        tasks = factories.TaskFactory.create_batch(3, state="open")
+        tasks[0].tags = [tag]
+
+        # Generate the output
+        expected_out = [
+            r"ID +Tags",
+            r"-+  -+",
+        ]
+        for task in tasks:
+            try:
+                task_str = fr"{task.id} +{task.tags[0].id}"
+            except IndexError:
+                task_str = fr"{task.id}"
+            expected_out.append(task_str)
+
+        views._print_entities(config, tasks, columns, labels)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
+    def test_print_entities_can_print_projects(self, config, capsys):
+
+        # ID                          Project
+        # --------------------------  ------
+        # 01EKFRS0EXDC9VSMM83AAAAAAA  course
+        # 01EKFRS0EXQWQ8S094BAAAAAAA
+        # 01EKFRS0EYJR1Z6XWTHAAAAAAA
+
+        columns = ["id", "project"]
+        labels = ["ID", "Project"]
+
+        # Generate the tasks
+        project = factories.ProjectFactory.create()
+        tasks = factories.TaskFactory.create_batch(3, state="open")
+        tasks[0].project = project
+
+        # Generate the output
+        expected_out = [
+            r"ID +Project",
+            r"-+  -+",
+        ]
+        for task in tasks:
+            try:
+                task_str = fr"{task.id} +{task.project.id}"
+            except AttributeError:
+                task_str = fr"{task.id}"
+            expected_out.append(task_str)
+
+        views._print_entities(config, tasks, columns, labels)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
 
 class TestOpenReport:
     def test_open_prints_open_task_attributes(self, repo, config, insert_tasks, capsys):
