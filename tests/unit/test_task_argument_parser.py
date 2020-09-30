@@ -230,8 +230,9 @@ class TestTaskArgumentParser:
         assert attributes["description"] == description
         assert attributes["agile"] == agile
 
-    def test_parse_extracts_due(self, faker):
+    def test_parse_extracts_due(self, faker, freezer):
         description = faker.sentence()
+        freezer.move_to("2017-05-20")
         due = "1d"
         task_arguments = [
             description,
@@ -241,7 +242,7 @@ class TestTaskArgumentParser:
         attributes = parse_task_arguments(task_arguments)
 
         assert isinstance(attributes["due"], datetime)
-        assert attributes["due"].day == datetime.now().day + 1
+        assert attributes["due"] == datetime(2017, 5, 21)
 
     def test_parse_return_empty_string_if_argument_is_empty(self):
         # One of each type (str, date, float, int) and the description

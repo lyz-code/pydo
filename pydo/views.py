@@ -4,6 +4,9 @@ Module to store the representations of the data.
 Functions:
     open: Print the open tasks that match a task filter.
 
+Classes:
+    Report: Class to manage the data to print.
+
 Internal Functions:
     _print_entities: Print the entity attributes.
     _remove_null_columns: Remove the columns that have all None items.
@@ -18,7 +21,80 @@ from tabulate import tabulate
 
 from pydo import config, exceptions, types
 from pydo.adapters import repository
+from pydo.model.project import Project
 from pydo.model.task import Task
+
+
+class Report(list):
+    """
+    Class to manage the data to print.
+
+    Public Methods:
+        add: Add a row of data to the report.
+        print: Print the report.
+
+    Internal Methods:
+        _remove_null_columns: Remove the columns that have all None items.
+    """
+
+    def __init__(self, labels: List["str"]) -> None:
+        self.labels = labels
+        self.data: List = []
+
+    def _remove_null_columns(self) -> None:
+        """
+        Method to remove the columns that have all None items from the report_data.
+        """
+
+        for column in reversed(range(0, len(self.labels))):
+            # If all entities have the None attribute value, remove the column from
+            # the report.
+            column_used = False
+            for row in range(0, len(self.data)):
+                if self.data[row][column] not in [None, ""]:
+                    column_used = True
+
+            if not column_used:
+                [row.pop(column) for row in self.data]
+                self.labels.pop(column)
+
+    def add(self, data: List) -> None:
+        """
+        Method to add a row of data to the report.
+        """
+        self.data.append(data)
+
+    def print(self) -> None:
+        """
+        Method to print the report.
+        """
+        self._remove_null_columns()
+
+        if len(self.data) == 0:
+            raise exceptions.EntityNotFoundError(
+                "The report doesn't have any data to print"
+            )
+        print(tabulate(self.data, headers=self.labels, tablefmt="simple"))
+
+
+def _get_columns_and_labels(
+    config: config.Config,
+    entities: List[types.Entity],
+    report_name: str,
+) -> Tuple[List[str], List[str]]:
+    """
+    Function to prepare the columns and labels from the reports.
+    """
+
+    columns = config.get(f"report.{report_name}.columns")
+    labels = config.get(f"report.{report_name}.labels")
+
+    if not isinstance(columns, list):
+        raise ValueError("The columns configuration of the open report is not a list.")
+    if not isinstance(labels, list):
+        raise ValueError("The labels configuration of the open report is not a list.")
+
+    return columns, labels
 
 
 def _print_entities(
@@ -29,11 +105,12 @@ def _print_entities(
 ) -> None:
     """
     Function to print the entity attributes.
+
+    The report_name will be used to extract the columns and labels from the
+    configuration.
     """
 
-    report_data: List = []
-
-    columns, labels = _remove_null_columns(entities, columns, labels)
+    report = Report(labels)
 
     for entity in entities:
         entity_line = []
@@ -55,35 +132,10 @@ def _print_entities(
                 elif isinstance(value, datetime):
                     value = _date2str(config, value)
             entity_line.append(value)
-        report_data.append(entity_line)
-    print(tabulate(report_data, headers=labels, tablefmt="simple"))
+        report.add(entity_line)
 
-
-def _remove_null_columns(
-    entities: List[types.Entity], columns: List[str], labels: List[str]
-) -> Tuple[List[str], List[str]]:
-    """
-    Function to remove the columns that have all None items.
-
-    Returns the columns and labels without the unneeded elements.
-    """
-
-    for attribute in columns.copy():
-        # If all entities have the None attribute value, remove the column from
-        # the report.
-        attribute_used = False
-        for entity in entities:
-            try:
-                if getattr(entity, attribute) is not None:
-                    attribute_used = True
-            except AttributeError:
-                continue
-
-        if not attribute_used:
-            index_to_remove = columns.index(attribute)
-            columns.pop(index_to_remove)
-            labels.pop(index_to_remove)
-    return columns, labels
+    report._remove_null_columns()
+    report.print()
 
 
 def _date2str(config: config.Config, date: datetime) -> str:
@@ -122,14 +174,6 @@ def open(
             "No open tasks found that match the filter criteria"
         )
 
-    columns = config.get("report.open.columns")
-    labels = config.get("report.open.labels")
-
-    if not isinstance(columns, list):
-        raise ValueError("The columns configuration of the open report is not a list.")
-    if not isinstance(labels, list):
-        raise ValueError("The labels configuration of the open report is not a list.")
-
     # Convert task ids in short ids.
     short_ids = repo.fulid.sulids([task.id for task in tasks])
     for task in tasks:
@@ -138,4 +182,28 @@ def open(
         task.tags
         task.id = short_ids[task.id]
 
+    columns, labels = _get_columns_and_labels(config, tasks, "open")
     _print_entities(config, tasks, columns, labels)
+
+
+def projects(
+    repo: repository.AbstractRepository,
+    config: config.Config,
+) -> None:
+    """
+    Function to print the projects.
+    """
+
+    projects = repo.all(Project)
+    columns, labels = _get_columns_and_labels(config, projects, "projects")
+    report = Report(labels)
+
+    for project in projects:
+        if project.tasks is not None:
+            open_tasks = [task for task in project.tasks if task.state == "open"]
+        else:
+            continue
+
+        if len(open_tasks) > 0:
+            report.add([project.id, len(open_tasks), project.description])
+    report.print()

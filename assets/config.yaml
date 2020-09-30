@@ -68,7 +68,7 @@ report:
     # Ordered list of Task attributes to print.
     columns: [id, task.count, description]
     # Ordered list of names for the Task attributes to print.
-    labels: [Name, Tasks, Description]
+    labels: [Name, Open Tasks, Description]
 
   # Configuration of the repeating report.
   repeating:

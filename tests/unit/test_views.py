@@ -3,61 +3,21 @@ Module to test the view implementations.
 """
 import re
 
-import pytest
-
 from pydo import services, views
 from tests import factories
 
 
 class TestGenericReport:
     def test_remove_null_columns_removes_columns_if_all_nulls(self, config):
-        original_columns = config.get("report.open.columns")
-        original_labels = config.get("report.open.labels")
+        tasks = factories.TaskFactory.create_batch(100, due=None, priority="")
+        report = views.Report(["ID", "Description", "Due", "Priority"])
+        for task in tasks:
+            report.add([task.id, task.description, task.due, task.priority])
 
-        desired_columns = original_columns.copy()
-        desired_labels = original_labels.copy()
+        report._remove_null_columns()
 
-        # If we don't assign a project and tags to the tasks they are all
-        # going to be null, we are going the due to be null, and as they are simple
-        # tasks there aren't going to have recurrence, recurrence_type nor parent_id.
-        for attribute in [
-            "project_id",
-            "tag_ids",
-            "recurrence",
-            "recurrence_type",
-            "due",
-            "parent_id",
-        ]:
-            attribute_index = desired_columns.index(attribute)
-            desired_columns.pop(attribute_index)
-            desired_labels.pop(attribute_index)
-
-        tasks = factories.TaskFactory.create_batch(100, due=None)
-
-        result_columns, result_labels = views._remove_null_columns(
-            tasks, original_columns, original_labels
-        )
-
-        assert desired_columns == result_columns
-        assert desired_labels == result_labels
-
-    def test_remove_null_columns_doesnt_fail_if_column_doesnt_exist(self):
-        desired_columns = ["id", "description"]
-        columns = desired_columns.copy()
-        columns.append("unexistent_column")
-
-        desired_labels = ["Id", "Description"]
-        labels = desired_labels.copy()
-        labels.append("unexistent_label")
-
-        tasks = factories.TaskFactory.create_batch(100, due=None)
-
-        result_columns, result_labels = views._remove_null_columns(
-            tasks, columns, labels
-        )
-
-        assert result_columns == desired_columns
-        assert result_labels == desired_labels
+        assert report.labels == ["ID", "Description"]
+        assert report.data[0] == [tasks[0].id, tasks[0].description]
 
     def test_print_entities_doesnt_fail_if_some_doent_have_an_attr(
         self, config, capsys
@@ -220,19 +180,18 @@ class TestOpenReport:
 
         assert err == ""
 
-    def test_open_allows_task_filter(self, repo, config, insert_tasks, capsys, faker):
+    def test_open_allows_task_filter(
+        self, repo, config, insert_tasks, insert_project, capsys, faker
+    ):
         # We are going to create a task that has a special project and filter by it
         # So only that one should be shown
 
         # Generate the tasks
 
-        project = faker.word()
-
-        task_with_project = factories.TaskFactory.create(
-            project_id=project, due=None, state="open"
-        )
-        repo.add(task_with_project)
-        repo.commit()
+        project = insert_project
+        tasks = insert_tasks
+        task_with_project = tasks[0]
+        services.modify_tasks(repo, task_with_project.id, {"project_id": project.id})
 
         # Generate the output
         #
@@ -247,7 +206,7 @@ class TestOpenReport:
             fr" +{task_with_project.priority}",
         ]
 
-        views.open(repo, config, {"project_id": project})
+        views.open(repo, config, {"project_id": project.id})
 
         out, err = capsys.readouterr()
         out = out.splitlines()
@@ -260,34 +219,76 @@ class TestOpenReport:
 
 
 class TestProjectsReport:
-    @pytest.mark.skip("Not yet")
-    def test_projects_prints_project_attributes(
+    def test_projects_prints_only_counts_open_tasks(
         self, repo, config, insert_tasks, insert_project, capsys
     ):
-        # Assign the project to all the tasks, complete one and delete the other
+        # Assign the same project to all the tasks, complete one and delete the other
 
         project = insert_project
         tasks = insert_tasks
 
         for task in tasks:
-            task.project = project
+            services.modify_tasks(repo, task.id, {"project_id": project.id})
 
-        [repo.add(task) for task in tasks]
-        services.do_tasks(repo, task[1])
-        services.rm_tasks(repo, task[2])
+        services.do_tasks(repo, tasks[1].id)
+        services.rm_tasks(repo, tasks[2].id)
         repo.commit()
+        capsys.readouterr()
 
         # Build Expected output
-        #
-        # ID        Description                                          Pri  Due
-        # --------  ------------------------------------------------  ------  ----------
-        # raaaaaaa  Set recently within soon popular stage election.       7  2026-03-12
-        # caaaaaaa  Kind matter change political head series.         630719  2017-06-06
-        # gaaaaaaa  Require respond so.                                 8864
+
+        # Name      Open Tasks  Description
+        # ------  ------------  ----------------------
+        # west               1  As or later ten happy.
 
         expected_out = [
-            r"ID +Description +Pri +Due",
-            r"-+  -+  -+  -+",
+            r"Name +Open Tasks +Description",
+            r"-+  -+  -+",
+            fr"{project.id} *1 *{project.description}",
+        ]
+
+        views.projects(repo, config)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
+    def test_projects_prints_only_projects_with_open_tasks(
+        self, repo, config, insert_tasks, insert_projects, capsys
+    ):
+        # Assign a different project to each tasks, complete one and delete the other
+        # The report should only show the one with the open task.
+
+        projects = insert_projects
+        tasks = insert_tasks
+
+        # Assign one task to each project
+        for task_id in range(0, len(tasks)):
+            services.modify_tasks(
+                repo, tasks[task_id].id, {"project_id": projects[task_id].id}
+            )
+
+        # Complete and remove the tasks of two of them
+        services.do_tasks(repo, tasks[0].id)
+        services.rm_tasks(repo, tasks[2].id)
+        repo.commit()
+        capsys.readouterr()
+
+        # Build Expected output
+
+        # Name      Open Tasks  Description
+        # ------  ------------  ----------------------
+        # west               1  As or later ten happy.
+
+        expected_out = [
+            r"Name +Open Tasks +Description",
+            r"-+  -+  -+",
+            fr"{projects[2].id} *1 *{projects[2].description}",
         ]
 
         views.projects(repo, config)

@@ -105,9 +105,7 @@ def start_mappers():
         properties={
             "parent": relationship(Task, remote_side=[task.c.id], backref="children"),
             "project": relationship(
-                Project,
-                primaryjoin=task.c.project_id == project.c.id,
-                backref="tasks",
+                Project, primaryjoin=task.c.project_id == project.c.id, backref="tasks"
             ),
             "tags": relationship(
                 Tag, backref="tasks", secondary=task_tag_association_table

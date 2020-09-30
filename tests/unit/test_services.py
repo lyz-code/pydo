@@ -363,17 +363,19 @@ class TestTaskMod:
         assert modified_task.project_id == project_id
         assert created_project.id == project_id
 
-    def test_modify_task_unsets_project(self, repo, faker, insert_task):
+    def test_modify_task_unsets_project(self, repo, faker, insert_task, insert_project):
+        # Assign a project to the task
         task = insert_task
-        task.project_id = faker.word()
-        repo.add(task)
-        repo.commit()
+        project = insert_project
+        services.modify_tasks(repo, task.id, {"project_id": project.id})
 
+        # Remove the project
         services.modify_tasks(repo, task.id, {"project_id": None})
 
         modified_task = repo.get(Task, task.id)
 
         assert modified_task.project_id is None
+        assert modified_task.project is None
 
     def test_modify_task_adds_tags(self, repo, faker, insert_task, insert_tags):
         task = insert_task
@@ -418,9 +420,7 @@ class TestTaskMod:
     ):
         task = insert_task
         tags = insert_tags
-        task.tag_ids = [tag.id for tag in tags]
-        repo.add(task)
-        repo.commit()
+        services.modify_tasks(repo, task.id, {"tag_ids": [tag.id for tag in tags]})
 
         services.modify_tasks(repo, task.id, {"tags_rm": ["unexistent_tag"]})
 

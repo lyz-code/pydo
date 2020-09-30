@@ -151,11 +151,7 @@ def mod(ctx: Any, task_filter: str, task_args: Tuple, modify_parent: bool) -> No
         sys.exit(1)
 
 
-@cli.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-    )
-)
+@cli.command(context_settings=dict(ignore_unknown_options=True))
 @click.argument("task_filter", nargs=-1, type=click.UNPROCESSED)
 @click.pass_context
 def open(ctx: Any, task_filter: Tuple) -> None:
@@ -173,6 +169,20 @@ def open(ctx: Any, task_filter: Tuple) -> None:
         views.open(ctx.obj["repo"], ctx.obj["config"], task_attributes)
     except exceptions.EntityNotFoundError as e:
         log.info(str(e))
+        sys.exit(0)
+
+
+@cli.command(context_settings=dict(ignore_unknown_options=True))
+@click.pass_context
+def projects(ctx: Any) -> None:
+    """
+    Show the open projects.
+    """
+
+    try:
+        views.projects(ctx.obj["repo"], ctx.obj["config"])
+    except exceptions.EntityNotFoundError:
+        log.info("No projects found with any open tasks.")
         sys.exit(0)
 
 

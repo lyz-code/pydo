@@ -8,6 +8,7 @@ import pytest
 from alembic.config import Config as AlembicConfig
 from click.testing import CliRunner
 
+from pydo import services
 from pydo.config import Config
 from pydo.entrypoints import load_repository, load_session
 from pydo.entrypoints.cli import cli
@@ -205,6 +206,24 @@ def insert_tasks_e2e(repo_e2e):
     yield tasks
 
 
+@pytest.fixture
+def insert_project_e2e(repo_e2e):
+    project = factories.ProjectFactory.create(state="open")
+    repo_e2e.add(project)
+    repo_e2e.commit()
+
+    yield project
+
+
+@pytest.fixture
+def insert_tag_e2e(repo_e2e):
+    tag = factories.TagFactory.create(state="open")
+    repo_e2e.add(tag)
+    repo_e2e.commit()
+
+    yield tag
+
+
 @pytest.mark.parametrize("action,state", (("do", "completed"), ("rm", "deleted")))
 class TestCliDoAndDel:
     def test_close_task_by_short_id(
@@ -374,22 +393,30 @@ class TestCliOpen:
         ) in caplog.record_tuples
 
 
-#     @patch("pydo.Projects")
-#     def test_projects_subcommand_prints_report(self, projectMock):
-#         arguments = [
-#             "projects",
-#         ]
-#         self.parser_args.subcommand = arguments[0]
-#
-#         main()
-#
-#         projectMock.assert_called_once_with(self.session)
-#
-#         projectMock.return_value.print.assert_called_once_with(
-#             columns=self.config.get("report.projects.columns"),
-#             labels=self.config.get("report.projects.labels"),
-#         )
-#
+class TestCliProjects:
+    def test_print_projects_report(
+        self, runner, repo_e2e, insert_tasks_e2e, insert_project_e2e
+    ):
+        tasks = insert_tasks_e2e
+        project = insert_project_e2e
+        services.modify_tasks(repo_e2e, tasks[0].id, {"project_id": project.id})
+
+        result = runner.invoke(cli, ["projects"])
+
+        assert result.exit_code == 0
+        assert re.match(r"Name +Open Tasks +Description", result.output)
+
+    def test_print_projects_handles_no_projects(self, runner, caplog):
+        result = runner.invoke(cli, ["projects"])
+
+        assert result.exit_code == 0
+        assert (
+            "pydo.entrypoints.cli",
+            logging.INFO,
+            "No projects found with any open tasks.",
+        ) in caplog.record_tuples
+
+
 #     @patch("pydo.Tags")
 #     def test_tags_subcommand_prints_report(self, tagsMock):
 #         arguments = [
@@ -404,47 +431,6 @@ class TestCliOpen:
 #         tagsMock.return_value.print.assert_called_once_with(
 #             columns=self.config.get("report.tags.columns"),
 #             labels=self.config.get("report.tags.labels"),
-#         )
-#
-#     def test_modify_subcommand_modifies_task(self):
-#         arguments = [
-#             "mod",
-#             ulid.new().str,
-#             "pro:test",
-#         ]
-#         self.parser_args.subcommand = arguments[0]
-#         self.parser_args.parent = False
-#         self.parser_args.ulid = arguments[1]
-#         self.parser_args.modify_argument = arguments[2]
-#         self.tm.return_value._parse_arguments.return_value = {
-#             "project": "test",
-#         }
-#
-#         main()
-#
-#         self.tm.return_value.modify.assert_called_once_with(
-#             arguments[1], project="test",
-#         )
-#
-#     def test_modify_parent_subcommand_modifies_parent_task(self):
-#         arguments = [
-#             "mod",
-#             "-p",
-#             ulid.new().str,
-#             "pro:test",
-#         ]
-#         self.parser_args.subcommand = arguments[0]
-#         self.parser_args.parent = True
-#         self.parser_args.ulid = arguments[2]
-#         self.parser_args.modify_argument = arguments[3]
-#         self.tm.return_value._parse_arguments.return_value = {
-#             "project": "test",
-#         }
-#
-#         main()
-#
-#         self.tm.return_value.modify_parent.assert_called_once_with(
-#             arguments[2], project="test",
 #         )
 #
 #     @patch("pydo.export")

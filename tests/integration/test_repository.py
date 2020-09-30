@@ -160,7 +160,7 @@ class TestSQLAlchemyRepositoryWithSeveralObjects:
 
 
 class TestSQLAlchemyRepositoryPopulatesRelationships:
-    def test_repository_sets_tasks_project_attribute_on_get(
+    def test_repository_sets_task_project_attributes_on_get(
         self, repo_sql, session, insert_project_sql
     ):
         task = factories.TaskFactory.create(state="open")
@@ -173,8 +173,10 @@ class TestSQLAlchemyRepositoryPopulatesRelationships:
         )
 
         task = repo_sql.get(Task, task.id)
+        project = repo_sql.get(Project, project.id)
 
         assert task.project == project
+        assert project.tasks == [task]
 
     def test_repository_sets_tasks_tags_attribute_on_add(
         self, repo_sql, session, insert_tag_sql
@@ -193,7 +195,7 @@ class TestSQLAlchemyRepositoryPopulatesRelationships:
         assert (task.id, tags[0].id) in rows
         assert (task.id, tags[1].id) in rows
 
-    def test_repository_sets_tasks_tags_attribute_on_get(
+    def test_repository_sets_tasks_tag_attributes_on_get(
         self, repo_sql, session, insert_tag_sql, insert_task_sql
     ):
         task = insert_task_sql(session)
@@ -205,8 +207,10 @@ class TestSQLAlchemyRepositoryPopulatesRelationships:
         )
 
         task = repo_sql.get(Task, task.id)
+        tag = repo_sql.get(Tag, tag.id)
 
         assert task.tags == [tag]
+        assert tag.tasks == [task]
 
 
 @pytest.mark.parametrize("factory,table", add_fixtures)
@@ -323,17 +327,23 @@ class TestFakeRepositoryPopulatesRelationships:
         repo.add(task)
 
         assert repo._select_table(Task)[0].project == project
+        assert repo._select_table(Project)[0].tasks == [task]
 
-    def test_repository_sets_tasks_project_attribute_on_get(self, repo, insert_project):
+    def test_repository_sets_tasks_and_project_attributes_on_get(
+        self, repo, insert_project
+    ):
         task = factories.TaskFactory.create(state="open")
         project = insert_project
         task.project_id = project.id
         task.project = project
+        project.tasks = [task]
         repo._task.add(task)
 
         task = repo.get(Task, task.id)
+        project = repo.get(Project, project.id)
 
         assert task.project == project
+        assert project.tasks == [task]
 
     def test_repository_sets_tasks_tags_attribute_on_add(self, repo, insert_tags):
         task = factories.TaskFactory.create(state="open")
@@ -344,6 +354,7 @@ class TestFakeRepositoryPopulatesRelationships:
         repo.commit()
 
         assert repo._select_table(Task)[0].tags == tags
+        assert repo._select_table(Tag)[0].tasks == [task]
 
     def test_repository_sets_tasks_tags_attribute_on_get(self, repo, insert_tag):
         task = factories.TaskFactory.create(state="open")
@@ -351,8 +362,10 @@ class TestFakeRepositoryPopulatesRelationships:
 
         task.tag_ids = [tag.id]
         task.tags = [tag]
+        tag.tasks.append(task)
         repo._task.add(task)
 
         task = repo.get(Task, task.id)
 
         assert task.tags == [tag]
+        assert tag.tasks == [task]

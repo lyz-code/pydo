@@ -6,9 +6,12 @@ Classes:
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from pydo.model import Entity
+
+if TYPE_CHECKING:
+    from pydo.model.task import Task
 
 
 class Project(Entity):
@@ -47,6 +50,7 @@ class Project(Entity):
         created: Optional[datetime] = None,
     ):
         super().__init__(id, description, state, created, closed)
+        self.tasks: List["Task"] = []
 
     def __eq__(self, other) -> bool:
         """

@@ -391,17 +391,19 @@ def modify_tasks(
     for task in tasks:
         for attribute, value in task_attributes.items():
             if attribute == "tags_rm":
-                if task.tag_ids is None:
+                if task.tag_ids == []:
                     log.warning(
                         f"Task {task.id} doesn't have any tag assigned.",
                     )
                 else:
-                    for tag in value:
+                    for tag_id in value:
                         try:
-                            task.tag_ids.remove(tag)
+                            task.tag_ids.remove(tag_id)
+                            task.tags.remove(repo.get(Tag, tag_id))
                         except ValueError:
                             log.warning(
-                                f"Task {task.id} doesn't have the tag {tag} assigned."
+                                f"Task {task.id} doesn't have "
+                                f"the tag {tag_id} assigned."
                             )
             else:
                 task.__setattr__(attribute, value)

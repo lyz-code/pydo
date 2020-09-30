@@ -171,9 +171,20 @@ class FakeRepository(repository.AbstractRepository):
             self._tag.add(entity)
         elif isinstance(entity, Task):
             if entity.project_id is not None:
-                entity.project = self.get(Project, entity.project_id)
+                project = self.get(Project, entity.project_id)
+                project.tasks.append(entity)
+                project.tasks = list(set(project.tasks))
+                self._project.add(project)
+                entity.project = project
+            else:
+                entity.project = None
             if entity.tag_ids is not None:
-                entity.tags = [self.get(Tag, tag_id) for tag_id in entity.tag_ids]
+                for tag_id in entity.tag_ids:
+                    tag = self.get(Tag, tag_id)
+                    tag.tasks.append(entity)
+                    tag.tasks = list(set(tag.tasks))
+                    self._tag.add(tag)
+                    entity.tags.append(tag)
             self._task.add(entity)
 
     def apply_migrations(self) -> None:
