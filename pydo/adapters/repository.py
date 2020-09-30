@@ -127,7 +127,7 @@ class AbstractRepository(abc.ABC):
     @abc.abstractmethod
     def search(
         self, entity_model: Type[types.Entity], field: str, value: str
-    ) -> Union[List[types.Entity], None]:
+    ) -> List[types.Entity]:
         """
         Method to obtain the entities whose attribute match a condition.
         """
@@ -139,13 +139,13 @@ class AbstractRepository(abc.ABC):
         Method to create the next entity's ID.
         """
 
-        matching_entities = self.search(entity_model, "state", "open")
-
-        if matching_entities is None:
-            last_id = None
-        else:
+        try:
+            matching_entities = self.search(entity_model, "state", "open")
             last_entity = max(matching_entities)
-            last_id = last_entity.id
+            last_id: Union[str, None] = last_entity.id
+        except exceptions.EntityNotFoundError:
+            last_id = None
+
         log.debug(f"Last entity id: {str(last_id)}")
 
         # Required to ensure the sortability of the fulids as their precision goes
@@ -296,21 +296,28 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def search(
         self, entity_model: Type[types.Entity], field: str, value: str
-    ) -> Union[List[types.Entity], None]:
+    ) -> List[types.Entity]:
         """
         Method to obtain the entities whose attribute match a condition.
         """
 
+        entities_found = False
         try:
             result = (
                 self.session.query(entity_model)
                 .filter(getattr(entity_model, field).like(f"%{value}"))
                 .all()
             )
-        except AttributeError:
-            return None
+            if len(result) > 0:
+                entities_found = True
 
-        if len(result) == 0:
-            return None
-        else:
+        except AttributeError:
+            pass
+
+        if entities_found:
             return result
+        else:
+            raise exceptions.EntityNotFoundError(
+                f"There are no {self.entity_model_to_str(entity_model)}s "
+                f"that match have the {field} field equal to {value}"
+            )

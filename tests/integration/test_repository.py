@@ -112,21 +112,17 @@ class TestSQLAlchemyRepositoryWithSeveralObjects:
 
         assert retrieved_obj == expected_obj
 
-    def test_repository_search_returns_none_if_unexistent_field(
+    def test_repository_search_raises_error_if_searching_by_unexistent_field(
         self, factory, table, session, obj_model, insert_objects_sql, repo_sql
     ):
-        retrieved_obj = repo_sql.search(
-            obj_model, "unexistent_field", "unexistent_value"
-        )
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo_sql.search(obj_model, "unexistent_field", "unexistent_value")
 
-        assert retrieved_obj is None
-
-    def test_repository_search_returns_none_if_unexistent_value(
+    def test_repository_search_raises_error_if_searching_by_unexistent_value(
         self, factory, table, session, obj_model, insert_objects_sql, repo_sql
     ):
-        retrieved_obj = repo_sql.search(obj_model, "id", "unexistent_value")
-
-        assert retrieved_obj is None
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo_sql.search(obj_model, "id", "unexistent_value")
 
     def test_repository_can_search_by_multiple_properties(
         self, factory, table, session, obj_model, insert_objects_sql, repo_sql
@@ -276,19 +272,17 @@ class TestFakeRepositoryWithSeveralObject:
 
         assert retrieved_obj == expected_obj
 
-    def test_repository_search_returns_none_if_unexistent_field(
+    def test_repository_search_raises_error_if_searching_by_unexistent_field(
         self, factory, table, session, obj_model, insert_objects, repo
     ):
-        retrieved_obj = repo.search(obj_model, "unexistent_field", "unexistent_value")
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo.search(obj_model, "unexistent_field", "unexistent_value")
 
-        assert retrieved_obj is None
-
-    def test_repository_search_returns_none_if_unexistent_value(
+    def test_repository_search_raises_error_if_searching_by_unexistent_value(
         self, factory, table, session, obj_model, insert_objects, repo
     ):
-        retrieved_obj = repo.search(obj_model, "id", "unexistent_value")
-
-        assert retrieved_obj is None
+        with pytest.raises(exceptions.EntityNotFoundError):
+            repo.search(obj_model, "id", "unexistent_value")
 
     def test_repository_can_search_by_multiple_properties(
         self, factory, table, session, obj_model, insert_objects, repo

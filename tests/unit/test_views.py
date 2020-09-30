@@ -247,7 +247,7 @@ class TestProjectsReport:
             fr"{project.id} *1 *{project.description}",
         ]
 
-        views.projects(repo, config)
+        views.projects(repo)
 
         out, err = capsys.readouterr()
         out = out.splitlines()
@@ -291,7 +291,166 @@ class TestProjectsReport:
             fr"{projects[2].id} *1 *{projects[2].description}",
         ]
 
-        views.projects(repo, config)
+        views.projects(repo)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
+    def test_projects_shows_open_tasks_without_project(
+        self, repo, config, insert_tasks, insert_projects, capsys
+    ):
+        # Assign a different project to each tasks, complete one and delete the other
+        # The report should only show the one with the open task.
+
+        tasks = insert_tasks
+
+        # Complete and remove the tasks of two of them
+        services.do_tasks(repo, tasks[0].id)
+        services.rm_tasks(repo, tasks[2].id)
+        repo.commit()
+        capsys.readouterr()
+
+        # Build Expected output
+
+        # Name      Open Tasks  Description
+        # ------  ------------  ----------------------
+        # None               1  Tasks without project
+
+        expected_out = [
+            r"Name +Open Tasks +Description",
+            r"-+  -+  -+",
+            r"None *1 *Tasks without project",
+        ]
+
+        views.projects(repo)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
+
+class TestTagsReport:
+    def test_tags_prints_only_counts_open_tasks(
+        self, repo, config, insert_tasks, insert_tag, capsys
+    ):
+        # Assign the same tag to all the tasks, complete one and delete the other
+
+        tag = insert_tag
+        tasks = insert_tasks
+
+        for task in tasks:
+            services.modify_tasks(repo, task.id, {"tag_ids": [tag.id]})
+
+        services.do_tasks(repo, tasks[1].id)
+        services.rm_tasks(repo, tasks[2].id)
+        repo.commit()
+        capsys.readouterr()
+
+        # Build Expected output
+
+        # Name      Open Tasks  Description
+        # ------  ------------  ----------------------
+        # west               1  As or later ten happy.
+
+        expected_out = [
+            r"Name +Open Tasks +Description",
+            r"-+  -+  -+",
+            fr"{tag.id} *1 *{tag.description}",
+        ]
+
+        views.tags(repo)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
+    def test_tags_prints_only_tags_with_open_tasks(
+        self, repo, config, insert_tasks, insert_tags, capsys
+    ):
+        # Assign a different tag to each tasks, complete one and delete the other
+        # The report should only show the one with the open task.
+
+        tags = insert_tags
+        tasks = insert_tasks
+
+        # Assign one task to each tag
+        for task_id in range(0, len(tasks)):
+            services.modify_tasks(
+                repo, tasks[task_id].id, {"tag_ids": [tags[task_id].id]}
+            )
+
+        # Complete and remove the tasks of two of them
+        services.do_tasks(repo, tasks[0].id)
+        services.rm_tasks(repo, tasks[2].id)
+        repo.commit()
+        capsys.readouterr()
+
+        # Build Expected output
+
+        # Name      Open Tasks  Description
+        # ------  ------------  ----------------------
+        # west               1  As or later ten happy.
+
+        expected_out = [
+            r"Name +Open Tasks +Description",
+            r"-+  -+  -+",
+            fr"{tags[2].id} *1 *{tags[2].description}",
+        ]
+
+        views.tags(repo)
+
+        out, err = capsys.readouterr()
+        out = out.splitlines()
+
+        assert len(out) == len(expected_out)
+        for line_id in range(0, len(out) - 1):
+            assert re.match(expected_out[line_id], out[line_id])
+
+        assert err == ""
+
+    def test_tags_shows_open_tasks_without_tag(
+        self, repo, config, insert_tasks, insert_tags, capsys
+    ):
+        # Assign a different tag to each tasks, complete one and delete the other
+        # The report should only show the one with the open task.
+
+        tasks = insert_tasks
+
+        # Complete and remove the tasks of two of them
+        services.do_tasks(repo, tasks[0].id)
+        services.rm_tasks(repo, tasks[2].id)
+        repo.commit()
+        capsys.readouterr()
+
+        # Build Expected output
+
+        # Name      Open Tasks  Description
+        # ------  ------------  ----------------------
+        # None               1  Tasks without tags
+
+        expected_out = [
+            r"Name +Open Tasks +Description",
+            r"-+  -+  -+",
+            r"None *1 *Tasks without tags",
+        ]
+
+        views.tags(repo)
 
         out, err = capsys.readouterr()
         out = out.splitlines()

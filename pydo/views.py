@@ -3,6 +3,8 @@ Module to store the representations of the data.
 
 Functions:
     open: Print the open tasks that match a task filter.
+    projects: Print the projects information.
+    tags: Print the tags information.
 
 Classes:
     Report: Class to manage the data to print.
@@ -22,6 +24,7 @@ from tabulate import tabulate
 from pydo import config, exceptions, types
 from pydo.adapters import repository
 from pydo.model.project import Project
+from pydo.model.tag import Tag
 from pydo.model.task import Task
 
 
@@ -86,8 +89,8 @@ def _get_columns_and_labels(
     Function to prepare the columns and labels from the reports.
     """
 
-    columns = config.get(f"report.{report_name}.columns")
-    labels = config.get(f"report.{report_name}.labels")
+    columns = config.get(f"report.{report_name}.columns", [])
+    labels = config.get(f"report.{report_name}.labels", [])
 
     if not isinstance(columns, list):
         raise ValueError("The columns configuration of the open report is not a list.")
@@ -186,18 +189,27 @@ def open(
     _print_entities(config, tasks, columns, labels)
 
 
-def projects(
-    repo: repository.AbstractRepository,
-    config: config.Config,
-) -> None:
+def projects(repo: repository.AbstractRepository) -> None:
     """
-    Function to print the projects.
+    Function to print the projects information.
     """
 
     projects = repo.all(Project)
-    columns, labels = _get_columns_and_labels(config, projects, "projects")
-    report = Report(labels)
+    report = Report(["Name", "Open Tasks", "Description"])
 
+    # Gather tasks without project
+    try:
+        report.add(
+            [
+                "None",
+                len(repo.msearch(Task, {"state": "open", "project_id": None})),
+                "Tasks without project",
+            ]
+        )
+    except exceptions.EntityNotFoundError:
+        pass
+
+    # Gather projects data
     for project in projects:
         if project.tasks is not None:
             open_tasks = [task for task in project.tasks if task.state == "open"]
@@ -206,4 +218,40 @@ def projects(
 
         if len(open_tasks) > 0:
             report.add([project.id, len(open_tasks), project.description])
+
+    report.print()
+
+
+def tags(repo: repository.AbstractRepository) -> None:
+    """
+    Function to print the tags.
+    """
+
+    tags = repo.all(Tag)
+    report = Report(["Name", "Open Tasks", "Description"])
+
+    # Gather tasks without tags
+    try:
+        open_tasks = repo.search(Task, "state", "open")
+        open_tasks_without_tags = [task for task in open_tasks if len(task.tags) == 0]
+        if len(open_tasks_without_tags) > 0:
+            report.add(
+                [
+                    "None",
+                    len(open_tasks_without_tags),
+                    "Tasks without tags",
+                ]
+            )
+    except exceptions.EntityNotFoundError:
+        pass
+
+    # Gather tags data
+    for tag in tags:
+        if tag.tasks is not None:
+            open_tasks = [task for task in tag.tasks if task.state == "open"]
+        else:
+            continue
+
+        if len(open_tasks) > 0:
+            report.add([tag.id, len(open_tasks), tag.description])
     report.print()

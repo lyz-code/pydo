@@ -417,6 +417,30 @@ class TestCliProjects:
         ) in caplog.record_tuples
 
 
+class TestCliTags:
+    def test_print_tags_report(
+        self, runner, repo_e2e, insert_tasks_e2e, insert_tag_e2e
+    ):
+        tasks = insert_tasks_e2e
+        tag = insert_tag_e2e
+        services.modify_tasks(repo_e2e, tasks[0].id, {"tag_ids": [tag.id]})
+
+        result = runner.invoke(cli, ["tags"])
+
+        assert result.exit_code == 0
+        assert re.match(r"Name +Open Tasks +Description", result.output)
+
+    def test_print_tags_handles_no_tags(self, runner, caplog):
+        result = runner.invoke(cli, ["tags"])
+
+        assert result.exit_code == 0
+        assert (
+            "pydo.entrypoints.cli",
+            logging.INFO,
+            "No tags found with any open tasks.",
+        ) in caplog.record_tuples
+
+
 #     @patch("pydo.Tags")
 #     def test_tags_subcommand_prints_report(self, tagsMock):
 #         arguments = [

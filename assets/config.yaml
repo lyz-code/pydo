@@ -63,13 +63,6 @@ report:
       - Due
       - Parent
 
-  # Configuration of the projects report.
-  projects:
-    # Ordered list of Task attributes to print.
-    columns: [id, task.count, description]
-    # Ordered list of names for the Task attributes to print.
-    labels: [Name, Open Tasks, Description]
-
   # Configuration of the repeating report.
   repeating:
     # Ordered list of Task attributes to print.
@@ -83,13 +76,6 @@ report:
     columns: [id, description, recurrence, project, priority, tags, due]
     # Ordered list of names for the Task attributes to print.
     labels: [ID, Description, Recurrence, Project, Pri, Tags, Due]
-
-  # Configuration of the projects report.
-  tags:
-    # Ordered list of Task attributes to print.
-    columns: [id, task.count, description]
-    # Ordered list of names for the Task attributes to print.
-    labels: [Name, Tasks, Description]
 
 # Level of logging verbosity. One of ['info', 'debug', 'warning'].
 verbose: info

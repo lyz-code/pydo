@@ -49,7 +49,7 @@ import os
 import random
 import re
 from shutil import copyfile
-from typing import Any, Dict, List, Optional, Set, Tuple, Type
+from typing import Any, Dict, List, Set, Tuple, Type
 
 import pytest
 from deepdiff import extract, grep
@@ -338,11 +338,12 @@ class FakeRepository(repository.AbstractRepository):
 
     def search(
         self, entity_model: Type[types.Entity], field: str, value: str
-    ) -> Optional[List[types.Entity]]:
+    ) -> List[types.Entity]:
         """
         Method to obtain the entities whose attribute match a condition.
         """
 
+        entities_found = False
         result = []
         try:
             for entity in self._select_table(entity_model):
@@ -350,13 +351,18 @@ class FakeRepository(repository.AbstractRepository):
                 if field_value is not None and re.match(value, field_value):
                     result.append(entity)
             result = sorted(result)
+            if len(result) > 0:
+                entities_found = True
         except AttributeError:
-            return None
+            pass
 
-        if len(result) == 0:
-            return None
-        else:
+        if entities_found:
             return result
+        else:
+            raise exceptions.EntityNotFoundError(
+                f"There are no {self.entity_model_to_str(entity_model)}s "
+                f"that match have the {field} field equal to {value}"
+            )
 
 
 @pytest.fixture()

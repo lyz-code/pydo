@@ -2,10 +2,15 @@
 Module to store the command line interface.
 
 Functions:
-    add: Define the interface to add tasks.
+    add: Subcommand to add tasks.
     cli: Define the main click group.
-    do: Define the interface to complete tasks
+    do: Subcommand to complete tasks.
     null: Does nothing.
+    mod: Subcommand to modify tasks.
+    open: Subcommand to list the open tasks.
+    projects: Subcommand to list the open projects.
+    rm: Subcommand to delete tasks.
+    tags: Subcommand to list the open tags
 """
 
 import logging
@@ -156,7 +161,7 @@ def mod(ctx: Any, task_filter: str, task_args: Tuple, modify_parent: bool) -> No
 @click.pass_context
 def open(ctx: Any, task_filter: Tuple) -> None:
     """
-    Show the open tasks.
+    List the open tasks.
     """
 
     try:
@@ -176,13 +181,27 @@ def open(ctx: Any, task_filter: Tuple) -> None:
 @click.pass_context
 def projects(ctx: Any) -> None:
     """
-    Show the open projects.
+    List the open projects.
     """
 
     try:
-        views.projects(ctx.obj["repo"], ctx.obj["config"])
+        views.projects(ctx.obj["repo"])
     except exceptions.EntityNotFoundError:
         log.info("No projects found with any open tasks.")
+        sys.exit(0)
+
+
+@cli.command(context_settings=dict(ignore_unknown_options=True))
+@click.pass_context
+def tags(ctx: Any) -> None:
+    """
+    List the open tags.
+    """
+
+    try:
+        views.tags(ctx.obj["repo"])
+    except exceptions.EntityNotFoundError:
+        log.info("No tags found with any open tasks.")
         sys.exit(0)
 
 
