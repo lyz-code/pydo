@@ -30,7 +30,7 @@ pymdown-extensions==6.2.1
 pytz==2019.3
 PyYAML==5.3
 requests==2.22.0
-six==1.14.0
+six==1.16.0
 smmap2==2.0.5
 soupsieve==1.9.5
 git+https://github.com/jldiaz/mkdocs-plugin-tags.git
