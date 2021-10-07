@@ -1,0 +1,10 @@
+-c requirements.txt
+
+mkdocs
+mkdocs-git-revision-date-localized-plugin
+mkdocs-htmlproofer-plugin
+mkdocs-autolinks-plugin
+mkdocs-material
+mkdocstrings
+markdown-include
+mkdocs-mermaid2-plugin

@@ -1,0 +1,640 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Lyz" name="author"/>
+<link href="https://lyz-code.github.io/pydo/adr/0xx-subtasks-and-steps/" rel="canonical"/>
+<link href="../../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.2.2, mkdocs-material-7.3.2" name="generator"/>
+<title>Status - Pydo</title>
+<link href="../../assets/stylesheets/main.24c991ad.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/palette.3f5d1f46.min.css" rel="stylesheet"/>
+<meta content="#546d78" name="theme-color"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+<link href="../../css/timeago.css" rel="stylesheet"/>
+<link href="../../stylesheets/extra.css" rel="stylesheet"/>
+<link href="../../stylesheets/links.css" rel="stylesheet"/>
+</head>
+<body data-md-color-accent="light-blue" data-md-color-primary="blue-grey" data-md-color-scheme="" dir="ltr">
+<script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#status">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Pydo" class="md-header__button md-logo" data-md-component="logo" href="../.." title="Pydo">
+<img alt="logo" src="../../images/logo.bmp"/>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Pydo
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Status
+            
+          </span>
+</div>
+</div>
+</div>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</label>
+<nav aria-label="Search" class="md-search__options">
+<button aria-label="Clear" class="md-search__icon md-icon" tabindex="-1" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+</button>
+</nav>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/lyz-code/pydo/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    lyz-code/pydo
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Pydo" class="md-nav__button md-logo" data-md-component="logo" href="../.." title="Pydo">
+<img alt="logo" src="../../images/logo.bmp"/>
+</a>
+    Pydo
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/lyz-code/pydo/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    lyz-code/pydo
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../..">
+        Overview
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../basic_usage/">
+        Basic Usage
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3">
+          Advanced Usage
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Advanced Usage" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+          Advanced Usage
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../areas/">
+        Areas
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../tags/">
+        Tags
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../dates/">
+        Dates
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../recurrence/">
+        Recurrence
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../priority/">
+        Priority
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../estimate/">
+        Estimate
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../objective_value/">
+        Value
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../willpower/">
+        Willpower
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../fun/">
+        Fun
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../export/">
+        Export
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4">
+          Customization
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Customization" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+          Customization
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../sorting/">
+        Sorting
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reports/">
+        Reports
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../colors.md">
+        Colors
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../contributing/">
+        Contributing
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" id="__nav_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6">
+          Developing
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Developing" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_6">
+<span class="md-nav__icon md-icon"></span>
+          Developing
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../contributing/">
+        Contributing
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_2" id="__nav_6_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6_2">
+          Architecture Decision Records
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Architecture Decision Records" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_6_2">
+<span class="md-nav__icon md-icon"></span>
+          Architecture Decision Records
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../adr/">
+        Adr
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../001-change-id-from-str-to-int">
+        001: Deprecation of Fulids
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href=".">
+        00X: Subtasks and steps
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../0xx-agenda">
+        00X: Agenda
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/">
+        Reference
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../related/">
+        Related
+      </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#status">
+    Status
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#context">
+    Context
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#proposals">
+    Proposals
+  </a>
+<nav aria-label="Proposals" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#task-division">
+    Task division
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#paths">
+    Paths
+  </a>
+<nav aria-label="Paths" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#path-definition">
+    Path definition
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#paths-tui">
+    Paths TUI
+  </a>
+<nav aria-label="Paths TUI" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#controls">
+    Controls
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#subtasks-cli-interface">
+    Subtasks CLI interface
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#decision">
+    Decision
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#consequences">
+    Consequences
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/lyz-code/pydo/edit/master/docs/adr/0xx-subtasks-and-steps.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
+</a>
+<h1>Status</h1>
+<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">¶</a></h2>
+<!-- What is the status? Draft, Proposed, Accepted, Rejected, Deprecated or Superseded?
+-->
+<p>Draft</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">¶</a></h2>
+<!-- What is the issue that we're seeing that is motivating this decision or change? -->
+<p>We need to define how are we going to split long tasks into smaller actionable
+steps in an user friendly way.</p>
+<h2 id="proposals">Proposals<a class="headerlink" href="#proposals" title="Permanent link">¶</a></h2>
+<!-- What are the possible solutions to the problem described in the context -->
+<p>There are two use cases:</p>
+<ul>
+<li>Big tasks that need to be subdivided in smaller tasks to enter a sprint</li>
+<li>Small enough tasks to enter the sprint, where the user wants to define the
+    small steps required to complete it.</li>
+</ul>
+<p>Creating a task requires time to fill up it's attributes: assign an area, tags,
+priority, description... It also adds time to the overall management of all the
+tasks. This time investment makes sense only for the first case, the small steps
+often change and don't have the size to be managed with the rest of the tasks.</p>
+<h3 id="task-division">Task division<a class="headerlink" href="#task-division" title="Permanent link">¶</a></h3>
+<p>This idea supports the plan to subdivide a task at two levels: subtasks and
+steps.</p>
+<p>Subtasks will be <code>Task</code> entities so that we can do infinite levels of subtask
+nesting. To achieve this we'll need to change the <code>Task</code> model to add an
+attribute <code>parent_id</code> that allows us to relate a task with its subtasks.</p>
+<p>Steps will be a new simpler entity <code>Step</code> with only <code>parent_id</code>, <code>created</code>,
+<code>closed</code>, <code>state</code> and <code>description</code>, so that it will be easier to create,
+potentially only the <code>description</code> will be filled by the user, and as it follows
+the same structure it will be easy to promote to <code>Task</code> if needed.</p>
+<p><code>Step</code>s don't have identity by themselves, they are tightly coupled with a task,
+that's why they could be saved under the <code>steps</code> attribute of the <code>Task</code>. Until
+<code>repository-orm</code> supports nested objects, we'll only be able to use the
+<code>TinyDB</code> and <code>Fake</code> repositories. The benefit from being a task attribute is
+that recurrent tasks will inherit them automatically.</p>
+<p>In the first iteration to simplify the logic:</p>
+<ul>
+<li>Steps and subtasks will be mutually exclusive.</li>
+<li>Recurrent tasks won't support subtasks, as the children breed won't be
+    trivial.</li>
+</ul>
+<h3 id="paths">Paths<a class="headerlink" href="#paths" title="Permanent link">¶</a></h3>
+<p>Sometimes the task divisions (steps or subtasks) are related between each other,
+to model this relationships we'll create <code>Path</code>s.</p>
+<p>A <code>Path</code> is an ordered list of task divisions that need to be consecutively
+done, so until one is completed the next are not actionable, therefore if it
+get's blocked the whole <code>Path</code> is blocked.</p>
+<div class="highlight"><pre><span></span><code>graph TD
+    First step --&gt; Second step
+    Second step --&gt; Third step
+</code></pre></div>
+<p>A <code>Task</code> may have many <code>Path</code>s.</p>
+<div class="highlight"><pre><span></span><code>graph TD
+    subgraph Path 1
+    Path 1: step 1 --&gt; Path 1: step 2
+    Path 1: step 2 --&gt; Path 1: step 3
+    end
+
+    subgraph Path 2
+    Path 2: step 1 --&gt; Path 2: step 2
+    Path 2: step 2 --&gt; Path 2: step 3
+    end
+</code></pre></div>
+<p>A <code>Path</code> may start from one or more other <code>Path</code> steps</p>
+<div class="highlight"><pre><span></span><code>graph TD
+    subgraph Path 1
+    Path 1: step 1 --&gt; Path 1: step 2
+    Path 1: step 2 --&gt; Path 1: step 3
+    end
+
+    subgraph Path 2
+    Path 1: step 2 --&gt; Path 2: step 1
+    Path 2: step 1 --&gt; Path 2: step 2
+    end
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>graph TD
+    subgraph Path 1
+    Path 1: step 1 --&gt; Path 1: step 2
+    Path 1: step 2 --&gt; Path 1: step 3
+    end
+
+    subgraph Path 2
+    Path 2: step 1 --&gt; Path 2: step 2
+    Path 2: step 2 --&gt; Path 2: step 3
+    end
+
+    subgraph Path 3
+    Path 1: step 2 --&gt; Path 3: step 1
+    Path 2: step 2 --&gt; Path 3: step 1
+    Path 2: step 1 --&gt; Path 2: step 2
+    end
+</code></pre></div>
+<h4 id="path-definition">Path definition<a class="headerlink" href="#path-definition" title="Permanent link">¶</a></h4>
+<p>A <code>Path</code> will have the next attributes:</p>
+<ul>
+<li><code>id_</code></li>
+<li><code>parent_id</code>: the <code>Task</code> id which this path is related to, whenever there is
+    a change in the <code>Path</code>, the <code>modified</code> attribute of the <code>Task</code> will be
+    changed.</li>
+<li><code>type</code>: Either <code>step</code> or <code>subtask</code>, used to fetch the subdivision elements.</li>
+<li><code>starting_nodes</code>: <code>Optional[List[str]]</code> If specified, these are the ids of the
+    steps or subtasks that need to be completed before the path can be acted
+    upon. If it's <code>None</code> the <code>parent_id</code> is assumed, and the <code>Path</code> is
+    actionable from the start.</li>
+</ul>
+<h4 id="paths-tui">Paths TUI<a class="headerlink" href="#paths-tui" title="Permanent link">¶</a></h4>
+<p>The TUI of the paths will show at the top the attributes of the parent task and
+then a graph  with the different paths.</p>
+<p>The first option is to use a output inspired by <code>git graph</code>:</p>
+<div class="highlight"><pre><span></span><code>Description: This is the parent task's description
+
+---------------------------------------------------------------
+
+ [x] Path 1: Step 1
+  |
+ [x] Path 1: Step 2
+  |
+ [x] -------------------- [A] ----------------------- [\] Path 3: Step 1
+  | Path 1: Step 3         | Path 2: Step 1                - No longer interesting
+  |                        |
+ [B] Path 1: Step 4       [ ] Path 2: Step 2
+     - Waiting for X
+       To happen
+</code></pre></div>
+<p>Where:</p>
+<ul>
+<li><code>[ ]</code>: Todo step</li>
+<li><code>[x]</code>: Done step</li>
+<li><code>[B]</code>: Blocked step</li>
+<li><code>[A]</code>: Currently active step</li>
+<li><code>[\]</code>: Dead end, won't follow this path</li>
+</ul>
+<p>Blocked and dead end steps will have a list of reasons why they are in that
+state.</p>
+<p>Colors will help:</p>
+<ul>
+<li>Inactive tasks (done or still not actionable) will be in grey.</li>
+<li>Active task will be in green.</li>
+<li>Blocked task will be in yellow.</li>
+</ul>
+<p>This representation has two main problems that can be difficult to handle the visualization and
+controls: long task descriptions and many parallel paths. As these are no corner
+cases, maybe a representation similar to <code>tree</code> is better.</p>
+<div class="highlight"><pre><span></span><code> [A] This is the parent task's description
+  │
+  ├── [B] Path 1: Definition
+  │    ├── [x] Path 1: Step 1
+  │    ├── [x] Path 1: Step 2
+  │    ├── [x] Path 1: Step 3
+  │    └── [B] Path 1: Step 4
+  │            * Waiting for X to happen
+  │
+  ├── [A] Path 2: Definition
+  │    ├── [A] Path 2: Step 1
+  │    ├── [ ] Path 2: Step 2
+  │    └── [ ] Path 2: Step 3
+  │         ├── [ ] Path 2.1: Step 1
+  │         └── [ ] Path 2.1: Step 2
+  │
+  └── [\] Path 3: Definition
+          * No longer interesting
+</code></pre></div>
+<p>If a task has only one path, a simplified version will be:</p>
+<div class="highlight"><pre><span></span><code> [B] This is the parent task's description
+  ├── [x] Path 1: Step 1
+  ├── [x] Path 1: Step 2
+  ├── [x] Path 1: Step 3
+  └── [B] Path 1: Step 4
+          * Waiting for X to happen
+</code></pre></div>
+<p>The only downside of this visualization is that we won't be able to represent
+a path that depends on more than one path. Compared with the other
+representation, the downside is neglectible, so we'll start with this
+representation. The upsides, is that the interface has only one column, instead
+of the undefined number of the first visualization, which makes the coding of
+the interface much more simple.</p>
+<p>The state of the path is defined by the state of it's subelements:</p>
+<ul>
+<li>If all elements are in state <code>done</code>, the path is in state <code>done</code>.</li>
+<li>If all elements are in state <code>blocked</code>, the path is in state <code>blocked</code>.</li>
+<li>If one element is in state <code>active</code>, the path is in state <code>active</code>.</li>
+<li>If one element is in state <code>open</code>, the path is in state <code>open</code>.</li>
+</ul>
+<h5 id="controls">Controls<a class="headerlink" href="#controls" title="Permanent link">¶</a></h5>
+<p>The user will be able to interact with the Paths TUI through:</p>
+<ul>
+<li><code>jklh</code>: to move between the elements and the paths</li>
+<li><code>d</code>: Toggle element state from done to todo.</li>
+<li><code>\</code>: Toggle element state from dead end to todo.</li>
+<li><code>b</code>: Toggle element state from blocked to todo.</li>
+<li><code>A</code>: Toggle element state from active to todo.</li>
+<li><code>D</code>: Delete the element</li>
+<li><code>a</code>: Add an element below the highlighted one. It uses the task creation TUI
+    or the step creation TUI.</li>
+<li><code>p</code>: Start a new path from the highlighted element</li>
+<li><code>h</code>: Toggle the hiding of completed and dead end elements</li>
+<li><code>m</code>: Toggle the moving mode. Moving mode will move the highlighted element with
+    <code>jklh</code> within the path or to adjacent paths.</li>
+<li><code>e</code>: Edit the highlighted element description.</li>
+<li><code>enter</code>: Enter the Task TUI. If it's a step, do nothing</li>
+<li><code>zc</code>: Fold current path</li>
+<li><code>zM</code>: Fold all paths</li>
+<li><code>zo</code>: Unfold current path</li>
+<li><code>zO</code>: Unfold all paths</li>
+<li><code>v</code>: Enter in visual mode, to select a group of elements and perform an action
+    over them.</li>
+<li><code>E</code>: Extract element or elements to a new task.</li>
+</ul>
+<h5 id="subtasks-cli-interface">Subtasks CLI interface<a class="headerlink" href="#subtasks-cli-interface" title="Permanent link">¶</a></h5>
+<p>Get inspiration in <a href="https://github.com/climech/grit">grit</a>.</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">¶</a></h2>
+<!-- What is the change that we're proposing and/or doing? -->
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">¶</a></h2>
+<!-- What becomes easier or more difficult to do because of this change? -->
+<hr/>
+<div class="md-source-date">
+<small>
+    
+      Last update: <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2020-07-02T20:37:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2020-07-02</span>
+</small>
+</div>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+            Material for MkDocs
+          </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.e99e714c.min.js", "version": null}</script>
+<script src="../../assets/javascripts/bundle.bc35569b.min.js"></script>
+<script src="../../js/timeago.min.js"></script>
+<script src="../../js/timeago_mkdocs_material.js"></script>
+</body>
+</html>
