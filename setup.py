@@ -60,6 +60,7 @@ setup(
         "click-default-group",
         "repository-orm",
         "rich",
+        "python-dateutil",
         "ulid-py",
         "ruyaml",
     ],

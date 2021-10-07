@@ -30,12 +30,16 @@ pymysql==1.0.2
     # via repository-orm
 pypika==0.48.8
     # via repository-orm
+python-dateutil==2.8.2
+    # via pydo (setup.py)
 repository-orm==0.5.5
     # via pydo (setup.py)
-rich==10.11.0
+rich==10.12.0
     # via pydo (setup.py)
 ruyaml==0.20.0
     # via pydo (setup.py)
+six==1.16.0
+    # via python-dateutil
 sqlparse==0.4.2
     # via yoyo-migrations
 tabulate==0.8.9
@@ -60,5 +64,5 @@ zipp==3.6.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==58.1.0
+setuptools==58.2.0
     # via ruyaml

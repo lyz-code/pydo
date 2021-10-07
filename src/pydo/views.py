@@ -9,10 +9,9 @@ from typing import Dict, List, Optional, Tuple, TypeVar
 
 from repository_orm import Repository
 
-from pydo import ConfigError, TaskSelector
-
 from . import config
-from .model.task import RecurrentTask, Task, TaskAttrs
+from .exceptions import ConfigError
+from .model.task import RecurrentTask, Task, TaskAttrs, TaskSelector
 from .model.views import Colors, Report
 
 EntityType = TypeVar("EntityType", Task, RecurrentTask)

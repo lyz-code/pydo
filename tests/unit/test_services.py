@@ -10,7 +10,8 @@ from faker import Faker
 from freezegun.api import FrozenDateTimeFactory
 from repository_orm import EntityNotFoundError, FakeRepository, Repository
 
-from pydo import RecurrentTask, Task, TaskChanges, TaskSelector, TaskState, services
+from pydo import services
+from pydo.model.task import RecurrentTask, Task, TaskChanges, TaskSelector, TaskState
 
 from ..factories import RecurrentTaskFactory
 
