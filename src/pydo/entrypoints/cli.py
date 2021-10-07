@@ -10,10 +10,8 @@ from click_default_group import DefaultGroup
 from pydantic import ValidationError
 from repository_orm import EntityNotFoundError
 
-from pydo import RecurrentTask
-
 from .. import services, version, views
-from ..model import TaskState
+from ..model.task import RecurrentTask, TaskState
 from .utils import (
     _parse_changes,
     _parse_task_selector,

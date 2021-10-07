@@ -8,7 +8,7 @@ astor==0.8.1
     # via flake8-simplify
 astpretty==2.1.0
     # via flake8-expression-complexity
-astroid==2.8.0
+astroid==2.8.2
     # via pylint
 asttokens==2.0.5
     # via flake8-aaa
@@ -50,7 +50,7 @@ colorama==0.4.4
     # via
     #   -c requirements.txt
     #   flakehell
-coverage==5.5
+coverage[toml]==6.0.1
     # via pytest-cov
 decopatch==1.4.8
     # via pytest-cases
@@ -76,13 +76,13 @@ execnet==1.9.0
     # via pytest-xdist
 factory-boy==3.2.0
     # via -r requirements-dev.in
-faker==8.14.1
+faker==9.2.0
     # via
     #   factory-boy
     #   faker-enum
 faker-enum==0.0.2
     # via -r requirements-dev.in
-filelock==3.2.0
+filelock==3.3.0
     # via virtualenv
 flake8==3.9.2
     # via
@@ -137,7 +137,7 @@ flake8-pytest-style==1.5.0
     # via -r requirements-dev.in
 flake8-simplify==0.14.2
     # via -r requirements-dev.in
-flake8-typing-imports==1.10.1
+flake8-typing-imports==1.11.0
     # via -r requirements-dev.in
 flake8-use-fstring==1.1
     # via -r requirements-dev.in
@@ -155,7 +155,7 @@ gitpython==3.1.24
     # via
     #   -c docs/requirements.txt
     #   bandit
-identify==2.2.15
+identify==2.3.0
     # via pre-commit
 idna==3.2
     # via
@@ -269,7 +269,7 @@ pytest==6.2.5
     #   pytest-xdist
 pytest-cases==3.6.4
     # via -r requirements-dev.in
-pytest-cov==2.12.1
+pytest-cov==3.0.0
     # via -r requirements-dev.in
 pytest-forked==1.3.0
     # via pytest-xdist
@@ -282,6 +282,7 @@ pytest-xdist==2.4.0
 python-dateutil==2.8.2
     # via
     #   -c docs/requirements.txt
+    #   -c requirements.txt
     #   faker
     #   freezegun
 pyyaml==5.4.1
@@ -308,6 +309,7 @@ sh==1.14.2
 six==1.16.0
     # via
     #   -c docs/requirements.txt
+    #   -c requirements.txt
     #   asttokens
     #   bandit
     #   flake8-debugger
@@ -331,10 +333,10 @@ toml==0.10.2
     #   pre-commit
     #   pylint
     #   pytest
-    #   pytest-cov
 tomli==1.2.1
     # via
     #   black
+    #   coverage
     #   pep517
 typed-ast==1.4.3
     # via
@@ -383,7 +385,7 @@ zipp==3.6.0
 # The following packages are considered to be unsafe in a requirements file:
 pip==21.2.4
     # via pip-tools
-setuptools==58.1.0
+setuptools==58.2.0
     # via
     #   -c docs/requirements.txt
     #   -c requirements.txt

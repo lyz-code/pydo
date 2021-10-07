@@ -5,7 +5,8 @@ from unittest.mock import Mock, patch
 import pytest
 from ruyaml.scanner import ScannerError
 
-from pydo import Config, ConfigError
+from pydo.config import Config
+from pydo.exceptions import ConfigError
 
 
 # R0903: too few methods. C'est la vie!

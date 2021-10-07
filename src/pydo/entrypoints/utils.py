@@ -8,11 +8,9 @@ from typing import Any, Iterable, Tuple
 
 from repository_orm import Repository, load_repository
 
-from pydo import TaskChanges, TaskSelector, exceptions
-
 from ..config import Config
-from ..exceptions import ConfigError
-from ..model import RecurrentTask, Task, convert_date
+from ..exceptions import ConfigError, DateParseError
+from ..model import RecurrentTask, Task, TaskChanges, TaskSelector, convert_date
 
 log = logging.getLogger(__name__)
 
@@ -154,7 +152,7 @@ def _parse_task_argument(task_arg: str) -> Tuple[str, Any]:
             elif attribute["type"] == "date":
                 try:
                     attribute_value = convert_date(":".join(task_arg.split(":")[1:]))
-                except exceptions.DateParseError as error:
+                except DateParseError as error:
                     log.error(str(error))
                     sys.exit(1)
             elif attribute["type"] == "sort":

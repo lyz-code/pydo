@@ -7,7 +7,7 @@ from typing import Optional
 from dateutil._common import weekday
 from dateutil.relativedelta import FR, MO, SA, SU, TH, TU, WE, relativedelta
 
-from pydo import exceptions
+from ..exceptions import DateParseError
 
 
 def convert_date(human_date: str, starting_date: Optional[datetime] = None) -> datetime:
@@ -93,7 +93,7 @@ def _str2date(modifier: str, starting_date: datetime) -> datetime:
     elements = element_regexp.findall(modifier)
 
     if len(elements) == 0:
-        raise exceptions.DateParseError(
+        raise DateParseError(
             f"Unable to parse the date string {modifier}, please enter a valid one"
         )
     for element_match in elements:

@@ -9,7 +9,8 @@ from _pytest.tmpdir import TempdirFactory
 from repository_orm import FakeRepository, Repository, load_repository
 from tests import factories
 
-from pydo import Config, RecurrentTask, Task
+from pydo.config import Config
+from pydo.model.task import RecurrentTask, Task
 
 
 @pytest.fixture(name="config")

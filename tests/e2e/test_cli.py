@@ -12,9 +12,9 @@ from faker import Faker
 from py._path.local import LocalPath
 from repository_orm import Repository
 
-from pydo import RecurrentTask, Task, TaskState
 from pydo.config import Config
 from pydo.entrypoints.cli import cli
+from pydo.model.task import RecurrentTask, Task, TaskState
 from pydo.version import __version__
 
 from ..factories import RecurrentTaskFactory

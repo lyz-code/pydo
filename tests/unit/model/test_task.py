@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from tests import factories
 from tests.factories import RecurrentTaskFactory
 
-from pydo import RecurrentTask, Task
+from pydo.model.task import RecurrentTask, Task
 
 
 @pytest.fixture(name="task_attributes")

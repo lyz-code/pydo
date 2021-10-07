@@ -10,7 +10,9 @@ from faker import Faker
 from repository_orm import EntityNotFoundError, Repository
 from tests import factories
 
-from pydo import Config, Task, TaskSelector, views
+from pydo import views
+from pydo.config import Config
+from pydo.model.task import Task, TaskSelector
 from pydo.model.views import Report
 from pydo.views import print_task_report
 
