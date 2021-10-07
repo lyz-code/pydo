@@ -32,7 +32,7 @@ pypika==0.48.8
     # via repository-orm
 repository-orm==0.5.5
     # via pydo (setup.py)
-rich==10.11.0
+rich==10.12.0
     # via pydo (setup.py)
 ruyaml==0.20.0
     # via pydo (setup.py)
