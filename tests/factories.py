@@ -1,76 +1,62 @@
-from pydo import config
-from pydo.fulids import fulid
-from pydo import models
+"""Define the factories for the tests."""
+
+from datetime import datetime
+from random import SystemRandom
+from typing import Optional
 
 import factory
-import random
+from faker import Faker
+from faker_enum import EnumProvider
 
-# XXX If you add new Factories remember to add the session in conftest.py
+from pydo.model.task import RecurrenceType, RecurrentTask, Task, TaskState
 
+factory.Faker.add_provider(EnumProvider)
 
-class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
-    """
-    Class to generate a fake project.
-    """
-    id = factory.Sequence(lambda n: 'project_{}'.format(n))
-    description = factory.Faker('sentence')
-
-    class Meta:
-        model = models.Project
-        sqlalchemy_session_persistence = 'commit'
+faker = Faker()  # type: ignore
 
 
-class TaskFactory(factory.alchemy.SQLAlchemyModelFactory):
-    id = factory.LazyFunction(lambda: fulid().new().str)
-    title = factory.Faker('sentence')
-    state = factory.Faker(
-        'word',
-        ext_word_list=config.get('task.allowed_states')
-    )
-    agile = factory.Faker('word', ext_word_list=['backlog', 'todo', None])
-    type = 'task'
-    priority = factory.Faker('random_number')
+class TaskFactory(factory.Factory):  # type: ignore
+    """Generate a fake task."""
+
+    id_ = factory.Faker("pyint")
+    state = factory.Faker("enum", enum_cls=TaskState)
+    subtype = "task"
+    active = True
+    area = factory.Faker("word")
+    priority = factory.Faker("random_number")
+    description = factory.Faker("sentence")
 
     # Let half the tasks have a due date
 
     @factory.lazy_attribute
-    def due(self):
-        if random.random() > 0.5:
-            return factory.Faker('date_time').generate({})
+    def due(self) -> Optional[datetime]:
+        """Generate the due date for half of the tasks."""
+        if SystemRandom().random() > 0.5:
+            return faker.date_time()
+        return None
 
     @factory.lazy_attribute
-    def closed(self):
-        if self.state == 'completed' or self.state == 'deleted':
-            return factory.Faker('date_time').generate({})
+    def closed(self) -> factory.Faker:
+        """Generate the closed date for the tasks with completed or deleted state."""
+        if self.state == "completed" or self.state == "deleted":
+            return faker.date_time()
+        return None
 
     class Meta:
-        model = models.Task
-        sqlalchemy_session_persistence = 'commit'
+        """Configure factoryboy class."""
+
+        model = Task
 
 
 class RecurrentTaskFactory(TaskFactory):
-    recurrence = factory.Faker(
-        'word',
-        ext_word_list=['1d', '1rmo', '1y2mo30s']
-    )
-    recurrence_type = factory.Faker(
-        'word',
-        ext_word_list=['repeating', 'recurring']
-    )
-    type = 'recurrent_task'
+    """Generate a fake recurrent task."""
+
+    recurrence = factory.Faker("word", ext_word_list=["1d", "1rmo", "1y2mo30s"])
+    recurrence_type = factory.Faker("enum", enum_cls=RecurrenceType)
+    due = factory.Faker("date_time")
+    subtype = "recurrent_task"
 
     class Meta:
-        model = models.RecurrentTask
-        sqlalchemy_session_persistence = 'commit'
+        """Configure factoryboy class."""
 
-
-class TagFactory(factory.alchemy.SQLAlchemyModelFactory):
-    """
-    Class to generate a fake tag.
-    """
-    id = factory.Sequence(lambda n: 'tag_{}'.format(n))
-    description = factory.Faker('sentence')
-
-    class Meta:
-        model = models.Tag
-        sqlalchemy_session_persistence = 'commit'
+        model = RecurrentTask

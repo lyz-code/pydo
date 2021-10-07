@@ -1,0 +1,134 @@
+---
+# Configuration of the reports.
+reports:
+  # Datetime strftime compatible string to print dates.
+  date_format: '%Y-%m-%d %H:%M'
+
+  # Equivalence between task attributes and how they are shown in the reports
+  task_attribute_labels:
+    id_: ID
+    description: Description
+    agile: Agile
+    body: Body
+    closed: Closed
+    created: Created
+    due: Due
+    estimate: Est
+    fun: Fun
+    parent_id: Parent
+    area: Area
+    priority: Pri
+    state: State
+    recurrence: Recur
+    recurrence_type: RecurType
+    tags: Tags
+    value: Val
+    wait: Wait
+    willpower: WP
+
+  # Definition of reports over a group of tasks:
+  #
+  # Each of them has the following properties:
+  #   * report_name: It's the key that identifies the report.
+  #   * columns: Ordered list of task attributes to print.
+  #   * filter: Dictionary of task properties that narrow down the tasks you
+  #       want to print.
+  #   * sort: Ordered list of criteria used to sort the tasks.
+  task_reports:
+    # Open: Print active tasks.
+    open:
+      filter:
+        active: true
+        type: task
+      columns:
+        - id_
+        - description
+        - area
+        - priority
+        - tags
+        - due
+        - parent_id
+
+    # Closed: Print inactive tasks.
+    closed:
+      filter:
+        active: false
+        type: task
+      columns:
+        - id_
+        - description
+        - area
+        - priority
+        - tags
+        - due
+        - parent_id
+
+    # Recurring: Print repeating and recurring active parent tasks.
+    recurring:
+      filter:
+        active: true
+        type: recurrent_task
+      columns:
+        - id_
+        - description
+        - recurrence
+        - recurrence_type
+        - area
+        - priority
+        - tags
+        - due
+
+    # Frozen: Print repeating and recurring inactive parent tasks.
+    frozen:
+      filter:
+        state: frozen
+        type: recurrent_task
+      columns:
+        - id_
+        - description
+        - recurrence
+        - recurrence_type
+        - area
+        - priority
+        - tags
+        - due
+        - parent_id
+
+# Level of logging verbosity. One of ['info', 'debug', 'warning'].
+verbose: info
+
+# URL specifying the connection to the database. For example:
+#   * tinydb: tinydb:////home/user/database.tinydb
+#   * sqlite: sqlite:////home/user/mydb.sqlite
+#   * mysql: mysql://scott:tiger@localhost/mydatabase
+database_url: fake:///fake.db
+
+# Colors
+theme: solarized_dark
+themes:
+  solarized_dark:
+    background_1: '#073642'
+    background_2: '#002b36'
+    foreground_1: '#657b83'
+    foreground_2: '#586e75'
+    yellow: '#b58900'
+    orange: '#cb4b16'
+    red: '#dc322f'
+    magenta: '#d33682'
+    violet: '#6c71c4'
+    blue: '#268bd2'
+    cyan: '#2aa198'
+    green: '#859900'
+  solarized:
+    background_1: '#fdf6e3'
+    background_2: '#eee8d5'
+    foreground_1: '#839496'
+    foreground_2: '#93a1a1'
+    yellow: '#b58900'
+    orange: '#cb4b16'
+    red: '#dc322f'
+    magenta: '#d33682'
+    violet: '#6c71c4'
+    blue: '#268bd2'
+    cyan: '#2aa198'
+    green: '#859900'

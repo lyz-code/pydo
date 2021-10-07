@@ -1,0 +1,25 @@
+{
+  "template": "git@github.com:lyz-code/cookiecutter-python-project.git",
+  "commit": "f2d6860498002278bdb94df7b16b0b6758219111",
+  "context": {
+    "cookiecutter": {
+      "project_name": "pydo",
+      "project_slug": "pydo",
+      "project_description": "CLI task manager built with Python and SQLite.",
+      "requirements": "click, click-default-group, ruamel.yaml, pypika, tabulate, yoyo-migrations, ulid-py",
+      "configure_command_line": "True",
+      "read_configuration_from_yaml": "True",
+      "github_user": "lyz-code",
+      "github_token_pass_path": "internet/github.lyz-code.api_token",
+      "pypi_token_pass_path": "internet/pypi.token",
+      "test_pypi_token_pass_path": "internet/test.pypi.token",
+      "author": "Lyz",
+      "author_email": "lyz-code-security-advisories@riseup.net",
+      "security_advisories_email": "lyz-code-security-advisories@riseup.net",
+      "project_underscore_slug": "pydo",
+      "_template": "git@github.com:lyz-code/cookiecutter-python-project.git"
+    }
+  },
+  "directory": null,
+  "checkout": null
+}
