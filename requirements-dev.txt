@@ -185,7 +185,7 @@ isort==5.9.3
     #   pylint
 lazy-object-proxy==1.6.0
     # via astroid
-makefun==1.11.3
+makefun==1.12.0
     # via
     #   decopatch
     #   pytest-cases
