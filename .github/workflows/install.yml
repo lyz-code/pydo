@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install the program
-        run: pip install pydo
+        run: pip install py-do
       - name: Test the program works
         run: pydo --version
+      - name: Test the program can create task
+        run: pydo add test task
+      - name: Test the program can remove task
+        run: pydo rm 1

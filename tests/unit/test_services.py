@@ -40,8 +40,8 @@ class TestTaskAdd:
         task = repo.get(result.id_, [Task])
         assert task.description == description
         assert task.state == "backlog"
-        assert (task.created - now).total_seconds() < 1
-        assert (task.modified - now).total_seconds() < 1
+        assert (task.created - now).total_seconds() < 2
+        assert (task.modified - now).total_seconds() < 2
         assert task.closed is None
         assert task.area is None
         assert (
@@ -177,9 +177,9 @@ class TestTaskDoAndDel:
         assert parent_task.state == "backlog"
         assert child_task.state == state
         assert child_task.closed is not None
-        assert (child_task.closed - now).total_seconds() < 1
+        assert (child_task.closed - now).total_seconds() < 2
         assert new_child.state == "backlog"
-        assert (new_child.created - now).total_seconds() < 1
+        assert (new_child.created - now).total_seconds() < 2
         assert new_child.due is not None
         assert new_child.due >= parent_task.due
         assert (
@@ -305,7 +305,7 @@ class TestTaskMod:
 
         modified_task = repo.get(task.id_, [Task])
         assert modified_task.description == description
-        assert (modified_task.modified - now).total_seconds() < 1
+        assert (modified_task.modified - now).total_seconds() < 2
         assert (
             "pydo.services",
             logging.INFO,
@@ -485,7 +485,7 @@ class TestTaskFreeze:
         parent_task = repo.get(parent_task.id_, [RecurrentTask])
         assert parent_task.active is False
         assert parent_task.state == TaskState.FROZEN
-        assert (parent_task.modified - now).total_seconds() < 1
+        assert (parent_task.modified - now).total_seconds() < 2
         assert (
             "pydo.services",
             logging.INFO,
@@ -544,7 +544,7 @@ class TestTaskThaw:
 
         parent_task = repo.get(task.id_, [RecurrentTask])
         assert parent_task.state == TaskState.BACKLOG
-        assert (parent_task.modified - now).total_seconds() < 1
+        assert (parent_task.modified - now).total_seconds() < 2
         children_tasks = repo.search({"parent_id": parent_task.id_}, [Task])
         assert len(children_tasks) == 1
 

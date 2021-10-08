@@ -19,7 +19,6 @@ nav:
   - Customization:
       - Sorting: sorting.md
       - Reports: reports.md
-      - Colors: colors.md
   - Contributing: contributing.md
   - Developing:
       - Contributing: contributing.md
