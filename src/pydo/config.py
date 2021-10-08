@@ -109,7 +109,9 @@ class Config(UserDict):  # type: ignore # noqa: R0901
                 except (ParserError, ScannerError) as error:
                     raise ConfigError(str(error)) from error
         except FileNotFoundError as error:
-            raise ConfigError("The configuration file could not be found.") from error
+            raise FileNotFoundError(
+                "The configuration file could not be found."
+            ) from error
 
     def save(self) -> None:
         """Save the configuration in the configuration YAML file."""

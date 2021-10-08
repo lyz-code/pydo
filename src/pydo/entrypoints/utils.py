@@ -1,7 +1,9 @@
 """Define common entrypoint functions."""
 
 import logging
+import os
 import re
+import shutil
 import sys
 from contextlib import suppress
 from typing import Any, Iterable, Tuple
@@ -25,6 +27,21 @@ def load_config(config_path: str) -> Config:
             f"Error parsing yaml of configuration file {config_path}: {str(error)}"
         )
         sys.exit(1)
+    except FileNotFoundError:
+        try:
+            data_directory = os.path.expanduser(os.path.dirname(config_path))
+            os.makedirs(data_directory)
+            log.info(f"Data directory {data_directory} created")
+        except FileExistsError:
+            log.info("Data directory already exits")
+
+        config_path = os.path.join(data_directory, "config.yaml")
+        if not os.path.isfile(config_path) or not os.access(config_path, os.R_OK):
+            shutil.copyfile("assets/config.yaml", config_path)
+            log.info("Copied default configuration template")
+
+        config = load_config(config_path)
+        config.set("database_url", f"tinydb://{data_directory}/database.tinydb")
 
     return config
 

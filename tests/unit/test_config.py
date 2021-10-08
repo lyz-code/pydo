@@ -51,7 +51,7 @@ def test_load_handles_file_not_found(config: Config) -> None:
     """
     config.config_path = "inexistent.yaml"
 
-    with pytest.raises(ConfigError):
+    with pytest.raises(FileNotFoundError):
         config.load()
 
 

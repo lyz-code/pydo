@@ -1,9 +1,7 @@
 """Python package building configuration."""
 
 import logging
-import os
 import re
-import shutil
 from glob import glob
 from os.path import basename, splitext
 
@@ -24,9 +22,9 @@ with open("README.md", "r") as readme_file:
 
 
 setup(
-    name="pydo",
+    name="py-do",
     version=version,
-    description="CLI task manager built with Python and SQLite.",
+    description="Free software command line task manager built in Python.",
     author="Lyz",
     author_email="lyz-code-security-advisories@riseup.net",
     license="GNU General Public License v3",
@@ -65,20 +63,3 @@ setup(
         "ruyaml",
     ],
 )
-
-try:
-    data_directory = os.path.expanduser("~/.local/share/pydo")
-    os.makedirs(data_directory)
-    log.info("Data directory created")
-except FileExistsError:
-    log.info("Data directory already exits")
-
-config_path = os.path.join(data_directory, "config.yaml")
-if os.path.isfile(config_path) and os.access(config_path, os.R_OK):
-    log.info(
-        "Configuration file already exists, check the documentation "
-        "for the new version changes."
-    )
-else:
-    shutil.copyfile("assets/config.yaml", config_path)
-    log.info("Copied default configuration template")

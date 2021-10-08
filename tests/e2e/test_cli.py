@@ -2,6 +2,7 @@
 
 import logging
 import re
+import shutil
 from datetime import datetime
 from typing import List, Tuple
 
@@ -65,24 +66,53 @@ class TestCli:
             f' "{config_file}", line 1, column 15',
         ) in caplog.record_tuples
 
+    def test_load_handles_directory_not_found(
+        self, runner: CliRunner, tmpdir: LocalPath, caplog: LogCaptureFixture
+    ) -> None:
+        """
+        Given: A missing config directory.
+        When: Running the command line.
+        Then: The config directory is created and the default configuration is populated
+        """
+        shutil.rmtree(tmpdir)
+        config_file = tmpdir.join("unexistent_config.yaml")  # type: ignore
+
+        result = runner.invoke(cli, ["-c", str(config_file), "null"])
+
+        assert result.exit_code == 0
+        assert (
+            "pydo.entrypoints.utils",
+            logging.INFO,
+            f"Data directory {tmpdir} created",
+        ) in caplog.record_tuples
+        assert (
+            "pydo.entrypoints.utils",
+            logging.INFO,
+            "Copied default configuration template",
+        ) in caplog.record_tuples
+
     def test_load_handles_file_not_found(
         self, runner: CliRunner, tmpdir: LocalPath, caplog: LogCaptureFixture
     ) -> None:
         """
         Given: A missing config file.
         When: Running the command line.
-        Then: An error is returned.
+        Then: The default configuration is populated
         """
         config_file = tmpdir.join("unexistent_config.yaml")  # type: ignore
 
         result = runner.invoke(cli, ["-c", str(config_file), "null"])
 
-        assert result.exit_code == 1
+        assert result.exit_code == 0
         assert (
             "pydo.entrypoints.utils",
-            logging.ERROR,
-            f"Error parsing yaml of configuration file {config_file}: "
-            "The configuration file could not be found.",
+            logging.INFO,
+            f"Data directory {tmpdir} created",
+        ) not in caplog.record_tuples
+        assert (
+            "pydo.entrypoints.utils",
+            logging.INFO,
+            "Copied default configuration template",
         ) in caplog.record_tuples
 
 

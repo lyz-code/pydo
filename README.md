@@ -96,7 +96,7 @@ user defined metadata and more.
 To install pydo, run:
 
 ```bash
-pip install pydo
+pip install py-do
 ```
 
 The installation method will create a new pydo database at
