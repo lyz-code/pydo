@@ -1017,6 +1017,7 @@ class TestFrozen:
         task = insert_frozen_parent_task_e2e
         task.description = "d"
         task.priority = 1
+        task.area = "ar"
         repo_e2e.add(task)
         repo_e2e.commit()
         # ECE001: Expression is too complex. Life is tough
