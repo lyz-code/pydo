@@ -2,122 +2,122 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://lyz-code.github.io/pydo/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/areas/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/basic_usage/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/contributing/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/dates/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/estimate/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/export/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/fun/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/future_features/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/objective_value/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/priority/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/recurrence/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/reference/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/related/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/reports/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/sorting/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/tags/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/update/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/willpower/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/adr/001-change-id-from-str-to-int/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/adr/0xx-agenda/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/adr/0xx-subtasks-and-steps/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/adr/adr/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://lyz-code.github.io/pydo/developing/database_schema/</loc>
-         <lastmod>2021-10-07</lastmod>
+         <lastmod>2021-10-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
