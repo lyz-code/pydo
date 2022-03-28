@@ -4,7 +4,7 @@
 #
 #    pip-compile --allow-unsafe
 #
-click==8.0.1
+click==8.1.0
     # via
     #   click-default-group
     #   pydo (setup.py)
