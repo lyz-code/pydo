@@ -12,8 +12,9 @@ astroid==2.8.2
     # via pylint
 asttokens==2.0.5
     # via flake8-aaa
-attrs==21.2.0
+attrs==21.4.0
     # via
+    #   flake8-annotations
     #   flake8-bugbear
     #   flake8-eradicate
     #   pytest
@@ -21,7 +22,7 @@ autoflake==1.4
     # via autoimport
 autoimport==0.7.3
     # via -r requirements-dev.in
-backports.entry-points-selectable==1.1.0
+backports-entry-points-selectable==1.1.0
     # via virtualenv
 bandit==1.7.0
     # via -r requirements-dev.in
@@ -105,7 +106,7 @@ flake8==3.9.2
     #   pep8-naming
 flake8-aaa==0.12.0
     # via -r requirements-dev.in
-flake8-annotations==2.6.2
+flake8-annotations==2.9.0
     # via -r requirements-dev.in
 flake8-annotations-complexity==0.0.6
     # via -r requirements-dev.in
@@ -161,22 +162,6 @@ idna==3.2
     # via
     #   -c docs/requirements.txt
     #   requests
-importlib-metadata==4.8.1
-    # via
-    #   -c docs/requirements.txt
-    #   -c requirements.txt
-    #   backports.entry-points-selectable
-    #   click
-    #   flake8
-    #   flake8-comprehensions
-    #   flake8-simplify
-    #   flake8-typing-imports
-    #   pep517
-    #   pluggy
-    #   pre-commit
-    #   pytest
-    #   stevedore
-    #   virtualenv
 iniconfig==1.1.1
     # via pytest
 isort==5.9.3
@@ -338,12 +323,6 @@ tomli==1.2.1
     #   black
     #   coverage
     #   pep517
-typed-ast==1.4.3
-    # via
-    #   astroid
-    #   black
-    #   flake8-annotations
-    #   mypy
 types-freezegun==1.1.0
     # via -r requirements-dev.in
 types-python-dateutil==2.8.0
@@ -352,12 +331,8 @@ typing-extensions==3.10.0.2
     # via
     #   -c docs/requirements.txt
     #   -c requirements.txt
-    #   astroid
     #   black
-    #   gitpython
-    #   importlib-metadata
     #   mypy
-    #   pylint
 urllib3==1.26.7
     # via
     #   -c docs/requirements.txt
@@ -375,12 +350,6 @@ yamlfix==0.7.2
     # via -r requirements-dev.in
 yamllint==1.26.3
     # via -r requirements-dev.in
-zipp==3.6.0
-    # via
-    #   -c docs/requirements.txt
-    #   -c requirements.txt
-    #   importlib-metadata
-    #   pep517
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==21.2.4
