@@ -60,18 +60,21 @@ class Report(BaseModel):
             raise EntityNotFoundError("The report doesn't have any data to print")
 
         table = Table(
-            box=box.MINIMAL,
+            box=box.SIMPLE,
             header_style=Style(color=self.colors.violet),
+            footer_style=Style(color=self.colors.violet),
             style=Style(color=self.colors.background_1),
             border_style=Style(color=self.colors.background_1),
             row_styles=[
-                Style(color=self.colors.foreground_1),
-                Style(color=self.colors.foreground_2),
+                Style(color=self.colors.foreground_1, bgcolor=self.colors.background_1),
+                Style(color=self.colors.foreground_1, bgcolor=self.colors.background_2),
             ],
         )
+        if len(self.data) > 60:
+            table.show_footer = True
 
         for label in self.labels:
-            table.add_column(label)
+            table.add_column(label, footer=label)
 
         for row in self.data:
             row = [str(element) for element in row]

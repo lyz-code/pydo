@@ -18,6 +18,11 @@ update:
   # Sync your virtualenv with the expected state
 	python -m piptools sync requirements.txt requirements-dev.txt docs/requirements.txt
 
+  # Remove the requirement files to avoid conflicts between themselves
+	rm requirements.txt docs/requirements.txt requirements-dev.txt
+	touch requirements.txt docs/requirements.txt requirements-dev.txt
+
+	# Update the requirements
 	pip-compile -Ur --allow-unsafe
 	pip-compile -Ur --allow-unsafe docs/requirements.in --output-file docs/requirements.txt
 	pip-compile -Ur --allow-unsafe requirements-dev.in --output-file requirements-dev.txt

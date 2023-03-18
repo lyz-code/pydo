@@ -2,6 +2,8 @@
 [![Actions Status](https://github.com/lyz-code/pydo/workflows/Build/badge.svg)](https://github.com/lyz-code/pydo/actions)
 [![Coverage Status](https://coveralls.io/repos/github/lyz-code/pydo/badge.svg?branch=master)](https://coveralls.io/github/lyz-code/pydo?branch=master)
 
+I'm archiving the repo as I'm currently going to use Orgmode instead
+
 # Pydo
 
 `pydo` is a free software command line task manager built in

@@ -249,6 +249,11 @@ The user will be able to interact with the Paths TUI through:
 
 Get inspiration in [grit](https://github.com/climech/grit).
 
+We may be able to use `get_line_prefix` attribute of the `Window` object of
+`prompt-toolkit` to display the tree like symbols, we could use [this
+example](https://github.com/prompt-toolkit/python-prompt-toolkit/blob/master/examples/full-screen/simple-demos/line-prefixes.py)
+as inspiration.
+
 # Decision
 <!-- What is the change that we're proposing and/or doing? -->
 

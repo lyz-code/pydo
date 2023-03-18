@@ -46,10 +46,12 @@ def report_prints_expected(
     out_lines = out.splitlines()
 
     if exact and (len(out_lines) != len(expected_out)):
+        __import__("pdb").set_trace()  # XXX BREAKPOINT
         return False
     for line_id in range(0, len(out_lines) - 1):
         with suppress(IndexError):
             if not re.match(expected_out[line_id], out_lines[line_id]):
+                __import__("pdb").set_trace()  # XXX BREAKPOINT
                 return False
 
     return True

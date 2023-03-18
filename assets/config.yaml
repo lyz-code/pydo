@@ -100,4 +100,4 @@ verbose: info
 #   * tinydb: tinydb:////home/user/database.tinydb
 #   * sqlite: sqlite:////home/user/mydb.sqlite
 #   * mysql: mysql://scott:tiger@localhost/mydatabase
-database_url: tinydb:///~/.local/share/pydo/database.tinydb
+database_url: tinydb://~/.local/share/pydo/database.tinydb

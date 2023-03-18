@@ -18,7 +18,7 @@ from pydo.entrypoints.cli import cli
 from pydo.model.task import RecurrentTask, Task, TaskState
 from pydo.version import __version__
 
-from ..factories import RecurrentTaskFactory
+from ..factories import RecurrentTaskFactory, TaskFactory
 from ..unit.test_views import report_prints_expected
 
 log = logging.getLogger(__name__)
@@ -774,6 +774,44 @@ class TestReport:
         ]
 
         result = runner.invoke(cli, ["report", "open", "sort:+priority,-id_"])
+
+        assert result.exit_code == 0
+        assert report_prints_expected(result.stdout, expected_output, result.stderr)
+
+    def test_print_core_adds_footer_if_many_rows(
+        self, runner: CliRunner, repo_e2e: Repository
+    ) -> None:
+        """
+        Given: A report to print with many lines
+        When: printing the report
+        Then: A footer with the columns is added, to make it easier to read
+        """
+        tasks = TaskFactory.create_batch(
+            62, description="Description", priority=3, due=None, area=None
+        )
+        for task in tasks:
+            repo_e2e.add(task)
+        repo_e2e.commit()
+        expected_output = [
+            r".*",
+            r" +ID +Description +Pri.*",
+            r".*",
+        ]
+        expected_output.extend(
+            [
+                fr" +{task.id_} +{task.description} +{task.priority}.*"
+                for task in sorted(tasks)
+            ]
+        )
+        expected_output.extend(
+            [
+                r".*",
+                r" +ID +Description +Pri.*",
+                r".*",
+            ]
+        )
+
+        result = runner.invoke(cli, ["report", "open"])
 
         assert result.exit_code == 0
         assert report_prints_expected(result.stdout, expected_output, result.stderr)

@@ -5,77 +5,47 @@
 #    pip-compile --allow-unsafe --output-file=docs/requirements.txt docs/requirements.in
 #
 astunparse==1.6.3
-    # via
-    #   -c docs/requirements.txt
-    #   pytkdocs
+    # via pytkdocs
 babel==2.9.1
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-git-revision-date-localized-plugin
+    # via mkdocs-git-revision-date-localized-plugin
 beautifulsoup4==4.10.0
     # via
-    #   -c docs/requirements.txt
     #   mkdocs-htmlproofer-plugin
     #   mkdocs-mermaid2-plugin
 cached-property==1.5.2
-    # via
-    #   -c docs/requirements.txt
-    #   pytkdocs
-certifi==2021.5.30
-    # via
-    #   -c docs/requirements.txt
-    #   requests
+    # via pytkdocs
+certifi==2021.10.8
+    # via requests
 charset-normalizer==2.0.6
-    # via
-    #   -c docs/requirements.txt
-    #   requests
-click==8.0.1
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs
+    # via requests
+click==8.0.3
+    # via mkdocs
 editorconfig==0.12.3
-    # via
-    #   -c docs/requirements.txt
-    #   jsbeautifier
+    # via jsbeautifier
 ghp-import==2.0.2
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs
+    # via mkdocs
 gitdb==4.0.7
-    # via
-    #   -c docs/requirements.txt
-    #   gitpython
+    # via gitpython
 gitpython==3.1.24
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-git-revision-date-localized-plugin
+    # via mkdocs-git-revision-date-localized-plugin
 idna==3.2
-    # via
-    #   -c docs/requirements.txt
-    #   requests
+    # via requests
 importlib-metadata==4.8.1
     # via
-    #   -c docs/requirements.txt
     #   click
     #   markdown
     #   mkdocs
 jinja2==3.0.2
     # via
-    #   -c docs/requirements.txt
     #   mkdocs
     #   mkdocs-material
     #   mkdocstrings
 jsbeautifier==1.14.0
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-mermaid2-plugin
+    # via mkdocs-mermaid2-plugin
 lxml==4.6.3
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-htmlproofer-plugin
+    # via mkdocs-htmlproofer-plugin
 markdown==3.3.4
     # via
-    #   -c docs/requirements.txt
     #   markdown-include
     #   mkdocs
     #   mkdocs-autorefs
@@ -84,21 +54,15 @@ markdown==3.3.4
     #   mkdocstrings
     #   pymdown-extensions
 markdown-include==0.6.0
-    # via
-    #   -c docs/requirements.txt
-    #   -r docs/requirements.in
+    # via -r docs/requirements.in
 markupsafe==2.0.1
     # via
-    #   -c docs/requirements.txt
     #   jinja2
     #   mkdocstrings
 mergedeep==1.3.4
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs
+    # via mkdocs
 mkdocs==1.2.2
     # via
-    #   -c docs/requirements.txt
     #   -r docs/requirements.in
     #   mkdocs-autolinks-plugin
     #   mkdocs-autorefs
@@ -108,122 +72,74 @@ mkdocs==1.2.2
     #   mkdocs-mermaid2-plugin
     #   mkdocstrings
 mkdocs-autolinks-plugin==0.4.0
-    # via
-    #   -c docs/requirements.txt
-    #   -r docs/requirements.in
+    # via -r docs/requirements.in
 mkdocs-autorefs==0.3.0
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocstrings
+    # via mkdocstrings
 mkdocs-git-revision-date-localized-plugin==0.10.0
-    # via
-    #   -c docs/requirements.txt
-    #   -r docs/requirements.in
+    # via -r docs/requirements.in
 mkdocs-htmlproofer-plugin==0.7.0
-    # via
-    #   -c docs/requirements.txt
-    #   -r docs/requirements.in
+    # via -r docs/requirements.in
 mkdocs-material==7.3.2
     # via
-    #   -c docs/requirements.txt
     #   -r docs/requirements.in
     #   mkdocs-mermaid2-plugin
 mkdocs-material-extensions==1.0.3
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-material
+    # via mkdocs-material
 mkdocs-mermaid2-plugin==0.5.2
-    # via
-    #   -c docs/requirements.txt
-    #   -r docs/requirements.in
+    # via -r docs/requirements.in
 mkdocstrings==0.16.2
-    # via
-    #   -c docs/requirements.txt
-    #   -r docs/requirements.in
+    # via -r docs/requirements.in
 packaging==21.0
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs
+    # via mkdocs
 pygments==2.10.0
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-material
+    # via mkdocs-material
 pymdown-extensions==9.0
     # via
-    #   -c docs/requirements.txt
     #   mkdocs-material
     #   mkdocs-mermaid2-plugin
     #   mkdocstrings
 pyparsing==2.4.7
-    # via
-    #   -c docs/requirements.txt
-    #   packaging
+    # via packaging
 python-dateutil==2.8.2
-    # via
-    #   -c docs/requirements.txt
-    #   ghp-import
+    # via ghp-import
 pytkdocs==0.12.0
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocstrings
+    # via mkdocstrings
 pytz==2021.3
-    # via
-    #   -c docs/requirements.txt
-    #   babel
+    # via babel
 pyyaml==5.4.1
     # via
-    #   -c docs/requirements.txt
     #   mkdocs
     #   mkdocs-mermaid2-plugin
     #   pyyaml-env-tag
 pyyaml-env-tag==0.1
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs
+    # via mkdocs
 requests==2.26.0
     # via
-    #   -c docs/requirements.txt
     #   mkdocs-htmlproofer-plugin
     #   mkdocs-mermaid2-plugin
 six==1.16.0
     # via
-    #   -c docs/requirements.txt
     #   astunparse
     #   jsbeautifier
     #   python-dateutil
 smmap==4.0.0
-    # via
-    #   -c docs/requirements.txt
-    #   gitdb
+    # via gitdb
 soupsieve==2.2.1
-    # via
-    #   -c docs/requirements.txt
-    #   beautifulsoup4
+    # via beautifulsoup4
 typing-extensions==3.10.0.2
     # via
-    #   -c docs/requirements.txt
     #   gitpython
     #   importlib-metadata
     #   pytkdocs
 urllib3==1.26.7
-    # via
-    #   -c docs/requirements.txt
-    #   requests
+    # via requests
 watchdog==2.1.6
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs
+    # via mkdocs
 wheel==0.37.0
-    # via
-    #   -c docs/requirements.txt
-    #   astunparse
+    # via astunparse
 zipp==3.6.0
-    # via
-    #   -c docs/requirements.txt
-    #   importlib-metadata
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 setuptools==58.2.0
-    # via
-    #   -c docs/requirements.txt
-    #   mkdocs-mermaid2-plugin
+    # via mkdocs-mermaid2-plugin
